@@ -11,74 +11,103 @@
 <header>
   <h1>Chaînes de cotes 1D</h1>
   <p class="intro">Vérifiez qu'un <strong>jeu entre deux pièces reste dans ses limites</strong>, au pire des cas comme en statistique. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
+  <nav id="menu" aria-label="Pages" hidden></nav>
 </header>
 
 <main>
   <p id="etat" class="message info" role="status">Chargement du calcul… la première fois, comptez 10 à 30 secondes.</p>
 
-  <section aria-labelledby="t-depart">
-    <h2 id="t-depart">1. Partir d'un exemple</h2>
-    <div class="ligne">
-      <label for="exemple">Exemple</label>
-      <select id="exemple" disabled></select>
-      <button id="charger" type="button" disabled>Charger cet exemple</button>
-    </div>
-    <p id="description" class="legende"></p>
-  </section>
-
-  <section aria-labelledby="t-condition">
-    <h2 id="t-condition">2. Cote condition</h2>
-    <p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p>
-    <div class="grille">
-      <label>Nom<input id="c-nom" type="text" value="Jeu J"></label>
-      <label>Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
-      <label>Jmax (mm)<input id="c-jmax" type="text" inputmode="decimal"></label>
-    </div>
-    <details>
-      <summary>Réglages du calcul</summary>
-      <div class="grille">
-        <label>Procédé garanti k (± kσ)<input id="r-k" type="text" inputmode="decimal" value="3"></label>
-        <label>T référence (°C)<input id="r-tref" type="text" inputmode="decimal" value="20"></label>
-        <label>T service (°C)<input id="r-tserv" type="text" inputmode="decimal" value="20"></label>
+  <!-- ===== Page « Analyser » (js/analyse.js) ===== -->
+  <div id="page-analyser" hidden>
+    <section aria-labelledby="t-depart">
+      <h2 id="t-depart">1. Partir d'un exemple ou d'une étude</h2>
+      <div class="ligne">
+        <label for="exemple" class="cache">Exemple</label>
+        <select id="exemple"></select>
+        <button id="charger" type="button">Charger cet exemple</button>
       </div>
-    </details>
-  </section>
+      <p id="description" class="legende"></p>
+      <div class="ligne">
+        <button id="ouvrir" type="button" class="secondaire">Ouvrir une étude (.json)</button>
+        <button id="enregistrer" type="button" class="secondaire">Enregistrer l'étude</button>
+        <input id="fichier" type="file" accept=".json,application/json" hidden>
+      </div>
+      <p class="legende">Le fichier est celui de l'application de bureau : une étude enregistrée sur la page s'ouvre dans l'application, et inversement.</p>
+      <p id="message-fichier" class="message" role="status" hidden></p>
+    </section>
 
-  <section aria-labelledby="t-maillons">
-    <h2 id="t-maillons">3. Maillons</h2>
-    <p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p>
-    <div class="defile">
-      <table id="maillons">
-        <thead><tr><th>Nom</th><th>Sens</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th><th><span class="cache">Supprimer</span></th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
-  </section>
+    <section aria-labelledby="t-condition">
+      <h2 id="t-condition">2. Cote condition</h2>
+      <p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p>
+      <div class="grille">
+        <label>Nom<input id="c-nom" type="text" value="Jeu J"></label>
+        <label>Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
+        <label>Jmax (mm)<input id="c-jmax" type="text" inputmode="decimal"></label>
+      </div>
+      <details>
+        <summary>Réglages du calcul</summary>
+        <div class="grille">
+          <label>Procédé garanti k (± kσ)<input id="r-k" type="text" inputmode="decimal" value="3"></label>
+          <label>T référence (°C)<input id="r-tref" type="text" inputmode="decimal" value="20"></label>
+          <label>T service (°C)<input id="r-tserv" type="text" inputmode="decimal" value="20"></label>
+          <label>Température de service
+            <select id="r-mode"><option value="uniforme">Uniforme (la même pour toutes les cotes)</option><option value="par_cote">Par cote (colonne du tableau)</option></select>
+          </label>
+          <label>Décentrage du procédé (σ)<input id="r-dec" type="text" inputmode="decimal" value="0"></label>
+          <label>Tolérance générale (ISO 2768)
+            <select id="r-tolgen"><option value="">Aucune (écarts à saisir)</option><option value="f">f : fine</option><option value="m">m : moyenne</option><option value="c">c : grossière</option><option value="v">v : très grossière</option></select>
+          </label>
+        </div>
+        <p class="legende">La tolérance générale est donnée aux maillons dont ni la désignation ISO ni les écarts ne sont saisis.</p>
+      </details>
+    </section>
 
-  <p><button id="calculer" type="button" class="primaire" disabled>Calculer</button></p>
+    <section aria-labelledby="t-maillons">
+      <h2 id="t-maillons">3. Maillons</h2>
+      <p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p>
+      <label class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
+      <div class="defile">
+        <table id="maillons">
+          <thead><tr><th>Nom</th><th>Sens</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th>
+            <th class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th class="th-therm th-tcote">T service (°C)</th><th><span class="cache">Supprimer</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
+    </section>
 
-  <section id="resultats" aria-live="polite" hidden>
-    <h2>Résultats</h2>
-    <p id="verdict" class="message"></p>
-    <p id="conseil"></p>
-    <div id="metriques" class="metriques"></div>
-    <ul id="avertissements" class="legende"></ul>
-    <div id="onglets" role="tablist" aria-label="Graphiques"></div>
-    <div id="graphique" role="tabpanel"></div>
-    <p id="legende-graphique" class="legende"></p>
-  </section>
-  <p id="erreur" class="message erreur" role="alert" hidden></p>
+    <section aria-labelledby="t-apercu" id="apercu-section">
+      <h2 id="t-apercu">Schéma et contrôles</h2>
+      <p id="apercu-verdict" class="message" role="status" hidden></p>
+      <div id="apercu-fig" class="figure"></div>
+      <p id="apercu-legende" class="legende"></p>
+      <ul id="controles" class="controles" aria-label="Contrôles de cohérence"></ul>
+    </section>
+
+    <p><button id="calculer" type="button" class="primaire">Calculer</button></p>
+    <p id="erreur" class="message erreur" role="alert" hidden></p>
+
+    <section id="resultats" aria-live="polite" hidden>
+      <h2>Résultats</h2>
+      <p id="verdict" class="message"></p>
+      <p id="conseil"></p>
+      <ul id="avertissements" class="legende"></ul>
+      <div id="onglets" role="tablist" aria-label="Résultats"></div>
+      <div id="panneau" role="tabpanel"></div>
+    </section>
+  </div>
 </main>
 
 <footer>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
-  <p class="legende">Version navigateur limitée à l'analyse. L'application de bureau (répartition des tolérances, comparaison, mécanisme, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
+  <p class="legende">Version navigateur : analyse d'une chaîne. L'application de bureau (répartition des tolérances, comparaison, mécanisme, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
   <p class="legende">© 2026 Théo Brun.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js"></script>
+<script src="js/analyse.js"></script>
+<script>App.demarrer();</script>
 </body>
 </html>

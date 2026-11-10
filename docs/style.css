@@ -75,7 +75,34 @@ td:nth-child(2), td:nth-child(7) { min-width: 110px; }
 
 #onglets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
 #onglets button[aria-selected="true"] { background: var(--accent); color: var(--sur-accent); }
-#graphique { background: #FFFAF5; border: 1px solid var(--bord); border-radius: 4px; min-height: 120px; overflow: hidden; }
+.figure { background: #FFFAF5; border: 1px solid var(--bord); border-radius: 4px; min-height: 120px; overflow: hidden; margin-top: 8px; }
+#panneau { border: 1px solid var(--bord); border-radius: 4px; padding: 4px 12px 12px; background: var(--carte); }
+#panneau h3 { font-size: 1.05rem; margin: 20px 0 6px; }
+#panneau table { min-width: 0; }
+#panneau .legende { margin-top: 8px; }
+button.secondaire { background: transparent; }
+label.case { flex-direction: row; align-items: center; gap: 8px; margin: 8px 0; font-size: .95rem; }
+label.case input { width: auto; min-height: 0; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.verdict { font-weight: 600; text-align: left; }
+td.verdict.succes { background: #C8F0D2; color: #0B3D1A; }
+td.verdict.erreur { background: #FFC2C2; color: #6B0A12; }
+td.verdict.info { background: #E4E0F3; color: #3D246C; }
+#maillons th { white-space: nowrap; }
+.th-therm, .td-therm { display: none; }
+#maillons.therm .th-therm, #maillons.therm .td-therm { display: table-cell; }
+.th-tcote, .td-tcote { display: none !important; }
+#maillons.tcote .th-tcote, #maillons.tcote .td-tcote { display: table-cell !important; }
+.controles { list-style: none; padding: 0; margin: 8px 0; }
+.controles li { padding: 6px 10px; margin: 4px 0; border-radius: 4px; font-size: .9rem; }
+.controles li.erreur { background: #FFC2C2; color: #6B0A12; }
+.controles li.avertissement { background: #FFE2A8; color: #5A3A00; }
+.controles li.info { background: #E4E0F3; color: #3D246C; }
+.details { margin: 8px 0; padding-left: 20px; font-size: .95rem; }
+.formule { margin: 6px 0 10px; padding: 6px 10px; background: #FFFAF5; color: #3D246C; border-left: 3px solid var(--accent); overflow-x: auto; }
+#menu { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+#menu button[aria-current="true"] { background: var(--accent); color: var(--sur-accent); }
+#panneau ul { padding-left: 20px; }
 a { color: var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) a { color: #C8BDF0; } }
 footer { margin-top: 40px; border-top: 1px solid var(--bord); padding-top: 8px; }

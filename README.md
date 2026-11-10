@@ -22,7 +22,9 @@ répond en une phrase : au pire des cas, en statistique, ou pas du tout, avec la
 2. Choisissez l'exemple **Réducteur : jeu axial d'un arbre intermédiaire** et cliquez sur **Charger cet exemple**.
 3. Lisez le verdict : le jeu ne tient pas au pire des cas (0,3000 à 0,8920 mm pour 0,20 à 0,85 mm demandés), mais tient
    en statistique (Cpk 2,05). Le conseil indique par quelle cote commencer.
-4. Passez d'un onglet à l'autre : schéma, comparaison des méthodes, Pareto, Monte-Carlo, distribution.
+4. Passez d'un onglet à l'autre : résultats, statistiques (Monte-Carlo, inertiel), graphiques, sensibilité, explications
+   du calcul avec les formules remplies. **Enregistrer l'étude** produit le même fichier `.json` que l'application de
+   bureau.
 
 ![Histogramme Monte-Carlo et loi normale](docs/captures/montecarlo.jpg)
 
@@ -42,7 +44,7 @@ Les tolérances viennent de l'ISO 286 (IT1 à IT18, positions a à zc et A à ZC
 | | Version navigateur | Application de bureau (Windows) |
 |---|---|---|
 | **Où** | [Page GitHub Pages](https://theo33-oss.github.io/chaines-de-cotes-1D/) : Chrome, Firefox, Edge, Safari, téléphone | Dossier [`application/`](application) |
-| **Contenu** | Analyse : exemples, saisie, verdict, schéma, Pareto, Monte-Carlo | Tout : répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, assistants d'ajustement et de chaîne, tolérances géométriques, dossiers PDF, Word et HTML, enregistrement des études |
+| **Contenu** | Analyse complète : exemples, saisie (ISO 286, matériaux, effet thermique, décentrage), schéma en direct, contrôles de cohérence, verdicts, Pareto, Monte-Carlo, sensibilité, explications pas à pas, ouverture et enregistrement d'études compatibles avec le bureau | Tout : répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, assistants d'ajustement et de chaîne, tolérances géométriques, dossiers PDF, Word et HTML, enregistrement des études |
 | **Installation** | Aucune | Python 3.11 ou plus, installé au premier lancement (environ 1 Go) |
 
 Dans les deux cas, **tout est calculé sur votre ordinateur** : aucune cote n'est envoyée sur Internet.

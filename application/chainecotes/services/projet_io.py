@@ -7,14 +7,17 @@ numéroté par version ; l'ouverture refuse tout fichier dont la forme ou les ty
 import io
 import json
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
 
 from chainecotes.core.chaine import LOIS, MODES_T, SENS
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.geometrie import TYPES as TYPES_GEOMETRIE
 from chainecotes.services.cartouche import CHAMPS, MAX_REVISIONS, REVISIONS, STATUTS
+
+if TYPE_CHECKING:  # pandas ne se charge que pour les exports tableur : la page web n'en a pas besoin pour enregistrer
+    import pandas as pd
 
 APPLICATION = "chaines-de-cotes-1d"
 VERSION = 1
@@ -114,9 +117,13 @@ def _controleBloc(bloc, champs: dict, ou: str, requis=()) -> None:
             raise _erreur(f"champ « {cle} » absent dans {ou}.")
     for cle, valeur in bloc.items():
         genre, videPermis = champs[cle]
-        _controleChamp(
-            valeur, genre, videPermis, f"le champ « {cle} » {'du ' + ou[3:] if ou.startswith('le ') else 'de ' + ou}"
-        )
+        if ou.startswith("le "):
+            de = "du " + ou[3:]
+        elif ou.startswith("les "):
+            de = "des " + ou[4:]
+        else:
+            de = "de " + ou
+        _controleChamp(valeur, genre, videPermis, f"le champ « {cle} » {de}")
 
 
 def _controleCartouche(c) -> None:
@@ -238,8 +245,10 @@ def _oui(ok: bool) -> str:
     return "conforme" if ok else "non conforme"
 
 
-def _tableaux(bundle: dict) -> dict[str, pd.DataFrame]:
+def _tableaux(bundle: dict) -> "dict[str, pd.DataFrame]":
     """Tableaux de résultats d'un calcul : Synthèse, Maillons, Contributions, Monte-Carlo."""
+    import pandas as pd
+
     res, v, mc = bundle["res"], bundle["verdicts"], bundle["mc"]
     c = res["condition"]
     synthese = [
@@ -346,6 +355,8 @@ def exporterResultatsXlsx(bundle: dict) -> bytes:
     Entrée : bundle (sortie de calculerChaine ; mc peut valoir None).
     Sortie : contenu du fichier .xlsx (onglets Synthèse, Maillons, Contributions, Monte-Carlo ; mm, °C, ppm).
     """
+    import pandas as pd
+
     tampon = io.BytesIO()
     with pd.ExcelWriter(tampon, engine="openpyxl") as writer:
         for nom, t in _tableaux(bundle).items():
