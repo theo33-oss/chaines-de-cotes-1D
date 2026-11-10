@@ -76,5 +76,7 @@ td:nth-child(2), td:nth-child(7) { min-width: 110px; }
 #onglets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
 #onglets button[aria-selected="true"] { background: var(--accent); color: var(--sur-accent); }
 #graphique { background: #FFFAF5; border: 1px solid var(--bord); border-radius: 4px; min-height: 120px; overflow: hidden; }
+a { color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) a { color: #C8BDF0; } }
 footer { margin-top: 40px; border-top: 1px solid var(--bord); padding-top: 8px; }
 [hidden] { display: none !important; }

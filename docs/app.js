@@ -135,11 +135,13 @@ function afficherOnglet(id) {
   if (layout.title && layout.title.text) {
     // les titres Plotly ne passent pas à la ligne : sur un écran étroit le sous-titre serait coupé
     layout.title = { ...layout.title, text: layout.title.text.replaceAll(" | ", "<br>"), x: 0.01, xanchor: "left" };
-    layout.margin = { ...layout.margin, t: Math.max((layout.margin || {}).t || 0, 90) };
+    if (layout.title.text.includes("<br>")) layout.margin = { ...layout.margin, t: Math.max((layout.margin || {}).t || 0, 90) };
   }
-  // légende sous le graphique : en haut, elle recouvrirait le sous-titre du titre
-  layout.legend = { ...layout.legend, orientation: "h", x: 0, xanchor: "left", y: -0.28, yanchor: "top" };
-  layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
+  if (layout.showlegend !== false) {
+    // légende sous le graphique : en haut, elle recouvrirait le sous-titre du titre (le schéma n'en a pas)
+    layout.legend = { ...layout.legend, orientation: "h", x: 0, xanchor: "left", y: -0.28, yanchor: "top" };
+    layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
+  }
   Plotly.react("graphique", f.fig.data, layout, { responsive: true, displaylogo: false });
   $("legende-graphique").textContent = f.legende;
 }
