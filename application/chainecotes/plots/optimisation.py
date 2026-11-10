@@ -49,3 +49,16 @@ def figureScenarios(maillons: list[dict], nomA: str = "Scénario A", nomB: str =
         for n, x, y in zip(noms, a, b, strict=True)
     )
     return fig, f"IT par maillon ({nomA} / {nomB}) : {detail}."
+
+
+def figureITAvantApres(sortie: dict, itAvant: list[float]) -> tuple:
+    """Barres groupées des IT (mm) par maillon, avant (saisie) et après (répartition).
+
+    Entrées : sortie (core.inverse.repartirTolerances), itAvant (IT saisis, mm). Sortie : (figure, légende en français).
+    """
+    noms = [m["nom"] for m in sortie["maillons"]]
+    apres = [m["IT"] for m in sortie["maillons"]]
+    avant = list(itAvant)
+    fig = _barres(noms, avant, apres, "Avant (saisie)", "Après (répartition)", "Intervalles de tolérance IT par maillon, avant et après", "IT (mm)", ".4f")
+    detail = " ; ".join(f"{n} : {fr(a, '.4f')} → {fr(b, '.4f')} mm" for n, a, b in zip(noms, avant, apres, strict=True))
+    return fig, f"IT par maillon, avant et après la répartition : {detail}."

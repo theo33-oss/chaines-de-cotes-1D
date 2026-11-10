@@ -57,5 +57,26 @@ dil = json.loads(pont.dilatation("Acier C45", 20, 100))
 assert dil["metriques"][0][1].startswith("12,4") and dil["fig"]["data"], dil["metriques"]
 assert "erreur" in json.loads(pont.dilatation("Acier C45", 20, -300))
 assert json.loads(pont.materiauxSources())["sources"]["lignes"]
+# ---- phase 3 : répartition et comparaison de scénarios
+red = pont.charger("reducteur_jeu_axial")
+n = len(json.loads(red)["maillons"])
+r = json.loads(pont.repartir(red, "egale", "pire_cas", "[]", 0))
+assert "erreur" not in r and r["tenue"], r
+assert {ligne[4] for ligne in r["tableau"]["lignes"]} == {"0,1083"}, r["tableau"]["lignes"]  # IT égaux : 0,65 / 6
+assert r["valeurs"][0] == ["Budget Jmax − Jmin", "0,6500 mm"] and len(r["ecarts"]) == n and r["explication"] and r["schema"]["fig"]
+for methode in ("proportionnelle", "iso"):
+    assert json.loads(pont.repartir(red, methode, "statistique", "[]", 0)).get("tenue") is not None, methode
+cm = json.loads(pont.repartir(red, "cout_minimal", "pire_cas", "[0]", 1, json.dumps(["tournage"] * n), "{}", True))
+assert cm["metriquesCout"] and cm["procedes"]["tableau"]["lignes"] and len(cm["figures"]) == 2 and cm["tenue"], cm.get("erreur")
+assert "erreur" in json.loads(pont.repartir(red, "egale", "pire_cas", json.dumps(list(range(n))), 0))  # tout figé
+sans_limite = json.loads(red); sans_limite["condition"]["jmax"] = None
+assert "erreur" in json.loads(pont.repartir(json.dumps(sans_limite), "egale", "pire_cas", "[]", 0))
+at = json.loads(pont.atelierExporter(json.dumps({"tournage": {"c": 2.0}})))
+assert json.loads(pont.atelierImporter(at["contenu"]))["valeurs"] == {"tournage": {"c": 2.0}}
+assert "erreur" in json.loads(pont.atelierImporter("pas du json"))
+cp = json.loads(pont.comparer(red, json.dumps(r["apres"]), "B (répartition)"))
+assert not cp["identiques"] and cp["phrases"] and len(cp["maillons"]["lignes"]) == n and cp["fig"]["data"], cp
+assert json.loads(pont.comparer(red, red))["identiques"]
+assert json.loads(pont.procedes())["procedes"]
 print("saisie invalide ->", vide["erreur"])
 print("fichier invalide ->", mauvais["erreur"])

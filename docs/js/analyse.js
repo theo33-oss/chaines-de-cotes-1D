@@ -377,6 +377,26 @@
     },
     noms: () => lireMaillons().map((m) => m.nom),
     tref: () => nombre($("r-tref").value) || 20,
+    probleme: lireProbleme,
+    limites: () => [$("c-jmin").value, $("c-jmax").value],
+    poserLimites(jmin, jmax) {
+      $("c-jmin").value = jmin;
+      $("c-jmax").value = jmax;
+      $("resultats").hidden = true;
+      apercu();
+    },
+    // « Appliquer à l'étude » : remplace les écarts de chaque maillon (la désignation ISO est vidée).
+    appliquerEcarts(ecarts) {
+      document.querySelectorAll("#maillons tbody tr").forEach((tr, i) => {
+        if (!ecarts[i]) return;
+        tr.querySelector(".m-iso").value = "";
+        // valeurs exactes, sans arrondi : un jeu qui tombe pile sur une limite deviendrait « non conforme » d'un millionième
+        tr.querySelector(".m-es").value = String(ecarts[i].es);
+        tr.querySelector(".m-ei").value = String(ecarts[i].ei);
+      });
+      $("resultats").hidden = true;
+      apercu();
+    },
   };
 
   App.enregistrerPage({ id: "analyser", titre: "Analyser", apres });

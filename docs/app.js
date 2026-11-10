@@ -178,6 +178,8 @@ const App = (() => {
   function afficherPage(id) {
     for (const p of pages) $("page-" + p.id).hidden = p.id !== id;
     for (const b of $("menu").children) b.setAttribute("aria-current", String(b.dataset.id === id));
+    const page = pages.find((p) => p.id === id);
+    if (page && page.afficher) page.afficher(); // la page se remet à jour d'après l'étude en cours
   }
 
   function menu() {

@@ -8,6 +8,7 @@ import json
 import math
 
 from chainecotes.core import ajustement as ajust
+from chainecotes.core import cout as cout_mod
 from chainecotes.core.chaine import capabilitesMaillons, libelleVerdict
 from chainecotes.core.donnees import chargerJson
 from chainecotes.core.errors import ErreurChaine
@@ -38,8 +39,11 @@ from chainecotes.plots import graphiques
 from chainecotes.plots._common import intervalle
 from chainecotes.plots.ajustement import figureZones
 from chainecotes.plots.materiaux import figureDilatation
+from chainecotes.plots.optimisation import figureCoutsMaillons, figureITAvantApres, figureScenarios
 from chainecotes.plots.schema import figureSchema
-from chainecotes.services import projet_io
+from chainecotes.services import procedes_atelier, projet_io
+from chainecotes.services import repartition as rep
+from chainecotes.services.scenarios import comparerScenarios
 from chainecotes.services.calcul import apercuChaine, calculerChaine
 from chainecotes.services.conclusion import conclusionEtude
 from chainecotes.services.controles import controlerProbleme
@@ -532,6 +536,126 @@ def dilatation(nom: str, tref: float, temperature: float) -> str:
             "messages": messages,
             "fig": json.loads(fig.to_json()),
             "legende": legende,
+        },
+        allow_nan=False,
+    )
+
+
+# ---------- répartition des tolérances ----------
+
+
+def procedes() -> str:
+    """Procédés de fabrication et leurs valeurs indicatives (c, n, qualités IT), en JSON ; avis de fiabilité."""
+    return json.dumps({"procedes": cout_mod.listeProcedes(), "fiabilite": cout_mod.fiabiliteProcedes()})
+
+
+def repartir(texte: str, methode: str, critere: str, figes: str = "[]", reglage: int = 0, procedesMaillons: str = "[]",
+             atelier: str = "{}", arrondi: bool = False) -> str:
+    """Répartit les tolérances de la chaîne pour tenir [Jmin ; Jmax] (JSON, voir services/repartition.py).
+
+    Entrées : texte (problème), methode, critere, figes (indices des maillons gardés), reglage (indice du maillon de
+    réglage), procedesMaillons (procédé de chaque maillon, « cout_minimal »), atelier (valeurs de l'atelier), arrondi.
+    Sortie JSON : {"erreur"} ou message, tenue, schéma après répartition, valeurs clés, tableau, figures, explication,
+    procédés utilisés, et ecarts (ES / EI à écrire dans l'étude pour « Appliquer »).
+    """
+    try:
+        probleme = _nettoyer(json.loads(texte))
+        garde = rep.repartir(probleme, methode, critere, json.loads(figes), int(reglage), json.loads(procedesMaillons),
+                             json.loads(atelier), bool(arrondi))
+        sortie, itAvant = garde["sortie"], garde["itAvant"]
+        apres = rep.problemeRepartition(garde)
+        schema, legendeSchema = figureSchema(apres, apercuChaine(apres))
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    except (ValueError, TypeError, KeyError, IndexError) as e:
+        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+    lignes, info = sortie["maillons"], sortie.get("cout")
+    nomReglage = lignes[sortie["reglage"]]["nom"]
+    valeurs = [["Budget Jmax − Jmin", f"{fr(sortie['budget'])} mm"]]
+    if sortie["qualite"] is not None:
+        valeurs.append(["Qualité ISO retenue", f"IT{sortie['qualite']}"])
+    valeurs.append([f"Décalage de « {nomReglage} »", f"{fr(sortie['decalage'] * 1000, '+.1f')} µm"])
+    colonnes = rep.colonnesRepartition(garde)
+    formats = {"Cote (mm)": ".3f", "IT avant (mm)": ".4f", "IT après (mm)": ".4f", "ES (mm)": "+.4f", "EI (mm)": "+.4f",
+               "Coût avant": ".3f", "Coût après": ".3f"}
+
+    def texte_case(titre, v):
+        if v is None:
+            return "—"
+        if isinstance(v, bool):
+            return "oui" if v else "non"
+        return fr(v, formats[titre]) if titre in formats else str(v)
+
+    tableau = _table(list(colonnes), [[texte_case(t, colonnes[t][i]) for t in colonnes] for i in range(len(lignes))])
+    figures = [_figure("it", "IT avant et après", *figureITAvantApres(sortie, itAvant))]
+    metriquesCout = None
+    if info:
+        avant, apresCout = rep.coutsAvantApres(garde)
+        figures.append(_figure("couts", "Coût par maillon", *figureCoutsMaillons([m["nom"] for m in lignes], avant, apresCout)))
+        metriquesCout = [
+            ["Coût relatif optimisé", fr(info["total"], ".2f")],
+            ["Gain vs répartition égale", fr(info["gainEgale"] * 100, "+.1f") + " %"],
+            ["Gain vs proportionnelle", fr(info["gainProportionnelle"] * 100, "+.1f") + " %"],
+        ]
+    pr = rep.tableProcedes(garde["specs"]) if info else None
+    return json.dumps(
+        {
+            "tenue": bool(sortie["tenue"]), "message": sortie["message"],
+            "schema": {"fig": json.loads(schema.to_json()), "legende": legendeSchema},
+            "valeurs": valeurs, "metriquesCout": metriquesCout, "tableau": tableau, "figures": figures,
+            "explication": [{"texte": b["texte"], "formules": [texVersHtml(f) for f in b["formules"]]} for b in rep.explicationRepartition(sortie)],
+            "procedes": None if pr is None else {
+                "legende": pr["legende"], "avertissement": pr["avertissement"],
+                "tableau": _table(list(pr["lignes"][0]), [[fr(v, "g") if isinstance(v, float) else v for v in x.values()] for x in pr["lignes"]]),
+            },
+            "ecarts": [{"es": m["es"], "ei": m["ei"]} for m in lignes],
+            "apres": apres,
+        },
+        allow_nan=False,
+    )
+
+
+def atelierExporter(valeurs: str) -> str:
+    """Fichier des valeurs d'atelier (même format que le bureau) ; JSON {"contenu"} ou {"erreur"}."""
+    try:
+        return json.dumps({"contenu": procedes_atelier.exporterProcedes(json.loads(valeurs))})
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+
+
+def atelierImporter(texte: str) -> str:
+    """Valeurs d'atelier relues d'un fichier (JSON {"valeurs"} ou {"erreur"})."""
+    try:
+        return json.dumps({"valeurs": procedes_atelier.importerProcedes(texte)})
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+
+
+# ---------- comparaison de deux scénarios ----------
+
+
+def comparer(texteA: str, texteB: str, nomB: str = "B") -> str:
+    """Compare deux problèmes (A = étude en cours, B = variante) : phrases, écarts, tolérances et barres jumelées."""
+    try:
+        a, b = _nettoyer(json.loads(texteA)), _nettoyer(json.loads(texteB))
+        cmp = comparerScenarios(calculerChaine(a, False), calculerChaine(b, False))
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    except (ValueError, TypeError, KeyError) as e:
+        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+
+    def f(v):
+        return "—" if v is None else fr(v, ".4f")
+
+    libelles = {"jeuMini": "Jeu mini (mm)", "jeuMaxi": "Jeu maxi (mm)", "cpk": "Cpk", "ppm": "ppm"}
+    fig, legende = figureScenarios(cmp["maillons"], "A (étude en cours)", nomB)
+    return json.dumps(
+        {
+            "phrases": cmp["phrases"], "identiques": cmp["identiques"],
+            "grandeurs": _table(["Grandeur", "A", "B", "Écart B − A"], [[lib, f(cmp[k]["a"]), f(cmp[k]["b"]), f(cmp[k]["delta"])] for k, lib in libelles.items()]),
+            "maillons": _table(["Maillon", "Statut", "IT A (mm)", "IT B (mm)", "Écart (mm)"],
+                               [[m["nom"], m["statut"], f(m["itA"]), f(m["itB"]), f(m["delta"])] for m in cmp["maillons"]]),
+            "fig": json.loads(fig.to_json()), "legende": legende,
         },
         allow_nan=False,
     )

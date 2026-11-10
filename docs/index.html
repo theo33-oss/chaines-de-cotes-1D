@@ -97,6 +97,94 @@
     </section>
   </div>
 
+  <!-- ===== Page « Répartir les tolérances » (js/repartir.js) ===== -->
+  <div id="page-repartir" hidden>
+    <h2>Répartition des tolérances</h2>
+    <p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p>
+    <div class="grille">
+      <label>Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
+      <label>Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
+    </div>
+    <fieldset class="familles"><legend>Critère</legend><div>
+      <label class="case"><input type="radio" name="rp-critere" value="pire_cas" checked> Pire des cas (100 % garanti)</label>
+      <label class="case"><input type="radio" name="rp-critere" value="statistique"> Statistique (± k σ)</label>
+    </div></fieldset>
+    <fieldset class="familles"><legend>Méthode de répartition</legend><div id="rp-methodes">
+      <label class="case"><input type="radio" name="rp-methode" value="egale" checked> Égale</label>
+      <label class="case"><input type="radio" name="rp-methode" value="proportionnelle"> Proportionnelle à l'unité de tolérance ISO i = 0,45∛D + 0,001D</label>
+      <label class="case"><input type="radio" name="rp-methode" value="iso"> Qualité ISO la plus proche</label>
+      <label class="case"><input type="radio" name="rp-methode" value="cout_minimal"> Coût minimal (procédés de l'atelier)</label>
+    </div></fieldset>
+    <fieldset class="familles"><legend>Maillons figés (écarts gardés)</legend><div id="rp-figes"></div></fieldset>
+    <label class="large">Maillon de réglage<select id="rp-reglage"></select></label>
+    <p class="legende">Maillon non figé dont la cote moyenne est décalée pour amener le jeu au milieu de [Jmin ; Jmax].</p>
+    <div id="rp-cout" hidden>
+      <label class="case"><input id="rp-arrondi" type="checkbox"> Arrondir chaque IT à une qualité ISO 286</label>
+      <h3>Procédé de chaque maillon</h3>
+      <div id="rp-procedes" class="grille"></div>
+      <details>
+        <summary>Mes valeurs d'atelier (remplacent les valeurs indicatives)</summary>
+        <p class="legende">Coût = c × (IT / 0,1 mm)^(−n). Entrez le coût relatif et l'exposant de votre atelier et les qualités IT que le procédé tient ; une valeur laissée telle quelle reste la valeur indicative.</p>
+        <div id="rp-atelier"></div>
+        <div class="ligne">
+          <button id="rp-at-garder" type="button" class="secondaire">Garder dans ce navigateur</button>
+          <button id="rp-at-exporter" type="button" class="secondaire">Exporter (.json)</button>
+          <button id="rp-at-importer" type="button" class="secondaire">Importer (.json)</button>
+          <button id="rp-at-effacer" type="button" class="secondaire">Revenir aux valeurs indicatives</button>
+          <input id="rp-at-fichier" type="file" accept=".json,application/json" hidden>
+        </div>
+        <p id="rp-at-message" class="message" role="status" hidden></p>
+      </details>
+    </div>
+    <div class="ligne">
+      <button id="rp-calculer" type="button" class="primaire">Calculer</button>
+      <button id="rp-appliquer" type="button" class="secondaire" disabled>Appliquer à l'étude</button>
+    </div>
+    <p id="rp-erreur" class="message erreur" role="alert" hidden></p>
+    <p id="rp-appliquee" class="message succes" role="status" hidden></p>
+    <section id="rp-resultat" hidden>
+      <h3>Résultat</h3>
+      <p id="rp-message" class="message"></p>
+      <p class="legende">Schéma de la chaîne avec les tolérances réparties :</p>
+      <div id="rp-schema" class="figure"></div>
+      <p id="rp-schema-legende" class="legende"></p>
+      <div id="rp-valeurs"></div>
+      <div id="rp-valeurs-cout"></div>
+      <div id="rp-tableau"></div>
+      <div id="rp-figures"></div>
+      <h3>Méthode retenue</h3>
+      <div id="rp-explication"></div>
+      <div id="rp-procedes-utilises"></div>
+    </section>
+  </div>
+
+  <!-- ===== Page « Comparer » (js/comparer.js) ===== -->
+  <div id="page-comparer" hidden>
+    <h2>Comparaison de scénarios</h2>
+    <p class="legende">Le scénario A est l'étude en cours (page Analyser). Choisissez le scénario B : le résultat de la répartition (page Répartir), un exemple de la bibliothèque ou un fichier d'étude. Les écarts sont toujours B − A.</p>
+    <fieldset class="familles"><legend>Scénario B</legend><div>
+      <label class="case"><input type="radio" name="cp-source" value="repartition" checked> Résultat de la répartition</label>
+      <label class="case"><input type="radio" name="cp-source" value="exemple"> Exemple de la bibliothèque</label>
+      <label class="case"><input type="radio" name="cp-source" value="fichier"> Fichier JSON</label>
+    </div></fieldset>
+    <p id="cp-repartition" class="legende">Compare l'étude en cours à la chaîne obtenue par le dernier calcul de la page « Répartir les tolérances » (avant « Appliquer à l'étude »).</p>
+    <label id="cp-exemple-bloc" class="large" hidden>Exemple<select id="cp-exemple"></select></label>
+    <div id="cp-fichier-bloc" class="ligne" hidden>
+      <button id="cp-ouvrir" type="button" class="secondaire">Choisir un fichier d'étude (.json)</button>
+      <input id="cp-fichier" type="file" accept=".json,application/json" hidden>
+      <span id="cp-fichier-nom" class="legende"></span>
+    </div>
+    <p><button id="cp-calculer" type="button" class="primaire">Comparer</button></p>
+    <p id="cp-erreur" class="message erreur" role="alert" hidden></p>
+    <section id="cp-resultat" hidden>
+      <p id="cp-phrases" class="message info"></p>
+      <div id="cp-grandeurs"></div>
+      <div id="cp-maillons"></div>
+      <div id="cp-fig" class="figure"></div>
+      <p id="cp-legende" class="legende"></p>
+    </section>
+  </div>
+
   <!-- ===== Page « Bibliothèque d'exemples » (js/exemples.js) ===== -->
   <div id="page-exemples" hidden>
     <h2>Bibliothèque d'exemples</h2>
@@ -204,7 +292,7 @@
 
 <footer>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
-  <p class="legende">Version navigateur : analyse d'une chaîne, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (répartition des tolérances, comparaison, mécanisme, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
+  <p class="legende">Version navigateur : analyse d'une chaîne, répartition des tolérances, comparaison de scénarios, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (mécanisme à plusieurs chaînes, assistant de chaîne, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
   <p class="legende">© 2026 Théo Brun.</p>
 </footer>
 
@@ -212,6 +300,8 @@
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js"></script>
 <script src="js/analyse.js"></script>
+<script src="js/repartir.js"></script>
+<script src="js/comparer.js"></script>
 <script src="js/exemples.js"></script>
 <script src="js/ajustement.js"></script>
 <script src="js/iso286.js"></script>

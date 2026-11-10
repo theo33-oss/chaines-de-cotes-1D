@@ -5,22 +5,28 @@ du problème calculé : si la saisie change ensuite, il est masqué jusqu'au pro
 """
 
 import copy
-import math
 
 import pandas as pd
-import plotly.graph_objects as go
 
 from chainecotes.bureau import editeur, state
 from chainecotes.bureau.widgets import Page, Zone
 from chainecotes.core import cout as cout_mod
-from chainecotes.core.chaine import solveurChaine
 from chainecotes.core.errors import ErreurChaine
-from chainecotes.core.inverse import repartirTolerances
-from chainecotes.plots._common import BLEU, VERMILLON, fr, miseEnPage
-from chainecotes.plots.optimisation import figureCoutsMaillons
+from chainecotes.plots._common import fr
+from chainecotes.plots.optimisation import figureCoutsMaillons, figureITAvantApres
 from chainecotes.plots.schema import figureSchema
 from chainecotes.services import procedes_atelier
 from chainecotes.services.calcul import apercuChaine
+from chainecotes.services.repartition import (
+    colonnesRepartition,
+    coutsAvantApres,
+    explicationRepartition,
+    problemeRepartition,
+    procedesDisponibles,
+    repartir,
+    specsProcedes,
+    tableProcedes,
+)
 
 CRITERES = {"pire_cas": "Pire des cas (100 % garanti)", "statistique": "Statistique (± k σ)"}
 METHODES = {
@@ -53,154 +59,25 @@ def valeursAtelier() -> dict[str, dict]:
     return sortie
 
 
-def _procedes() -> dict[str, str]:
-    """Procédés disponibles : identifiant → nom, dans l'ordre de data/procedes.json."""
-    return {p["id"]: p["nom"] for p in cout_mod.listeProcedes()}
-
-
-def _coutMaillon(spec: dict, it: float) -> float | None:
-    """Coût relatif c·(IT/IT_ref)^(-n) d'un maillon (None si IT ≤ 0 : coût non défini)."""
-    if not it > 0:
-        return None
-    m = cout_mod.modeleMaillon(spec)
-    return m["c"] * (it / cout_mod.refIT()) ** (-m["n"])
-
-
-def _qualiteAvant(cote: float, it: float) -> str:
-    """Qualité ISO équivalente d'un IT saisi, en texte (« ≈ IT7 », ou « — » si non définie)."""
-    try:
-        q = cout_mod.qualiteEquivalente(cote, it) if cote > 0 and it > 0 else None
-    except ErreurChaine:
-        q = None
-    return "—" if q is None else f"≈ IT{q}"
+_procedes = procedesDisponibles  # identifiant → nom des procédés, pour les listes de la page
 
 
 def _tableProcedes(z: Zone, specs: list[dict]) -> None:
     """Tableau des procédés utilisés par la répartition : coût c, exposant n, qualités IT et source."""
-    effectifs = {}
-    for s in specs:  # valeurs réellement utilisées : celles de l'atelier si elles ont été saisies
-        effectifs.setdefault(s.get("procede") or "generique", s)
+    t = tableProcedes(specs)
     z.sousTitre("Procédés utilisés et leurs paramètres")
-    z.legende("Modèle de coût : coût = c × (IT / IT_ref)^(−n), IT_ref = 0,1 mm. Coûts relatifs, jamais des prix.")
-    lignes = []
-    for p in cout_mod.listeProcedes():
-        if p["id"] not in effectifs:
-            continue
-        m = cout_mod.modeleMaillon(effectifs[p["id"]])
-        atelier = any(m[c] != p[c] for c in ("c", "n", "itmin", "itmax"))
-        lignes.append(
-            {
-                "Procédé": p["nom"],
-                "c": m["c"],
-                "n": m["n"],
-                "IT min": f"IT{m['itmin']}",
-                "IT max": f"IT{m['itmax']}",
-                "Origine": "Valeurs de l'atelier (saisies)" if atelier else "Indicatif, à valider",
-                "Source": "Saisie de l'utilisateur" if atelier else p["source"],
-            }
-        )
-    z.tableau(pd.DataFrame(lignes))
-    if any(ln["Origine"].startswith("Indicatif") for ln in lignes):
-        z.avertissement(cout_mod.fiabiliteProcedes())
-
-
-def _tex(v: float, fmt: str = ".4f") -> str:
-    """Nombre à la française pour une formule (la virgule entre accolades n'ajoute pas d'espace)."""
-    return fr(v, fmt).replace(",", "{,}")
-
-
-def _figureComparaison(sortie: dict, itAvant: list[float]) -> tuple[go.Figure, str]:
-    """Barres groupées des IT (mm) par maillon, avant (saisie) et après (répartition)."""
-    noms = [m["nom"] for m in sortie["maillons"]]
-    apres = [m["IT"] for m in sortie["maillons"]]
-    avant = list(itAvant)
-    fig = go.Figure(
-        [
-            go.Bar(x=noms, y=avant, name="Avant (saisie)", marker_color=BLEU, hovertemplate="%{x} : %{y:.4f} mm"),
-            go.Bar(
-                x=noms, y=apres, name="Après (répartition)", marker_color=VERMILLON, hovertemplate="%{x} : %{y:.4f} mm"
-            ),
-        ]
-    )
-    miseEnPage(fig, "Intervalles de tolérance IT par maillon, avant et après", 380)
-    fig.update_layout(barmode="group")
-    fig.update_yaxes(title_text="IT (mm)")
-    detail = " ; ".join(f"{n} : {fr(a, '.4f')} → {fr(b, '.4f')} mm" for n, a, b in zip(noms, avant, apres, strict=True))
-    return fig, f"IT par maillon, avant et après la répartition : {detail}."
-
-
-def problemeRepartition(garde: dict) -> dict:
-    """Problème calculé avec les écarts de la répartition (ES / EI calculés, désignation ISO vidée).
-
-    Entrée : garde (résultat gardé sous « inv.resultat » : sortie, probleme). Sortie : copie du problème.
-    """
-    apres = copy.deepcopy(garde["probleme"])
-    for m, ligne in zip(apres["maillons"], garde["sortie"]["maillons"], strict=True):
-        m.update({"iso": None, "es": ligne["es"], "ei": ligne["ei"]})
-    return apres
+    z.legende(t["legende"])
+    z.tableau(pd.DataFrame(t["lignes"]))
+    if t["avertissement"]:
+        z.avertissement(t["avertissement"])
 
 
 def _explication(z: Zone, sortie: dict) -> None:
     """Méthode retenue et formule du critère remplie avec les valeurs obtenues."""
-    v = sortie["verification"]
-    k = v["k_sigma"]
-    c = v["condition"]
-    a = [abs(float(x)) for x in v["coef"]]
-    it = [float(x) for x in v["IT"]]
-    budget = f"J_{{max}} - J_{{min}} = {_tex(c['jmax'])} - {_tex(c['jmin'])} = {_tex(sortie['budget'])}"
-    if sortie["critere"] == "pire_cas":
-        z.texte(
-            "**Critère du pire des cas** : la somme des IT (pondérés par la sensibilité |aᵢ| de chaque maillon) "
-            "doit égaler l'intervalle autorisé ; le jeu est alors garanti à 100 %."
-        )
-        termes = " + ".join(f"{_tex(ai, 'g')} \\times {_tex(x)}" for ai, x in zip(a, it, strict=True))
-        total = sum(ai * x for ai, x in zip(a, it, strict=True))
-        z.formule(f"\\sum_i |a_i|\\,IT_i = {termes} = {_tex(total)}")
-    else:
-        z.texte(
-            f"**Critère statistique** : avec des cotes indépendantes, les écarts types s'ajoutent en quadrature ; "
-            f"l'intervalle ± {fr(k, 'g')} σ du jeu doit égaler l'intervalle autorisé. σᵢ = |aᵢ|·ITᵢ/(2k) en loi "
-            "normale, |aᵢ|·ITᵢ/√12 en loi uniforme."
-        )
-        sig = [
-            ai * x / (2 * k) if loi == "normale" else ai * x / math.sqrt(12)
-            for ai, x, loi in zip(a, it, v["loi"], strict=True)
-        ]
-        termes = " + ".join(f"{_tex(s, '.5f')}^2" for s in sig)
-        total = 2 * k * math.sqrt(sum(s * s for s in sig))
-        z.formule(f"2k\\,\\sigma_J = 2 \\times {_tex(k, 'g')} \\times \\sqrt{{{termes}}} = {_tex(total)}")
-    z.formule(budget)
-    if sortie["methode"] == "egale":
-        z.texte(
-            f"**Répartition égale** : tous les maillons non figés reçoivent le même IT, "
-            f"ici {fr(sortie['facteur'] * 1000, '.1f')} µm."
-        )
-    elif sortie["methode"] == "proportionnelle":
-        z.texte(
-            "**Répartition proportionnelle à l'unité de tolérance ISO** : un maillon long reçoit un IT plus large, "
-            "comme dans la norme ISO 286 (même qualité « continue » pour tous)."
-        )
-        z.formule(
-            f"IT_i = f \\cdot i(D_i), \\quad i(D) = 0{{,}}45\\,\\sqrt[3]{{D}} + 0{{,}}001\\,D \\;(\\mu m), "
-            f"\\quad f = {_tex(sortie['facteur'] * 1000, '.3f')}"
-        )
-    elif sortie["methode"] == "cout_minimal":
-        z.texte(
-            "**Coût minimal** : chaque maillon reçoit l'IT qui minimise la somme des coûts c × (IT / 0,1 mm)^(−n) de "
-            "son procédé, sous le critère choisi et dans les qualités que ce procédé tient (multiplicateurs de "
-            "Lagrange). Les coûts sont relatifs et indicatifs."
-        )
-    else:
-        z.texte(
-            f"**Qualité ISO la plus proche** : on essaie les qualités ISO 286 de la plus grossière à la plus fine ; "
-            f"IT{sortie['qualite']} est la plus grossière qui tient le critère (les maillons non figés reçoivent "
-            "l'IT de leur cote dans cette qualité)."
-        )
-    nomReglage = sortie["maillons"][sortie["reglage"]]["nom"]
-    z.texte(
-        f"**Centrage** : les écarts des maillons non figés sont centrés (± IT/2), puis « {nomReglage} » est décalé "
-        f"de {fr(sortie['decalage'] * 1000, '+.1f')} µm pour amener le jeu moyen au milieu de [Jmin ; Jmax]."
-    )
+    for bloc in explicationRepartition(sortie):
+        z.texte(bloc["texte"])
+        for formule in bloc["formules"]:
+            z.formule(formule)
 
 
 class PageInverse(Page):
@@ -331,17 +208,7 @@ class PageInverse(Page):
 
     def _specs(self) -> list[dict]:
         """Un dict « procede » par maillon, complété des valeurs d'atelier qui diffèrent de data/procedes.json."""
-        base = {p["id"]: p for p in cout_mod.listeProcedes()}
-        specs = []
-        for cle in self.clesProcedes:
-            pid = state.v.get(cle) or next(iter(base))
-            s = {"procede": pid}
-            for champ, _ in CHAMPS_ATELIER:
-                v = state.v.get(f"opt.cout.atelier.{pid}.{champ}", base[pid][champ])
-                if v != base[pid][champ]:
-                    s[champ] = v
-            specs.append(s)
-        return specs
+        return specsProcedes([state.v.get(cle) for cle in self.clesProcedes], valeursAtelier())
 
     def _proposerLimites(self) -> None:
         """Remplit Jmin et Jmax d'un exemple de jeu (0,05 à 0,1 mm) : les champs se redessinent avec ces valeurs."""
@@ -364,18 +231,13 @@ class PageInverse(Page):
             self.droite.rafraichir()
             return
         methode = state.v["inv.methode"]
-        cout = methode == "cout_minimal"
-        specs = self._specs() if cout else None
         try:
-            sortie = repartirTolerances(
+            state.v[CLE_RESULTAT] = repartir(
                 p, methode, state.v["inv.critere"], state.v[self.cleFiges], state.v[self.cleReglage],
-                specs, bool(cout and state.v.get("opt.cout.arrondi")),
+                [state.v.get(cle) for cle in self.clesProcedes], valeursAtelier(), bool(state.v.get("opt.cout.arrondi")),
             )  # fmt: skip
-            itAvant = [float(x) for x in solveurChaine(p)["IT"]]
         except ErreurChaine as e:
             state.v[CLE_ERREUR] = e.message
-        else:
-            state.v[CLE_RESULTAT] = {"sortie": sortie, "probleme": copy.deepcopy(p), "itAvant": itAvant, "specs": specs}
         self.droite.rafraichir()
 
     def _appliquer(self) -> None:
@@ -435,16 +297,7 @@ class PageInverse(Page):
         )  # fmt: skip
         z.metriques(valeurs, 3)
         lignes, itAvant = sortie["maillons"], garde["itAvant"]
-        colonnes = {
-            "Maillon": [m["nom"] for m in lignes],
-            "Cote (mm)": [m["cote"] for m in lignes],
-            "Figé": [m["fige"] for m in lignes],
-            "IT avant (mm)": list(itAvant),
-            "IT après (mm)": [m["IT"] for m in lignes],
-            "ES (mm)": [m["es"] for m in lignes],
-            "EI (mm)": [m["ei"] for m in lignes],
-            "Désignation": [m["designation"] or "—" for m in lignes],
-        }
+        colonnes = colonnesRepartition(garde)
         formats = {"Cote (mm)": "%.3f", "IT avant (mm)": "%.4f", "IT après (mm)": "%.4f", "ES (mm)": "%+.4f",
                    "EI (mm)": "%+.4f"}  # fmt: skip
         info, specs = sortie.get("cout"), garde.get("specs")
@@ -459,19 +312,11 @@ class PageInverse(Page):
                 ],
                 3,
             )  # fmt: skip
-            avant = [_coutMaillon(s, x) for s, x in zip(specs, itAvant, strict=True)]
-            apresCout = [_coutMaillon(s, m["IT"]) for s, m in zip(specs, lignes, strict=True)]
-            procedes = _procedes()
-            colonnes |= {
-                "Procédé": [procedes.get(s.get("procede"), "générique") for s in specs],
-                "Qualité avant": [_qualiteAvant(m["cote"], x) for m, x in zip(lignes, itAvant, strict=True)],
-                "Coût avant": avant,
-                "Coût après": apresCout,
-            }
             formats |= {"Coût avant": "%.3f", "Coût après": "%.3f"}
         z.tableau(pd.DataFrame(colonnes), formats)
-        z.figure(*_figureComparaison(sortie, itAvant))
+        z.figure(*figureITAvantApres(sortie, itAvant))
         if info:
+            avant, apresCout = coutsAvantApres(garde)
             z.figure(*figureCoutsMaillons([m["nom"] for m in lignes], avant, apresCout))
         z.sousTitre("Méthode retenue")
         _explication(z, sortie)
