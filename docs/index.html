@@ -19,7 +19,21 @@
 
   <!-- ===== Page « Analyser » (js/analyse.js) ===== -->
   <div id="page-analyser" hidden>
-    <section aria-labelledby="t-depart">
+    <div id="guide" class="guide-seul">
+      <h2>Nouvelle étude</h2>
+      <p class="legende">Parcours guidé en cinq étapes pour mener une chaîne de cotes du jeu à garantir jusqu'au dossier à joindre à votre note de calcul.</p>
+      <ol id="guide-etapes" class="etapes" aria-label="Étapes du parcours"></ol>
+      <h3 id="guide-titre"></h3>
+      <p id="guide-texte"></p>
+      <div class="ligne">
+        <button type="button" class="secondaire js-precedent">Précédent</button>
+        <button type="button" class="primaire js-suivant">Suivant</button>
+      </div>
+      <p><button id="guide-quitter" type="button" class="secondaire">Tout voir d'un coup (mode expert)</button></p>
+    </div>
+    <p id="guide-ouvrir-bloc"><button id="guide-ouvrir" type="button" class="secondaire">Passer en mode guidé (5 étapes)</button></p>
+
+    <section aria-labelledby="t-depart" data-etape="1">
       <h2 id="t-depart">1. Partir d'un exemple ou d'une étude</h2>
       <div class="ligne">
         <label for="exemple" class="cache">Exemple</label>
@@ -36,7 +50,7 @@
       <p id="message-fichier" class="message" role="status" hidden></p>
     </section>
 
-    <section aria-labelledby="t-condition">
+    <section aria-labelledby="t-condition" data-etape="2">
       <h2 id="t-condition">2. Cote condition</h2>
       <p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p>
       <div class="grille">
@@ -62,7 +76,7 @@
       </details>
     </section>
 
-    <section aria-labelledby="t-maillons">
+    <section aria-labelledby="t-maillons" data-etape="3">
       <h2 id="t-maillons">3. Maillons</h2>
       <p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p>
       <label class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
@@ -76,7 +90,7 @@
       <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
     </section>
 
-    <section aria-labelledby="t-apercu" id="apercu-section">
+    <section aria-labelledby="t-apercu" id="apercu-section" data-etape="3">
       <h2 id="t-apercu">Schéma et contrôles</h2>
       <p id="apercu-verdict" class="message" role="status" hidden></p>
       <div id="apercu-fig" class="figure"></div>
@@ -84,17 +98,112 @@
       <ul id="controles" class="controles" aria-label="Contrôles de cohérence"></ul>
     </section>
 
-    <p><button id="calculer" type="button" class="primaire">Calculer</button></p>
-    <p id="erreur" class="message erreur" role="alert" hidden></p>
+    <p data-etape="4"><button id="calculer" type="button" class="primaire">Calculer</button></p>
+    <p id="erreur" class="message erreur" role="alert" hidden data-etape="4"></p>
 
-    <section id="resultats" aria-live="polite" hidden>
+    <section id="resultats" aria-live="polite" hidden data-etape="4">
       <h2>Résultats</h2>
       <p id="verdict" class="message"></p>
-      <p id="conseil"></p>
+      <p id="conseil" class="expert-seul"></p>
+      <ul id="plain-details" class="details guide-seul"></ul>
+      <div id="plain-conseils" class="guide-seul"></div>
       <ul id="avertissements" class="legende"></ul>
       <div id="onglets" role="tablist" aria-label="Résultats"></div>
       <div id="panneau" role="tabpanel"></div>
     </section>
+
+    <section id="guide-dossier" class="guide-seul" data-etape="5">
+      <h2>Dossier</h2>
+      <p>Complétez le cartouche, gardez une révision, puis enregistrez le dossier et l'étude.</p>
+      <div class="ligne">
+        <button id="guide-vers-dossier" type="button" class="primaire">Compléter le cartouche et générer le dossier</button>
+        <button id="guide-enregistrer" type="button" class="secondaire">Enregistrer l'étude (.json)</button>
+      </div>
+      <p class="legende">Le calcul doit être fait à l'étape 4 : le dossier refait chaque grandeur de l'étude en cours.</p>
+    </section>
+
+    <div class="ligne guide-seul" id="guide-bas">
+      <button type="button" class="secondaire js-precedent">Précédent</button>
+      <button type="button" class="primaire js-suivant">Suivant</button>
+    </div>
+  </div>
+
+  <!-- ===== Page « Accueil » (js/accueil.js) ===== -->
+  <div id="page-accueil" hidden>
+    <h2>Bienvenue dans Chaînes de cotes 1D</h2>
+    <p>Vérifiez qu'un <strong>jeu entre deux pièces reste dans ses limites</strong>, au pire des cas comme en statistique : l'outil répond en une phrase et indique sur quelle cote agir en premier.</p>
+    <div class="trois">
+      <button id="ac-exemple" type="button" class="primaire">Partir d'un exemple</button>
+      <button id="ac-guide" type="button" class="primaire">Créer une étude guidée</button>
+      <button id="ac-ouvrir" type="button" class="secondaire">Ouvrir une étude</button>
+    </div>
+    <p class="legende">Une étude est un fichier .json : celui de l'application de bureau s'ouvre ici, et inversement.</p>
+    <details>
+      <summary>En savoir plus : méthodes, outils, limites</summary>
+      <p>Cet outil calcule des <strong>chaînes de cotes à une dimension</strong>. Une chaîne de cotes relie une <strong>cote condition</strong> (un jeu, un serrage, un dépassement : la grandeur qui doit rester entre un minimum Jmin et un maximum Jmax pour que le mécanisme fonctionne) aux <strong>maillons</strong> qui la fabriquent : les cotes des pièces, chacune avec sa valeur nominale, son sens (« + » si elle agrandit la cote condition, « − » si elle la réduit) et sa <strong>tolérance</strong> (écarts ES / EI en mm ou désignation ISO 286 comme « 40 h7 »).</p>
+      <p>Le jeu est donné par trois méthodes, qui répondent à trois questions différentes :</p>
+      <ul class="details">
+        <li><strong>Pire des cas</strong> : toutes les cotes au plus mauvais en même temps. Le jeu est garanti à 100 %, mais les tolérances demandées sont serrées, donc chères.</li>
+        <li><strong>Statistique (RSS ± kσ)</strong> : les cotes se répartissent au hasard autour de leur milieu ; leurs écarts se compensent. On accepte un petit taux de pièces hors tolérance (Cp, Cpk, ppm) contre des tolérances plus larges.</li>
+        <li><strong>Monte-Carlo</strong> : des assemblages tirés au hasard vérifient le calcul statistique et donnent le taux de rebut simulé, même quand les lois sont uniformes.</li>
+      </ul>
+      <p>L'<strong>effet thermique</strong> est pris en compte : chaque maillon peut recevoir un matériau (ou un coefficient α) et une température de service.</p>
+      <h3>Tous les outils</h3>
+      <div id="ac-outils" class="ligne"></div>
+      <h3>Comment faire : une chaîne de cotes en 5 étapes</h3>
+      <ol class="details">
+        <li><strong>Cote condition</strong> : donnez-lui un nom et ses limites Jmin et Jmax en mm (laissez vide le côté sans limite).</li>
+        <li><strong>Maillons</strong> : ajoutez une ligne par cote de la chaîne, avec son sens « + » ou « − », sa cote nominale et sa tolérance, puis si besoin la loi, le matériau et la température.</li>
+        <li><strong>Schéma</strong> : vérifiez que les flèches se suivent et que la chaîne se referme. La flèche de la cote condition est verte si le pire cas tient les limites, rouge sinon.</li>
+        <li><strong>Calculer</strong> : lisez le verdict (vert : conforme au pire des cas ; orange : en statistique seulement ; rouge : non conforme), puis le Pareto pour savoir quelles cotes pèsent le plus.</li>
+        <li><strong>Dossier de validation</strong> : il refait chaque calcul à la main et le compare au solveur, à joindre à votre note de calcul.</li>
+      </ol>
+      <p>Pas sûr de la chaîne ? L'<strong>Assistant de chaîne</strong> la construit depuis vos pièces et leurs contacts.</p>
+      <h3>Limites d'usage</h3>
+      <ul class="details">
+        <li><strong>Une dimension seulement</strong> : une chaîne suit un axe ; un facteur (levier) et un angle donnent un coefficient libre, mais il n'y a ni chaîne 2D ou 3D, ni basculement.</li>
+        <li><strong>Lois normale, uniforme ou triangulaire, indépendantes</strong> : aucune corrélation entre maillons n'est prise en compte.</li>
+        <li><strong>Thermique linéaire par courbes</strong> : dilatation libre lue sur les courbes des matériaux ; ni gradient, ni contrainte thermique.</li>
+        <li><strong>Résultats à vérifier</strong> avant tout usage réel, avec le dossier de validation.</li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- ===== Page « Assistant de chaîne » (js/assistant.js) ===== -->
+  <div id="page-assistant" hidden>
+    <h2>Assistant de construction de chaîne</h2>
+    <p class="legende">Décrivez les pièces par leurs <strong>cotes</strong> (entre deux de leurs surfaces) et les <strong>contacts</strong> entre pièces, puis choisissez les deux surfaces dont vous voulez le jeu. L'assistant trouve la <strong>chaîne minimale</strong> (le moins de cotes possible, une seule par pièce), dessine le plan et prépare le calcul.</p>
+    <div class="ligne">
+      <button id="as-exemple" type="button" class="secondaire">Charger l'exemple (arbre dans un carter)</button>
+      <button id="as-vider" type="button" class="secondaire">Tout effacer</button>
+    </div>
+    <h3>1. Les cotes de chaque pièce</h3>
+    <p class="legende">Une ligne par cote : la surface « vers » est à « cote » de la surface « de », dans le sens de l'axe. Mettez des valeurs positives (inversez De et Vers sinon). Une pièce peut avoir plusieurs cotes.</p>
+    <div class="defile"><table id="as-cotes"><thead></thead><tbody></tbody></table></div>
+    <button id="as-ajout-cote" type="button" class="secondaire">Ajouter une cote</button>
+    <h3>2. Les contacts entre pièces</h3>
+    <p class="legende">Deux surfaces de pièces différentes qui se touchent sont au même endroit.</p>
+    <div class="defile"><table id="as-contacts"><thead></thead><tbody></tbody></table></div>
+    <button id="as-ajout-contact" type="button" class="secondaire">Ajouter un contact</button>
+    <h3>3. Le jeu et la chaîne</h3>
+    <div class="grille">
+      <label>Surface de départ du jeu<select id="as-depart"></select></label>
+      <label>Surface d'arrivée du jeu<select id="as-arrivee"></select></label>
+      <label>Nom de la cote condition<input id="as-nom" type="text" value="Jeu J"></label>
+      <label>Jmin (mm)<input id="as-jmin" type="text" inputmode="decimal" value="0"></label>
+      <label>Jmax (mm)<input id="as-jmax" type="text" inputmode="decimal" value="1"></label>
+    </div>
+    <p class="legende">Le jeu J est la position de la surface d'arrivée moins celle de la surface de départ (l'axe croît de « de » vers « vers »).</p>
+    <p id="as-info" class="message info" hidden></p>
+    <p id="as-erreur" class="message erreur" role="alert" hidden></p>
+    <div id="as-resultat" hidden>
+      <label id="as-plusieurs" class="large" hidden>Chaîne proposée<select id="as-choix"></select></label>
+      <div id="as-avertissements"></div>
+      <div id="as-tableau"></div>
+      <div id="as-fig" class="figure"></div>
+      <p id="as-legende" class="legende"></p>
+      <p><button id="as-utiliser" type="button" class="primaire">Utiliser cette chaîne comme étude en cours</button></p>
+    </div>
   </div>
 
   <!-- ===== Page « Répartir les tolérances » (js/repartir.js) ===== -->
@@ -360,18 +469,20 @@
 
 <footer>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
-  <p class="legende">Version navigateur : analyse d'une chaîne, répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, dossier de validation HTML, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (assistant de chaîne, parcours guidé, dossiers PDF et Word avec images) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
+  <p class="legende">Version navigateur : analyse d'une chaîne, répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, dossier de validation HTML, assistant de chaîne, parcours guidé, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (dossiers PDF et Word avec images, enregistrement direct sur le disque) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
   <p class="legende">© 2026 Théo Brun.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js"></script>
+<script src="js/accueil.js"></script>
 <script src="js/analyse.js"></script>
 <script src="js/repartir.js"></script>
 <script src="js/comparer.js"></script>
 <script src="js/mecanisme.js"></script>
 <script src="js/dossier.js"></script>
+<script src="js/assistant.js"></script>
 <script src="js/exemples.js"></script>
 <script src="js/ajustement.js"></script>
 <script src="js/iso286.js"></script>

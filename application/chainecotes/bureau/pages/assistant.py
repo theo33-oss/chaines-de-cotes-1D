@@ -13,9 +13,8 @@ import pandas as pd
 
 from chainecotes.bureau import state
 from chainecotes.bureau.widgets import Colonne, Page, TableauEditable, Zone
-from chainecotes.core.chaine import LOIS, estVide
-from chainecotes.core.construction import construireChaines, lireSaisie, surface
-from chainecotes.core.donnees import chargerJson
+from chainecotes.core.chaine import LOIS
+from chainecotes.core.construction import construireChaines, exempleAssistant, lireSaisie, surfaces
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.plots._common import fr
 from chainecotes.plots.assistant import figureConstruction
@@ -34,20 +33,7 @@ COLONNES_COTES = [
 ]
 
 
-def exemple() -> dict:
-    """Exemple de l'assistant (data/assistant_exemple.json) : arbre dans un carter fermé par un couvercle."""
-    return chargerJson("assistant_exemple.json")
-
-
-def surfaces(cotes: list[dict]) -> list[str]:
-    """Surfaces « Pièce.surface » citées par les cotes complètes, sans doublon, dans l'ordre."""
-    noeuds = []
-    for c in cotes:
-        piece = str(c.get("piece") or "").strip()
-        for cle in ("de", "vers"):
-            if piece and not estVide(c.get(cle)):
-                noeuds.append(surface(piece, c[cle]))
-    return list(dict.fromkeys(noeuds))
+exemple = exempleAssistant  # nom historique de la page
 
 
 class PageAssistant(Page):

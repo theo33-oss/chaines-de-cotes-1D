@@ -11,6 +11,7 @@ from chainecotes.core import ajustement as ajust
 from chainecotes.core import cout as cout_mod
 from chainecotes.core.chaine import capabilitesMaillons, libelleVerdict
 from chainecotes.core.donnees import chargerJson
+from chainecotes.core.construction import construireChaines, exempleAssistant, lireSaisie, surfaces
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.formules import texVersHtml
 from chainecotes.core.inertiel import analyseInertielle, verdictBender
@@ -38,6 +39,7 @@ from chainecotes.core.sensibilite import gainSiResserre, indicesSensibilite
 from chainecotes.plots import graphiques
 from chainecotes.plots._common import intervalle
 from chainecotes.plots.ajustement import figureZones
+from chainecotes.plots.assistant import figureConstruction
 from chainecotes.plots.materiaux import figureDilatation
 from chainecotes.plots.optimisation import figureCoutsMaillons, figureITAvantApres, figureScenarios
 from chainecotes.plots.schema import figureSchema
@@ -300,6 +302,7 @@ def calculer(texte: str) -> str:
                 "niveau": conclusion["niveau"],
                 "titre": conclusion["titre"],
                 "conseil": conclusion["conseils"][0] if conclusion["conseils"] else "",
+                "conseils": conclusion["conseils"],
                 "details": conclusion["details"],
                 "avertissements": bundle["avertissements"],
                 "resultats": _resultats(bundle),
@@ -754,6 +757,69 @@ def dossier(texte: str) -> str:
         return json.dumps({"erreur": f"Saisie incomplète : {e}"})
     ecarts = [{"nom": c["nom"], "attendu": fr(c["attendu"], ".6g"), "obtenu": fr(c["obtenu"], ".6g")} for c in d["controles"] if c["statut"] != "OK"]
     return json.dumps({"html": d["html"], "nOk": d["nOk"], "nTotal": d["nTotal"], "bilan": d["bilan"], "ecarts": ecarts}, allow_nan=False)
+
+
+# ---------- assistant de chaîne ----------
+
+
+def assistantExemple() -> str:
+    """Exemple de l'assistant (arbre dans un carter fermé par un couvercle), en JSON."""
+    return json.dumps(exempleAssistant(), allow_nan=False)
+
+
+def assistant(cotes: str, contacts: str, depart: str = "", arrivee: str = "", nom: str = "Jeu J", jmin: float = 0.0,
+              jmax: float = 1.0, choix: int = 0) -> str:
+    """Chaînes minimales entre deux surfaces, à partir des cotes des pièces et de leurs contacts (JSON).
+
+    Entrées : cotes (liste de dict piece, de, vers, cote, iso, es, ei, loi, nom), contacts (liste de dict a, b),
+    depart et arrivee (« Pièce.surface » ; une surface inconnue est remplacée par une surface connue), nom, jmin, jmax
+    (cote condition), choix (indice de la chaîne si plusieurs ont la même longueur).
+    Sortie JSON : surfaces ; puis info, ou erreur, ou la chaîne choisie : tableau, plan, avertissements, maillons et condition
+    à envoyer vers la page Analyser, manquants (tolérances absentes).
+    """
+    try:
+        cotes, contacts = json.loads(cotes), json.loads(contacts)
+        noeuds = surfaces(cotes)
+        sortie = {"surfaces": noeuds}
+        if len(noeuds) < 2:
+            return json.dumps({**sortie, "info": "Décrivez au moins une cote (pièce, deux surfaces, valeur) pour choisir les surfaces du jeu."})
+        depart = depart if depart in noeuds else noeuds[0]  # surface renommée ou supprimée : on repart d'une surface connue
+        arrivee = arrivee if arrivee in noeuds else noeuds[1]
+        sortie |= {"depart": depart, "arrivee": arrivee}
+        chaines = construireChaines(cotes, contacts, depart, arrivee)
+        lues, liens = lireSaisie(cotes, contacts)
+    except ErreurChaine as e:
+        return json.dumps({**locals().get("sortie", {"surfaces": []}), "erreur": e.message})
+    except (ValueError, TypeError, KeyError) as e:
+        return json.dumps({**locals().get("sortie", {"surfaces": []}), "erreur": f"Saisie incomplète : {e}"})
+    i = min(max(int(choix), 0), len(chaines) - 1)
+    chaine = chaines[i]
+    jmin, jmax, nominal = float(jmin), float(jmax), chaine["nominal"]
+    avertissements = list(chaine["avertissements"])
+    if not jmin <= nominal <= jmax:
+        avertissements.append(
+            f"Le jeu nominal de cette chaîne ({fr(nominal, 'g')} mm) est hors de [{fr(jmin, 'g')} ; {fr(jmax, 'g')}] mm : "
+            "ce peut être normal si les tolérances sont dissymétriques, sinon un sens ou une cote est faux."
+        )
+    manquants = [m["nom"] for m in chaine["maillons"] if not m["iso"] and (m["es"] is None or m["ei"] is None)]
+    if manquants:
+        avertissements.append("Tolérance manquante (désignation ISO, ou ES et EI) : " + ", ".join(manquants) + ".")
+    fig, legende = figureConstruction(lues, liens, depart, arrivee, chaine)
+    return json.dumps(
+        {
+            **sortie,
+            "plusieurs": [f"Chaîne {j + 1} : {len(c['maillons'])} cotes, jeu nominal {fr(c['nominal'], 'g')} mm" for j, c in enumerate(chaines)] if len(chaines) > 1 else [],
+            "choisi": i,
+            "avertissements": avertissements,
+            "tableau": _table(["Maillon", "Sens", "Cote (mm)", "ISO 286", "ES (mm)", "EI (mm)"],
+                              [[m["nom"], "−" if m["sens"] == "-" else "+", fr(m["cote"], "g"), m["iso"] or "", fr(m["es"], "g") if m["es"] is not None else "",
+                                fr(m["ei"], "g") if m["ei"] is not None else ""] for m in chaine["maillons"]]),
+            "fig": json.loads(fig.to_json()), "legende": legende,
+            "maillons": chaine["maillons"], "condition": {"nom": nom or "Jeu J", "jmin": jmin, "jmax": jmax},
+            "utilisable": not manquants,
+        },
+        allow_nan=False,
+    )
 
 
 # ---------- fichiers d'étude (.json du bureau) ----------

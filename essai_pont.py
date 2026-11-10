@@ -112,5 +112,22 @@ for ident in ("reducteur_jeu_axial", "thermique_par_cote", "ajustements_h7_h6_n7
     assert etatValidation(relu) == "valide", (ident, etatValidation(relu))
     relu["maillons"][0]["cote"] += 1  # toute modification ensuite est signalée
     assert etatValidation(relu) == "modifie"
+# ---- phase 5 : assistant de chaîne
+ex = json.loads(pont.assistantExemple())
+a = json.loads(pont.assistant(json.dumps(ex["cotes"]), json.dumps(ex["contacts"]), ex["depart"], ex["arrivee"], ex["condition"]["nom"],
+                              ex["condition"]["jmin"], ex["condition"]["jmax"]))
+assert "erreur" not in a and a["utilisable"] and len(a["maillons"]) == 4 and a["fig"]["data"] and a["tableau"]["lignes"], a.get("erreur")
+# la chaîne trouvée se calcule comme n'importe quelle étude
+etude = {"condition": a["condition"], "reglages": {"kSigma": 3, "tref": 20, "modeT": "uniforme"}, "maillons": a["maillons"]}
+assert "erreur" not in json.loads(pont.calculer(json.dumps(etude))), "la chaîne de l'assistant doit se calculer"
+assert json.loads(pont.assistant("[]", "[]"))["info"], "moins de deux surfaces"
+inconnue = json.loads(pont.assistant(json.dumps(ex["cotes"]), json.dumps(ex["contacts"]), "Nulle.part", "Autre.chose", "J", 0, 1))
+assert "erreur" not in inconnue and inconnue["depart"] == json.loads(pont.assistant(json.dumps(ex["cotes"]), "[]"))["surfaces"][0]
+coupee = json.loads(pont.assistant(json.dumps(ex["cotes"]), "[]", ex["depart"], ex["arrivee"]))
+assert "Aucun chemin" in coupee["erreur"], coupee  # sans contacts : les pièces ne sont pas reliées
+incomplet = [{"piece": "A", "de": "x", "vers": "y", "cote": ""}]
+assert "nombre" in json.loads(pont.assistant(json.dumps(incomplet), "[]", "A.x", "A.y"))["erreur"]
+sans_tol = [dict(c, es="", ei="", iso="") for c in ex["cotes"]]
+assert not json.loads(pont.assistant(json.dumps(sans_tol), json.dumps(ex["contacts"]), ex["depart"], ex["arrivee"]))["utilisable"]
 print("saisie invalide ->", vide["erreur"])
 print("fichier invalide ->", mauvais["erreur"])

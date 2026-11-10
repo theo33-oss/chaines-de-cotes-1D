@@ -123,3 +123,16 @@ a { color: var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) a { color: #C8BDF0; } }
 footer { margin-top: 40px; border-top: 1px solid var(--bord); padding-top: 8px; }
 [hidden] { display: none !important; }
+
+/* parcours guidé : les mêmes sections de la page Analyser, une étape à la fois */
+#page-analyser:not(.guidee) .guide-seul { display: none !important; }
+#page-analyser.guidee [data-etape]:not(.etape-courante) { display: none !important; }
+#page-analyser.guidee #guide-ouvrir-bloc, #page-analyser.guidee .expert-seul { display: none !important; }
+.etapes { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 12px 0; }
+.etapes button[aria-current="step"] { background: var(--accent); color: var(--sur-accent); }
+.trois { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+.trois button { padding: 18px 12px; font-size: 1.05rem; font-weight: 600; }
+#as-cotes input, #as-cotes select { min-width: 90px; }
+#as-cotes td:nth-child(1), #as-cotes td:nth-child(9) { min-width: 130px; }
+#as-contacts td { min-width: 180px; }
+#as-cotes, #as-contacts { min-width: 0; }

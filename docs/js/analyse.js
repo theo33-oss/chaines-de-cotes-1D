@@ -261,6 +261,12 @@
     $("resultats").hidden = false;
     App.message($("verdict"), r.niveau, r.titre);
     $("conseil").textContent = r.conseil ? "À faire : " + r.conseil : "";
+    // mode guidé : le verdict en langage courant (chiffres, puis conseils)
+    const puces = (liste) => liste.map((t) => Object.assign(document.createElement("li"), { textContent: t }));
+    $("plain-details").replaceChildren(...puces(r.details));
+    const ul = Object.assign(document.createElement("ul"), { className: "details" });
+    ul.append(...puces(r.conseils));
+    $("plain-conseils").replaceChildren(...(r.conseils.length ? [App.titre("Que faire ?"), ul] : []));
     $("avertissements").replaceChildren(...r.avertissements.map((t) => Object.assign(document.createElement("li"), { textContent: t })));
     App.onglets($("onglets"), $("panneau"), onglets(r).map((o) => ({ ...o, rendu: (p) => { ongletActif = o.id; o.rendu(p); } })), ongletActif);
   }
@@ -292,6 +298,47 @@
 
   function messageFichier(niveau, texte) {
     App.message($("message-fichier"), niveau, texte);
+  }
+
+  // ---------- parcours guidé : les mêmes sections, montrées une étape à la fois ----------
+
+  const ETAPES = [
+    ["Point de départ", "Une chaîne de cotes répond à une question : <strong>le jeu entre deux pièces reste-t-il dans ses limites ?</strong> Partez d'un exemple, d'une étude déjà enregistrée, ou de la chaîne en cours."],
+    ["Cote condition", "La <strong>cote condition</strong> est le jeu (ou le serrage, le dépassement) à garantir. Donnez-lui un nom et ses limites : <strong>Jmin</strong> est le plus petit jeu acceptable, <strong>Jmax</strong> le plus grand."],
+    ["Maillons", "Ajoutez une ligne par cote de la chaîne : son <strong>sens</strong> (« + » si elle agrandit le jeu, « − » si elle le réduit), sa <strong>cote nominale</strong> et sa <strong>tolérance</strong> (désignation ISO comme H7, ou écarts ES / EI)."],
+    ["Calcul et verdict", "Lancez le calcul, puis lisez le verdict : il dit si le jeu tient et sur quelle cote agir."],
+    ["Dossier", "Complétez le cartouche, gardez une révision, puis enregistrez le dossier et l'étude."],
+  ];
+  const guide = { actif: false, etape: 0 };
+
+  function majGuide() {
+    const page = $("page-analyser");
+    page.classList.toggle("guidee", guide.actif);
+    for (const el of page.querySelectorAll("[data-etape]")) el.classList.toggle("etape-courante", Number(el.dataset.etape) === guide.etape + 1);
+    $("guide-etapes").replaceChildren(...ETAPES.map(([titre], i) => {
+      const li = document.createElement("li");
+      const b = Object.assign(document.createElement("button"), { type: "button", textContent: `${i + 1}. ${titre}` });
+      b.setAttribute("aria-current", String(i === guide.etape ? "step" : "false"));
+      b.addEventListener("click", () => allerEtape(i));
+      li.append(b);
+      return li;
+    }));
+    $("guide-titre").textContent = `Étape ${guide.etape + 1} sur ${ETAPES.length} : ${ETAPES[guide.etape][0]}`;
+    $("guide-texte").innerHTML = ETAPES[guide.etape][1]; // textes écrits ici, sans donnée de l'utilisateur
+    for (const b of page.querySelectorAll(".js-precedent")) b.disabled = guide.etape === 0;
+    for (const b of page.querySelectorAll(".js-suivant")) b.disabled = guide.etape === ETAPES.length - 1;
+  }
+
+  function allerEtape(i) {
+    guide.etape = Math.min(Math.max(i, 0), ETAPES.length - 1);
+    majGuide();
+    window.scrollTo(0, 0);
+  }
+
+  function modeGuide(actif, etape = 0) {
+    guide.actif = actif;
+    guide.etape = etape;
+    majGuide();
   }
 
   async function ouvrirFichier(fichier) {
@@ -348,6 +395,13 @@
     $("enregistrer").addEventListener("click", enregistrer);
     $("ajouter").addEventListener("click", () => { afficherMaillons([...lireMaillons(), { ...MAILLON_VIDE }]); apercuDiffere(); });
     $("calculer").addEventListener("click", calculer);
+    $("guide-ouvrir").addEventListener("click", () => modeGuide(true, 0));
+    $("guide-quitter").addEventListener("click", () => modeGuide(false));
+    for (const b of document.querySelectorAll("#page-analyser .js-precedent")) b.addEventListener("click", () => allerEtape(guide.etape - 1));
+    for (const b of document.querySelectorAll("#page-analyser .js-suivant")) b.addEventListener("click", () => allerEtape(guide.etape + 1));
+    $("guide-vers-dossier").addEventListener("click", () => App.afficherPage("dossier"));
+    $("guide-enregistrer").addEventListener("click", enregistrer);
+    majGuide();
     $("thermique").addEventListener("change", () => { colonnesThermiques(); apercuDiffere(); });
     $("r-mode").addEventListener("change", colonnesThermiques);
     $("page-analyser").addEventListener("input", apercuDiffere);
@@ -359,6 +413,8 @@
 
   // Points d'entrée pour les autres pages (exemples, assistant d'ajustement) : elles alimentent la chaîne de cette page.
   App.analyser = {
+    guide: modeGuide, // modeGuide(true, 0) : parcours guidé à l'étape 1 ; modeGuide(false) : mode expert
+    ouvrirFichier: () => $("fichier").click(),
     // Remplace l'étude par un problème (dict du pont) et lance le calcul.
     charger(probleme) {
       etude = { cartouche: null, revisions: [] };

@@ -19,7 +19,8 @@ répond en une phrase : au pire des cas, en statistique, ou pas du tout, avec la
 
 1. Ouvrez la [page web](https://theo33-oss.github.io/chaines-de-cotes-1D/). Le premier chargement prend 10 à 30
    secondes (Internet nécessaire), puis le message « Prêt » apparaît.
-2. Choisissez l'exemple **Réducteur : jeu axial d'un arbre intermédiaire** et cliquez sur **Charger cet exemple**.
+2. Cliquez sur **Partir d'un exemple**, puis sur **Ouvrir dans Analyser** sous la carte **Réducteur : jeu axial d'un
+   arbre intermédiaire**. (Ou sur **Créer une étude guidée** : cinq étapes, du jeu à garantir au dossier.)
 3. Lisez le verdict : le jeu ne tient pas au pire des cas (0,3000 à 0,8920 mm pour 0,20 à 0,85 mm demandés), mais tient
    en statistique (Cpk 2,05). Le conseil indique par quelle cote commencer.
 4. Passez d'un onglet à l'autre : résultats, statistiques (Monte-Carlo, inertiel), graphiques, sensibilité, explications
@@ -44,7 +45,7 @@ Les tolérances viennent de l'ISO 286 (IT1 à IT18, positions a à zc et A à ZC
 | | Version navigateur | Application de bureau (Windows) |
 |---|---|---|
 | **Où** | [Page GitHub Pages](https://theo33-oss.github.io/chaines-de-cotes-1D/) : Chrome, Firefox, Edge, Safari, téléphone | Dossier [`application/`](application) |
-| **Contenu** | Analyse complète : exemples, saisie (ISO 286, matériaux, effet thermique, décentrage), schéma en direct, contrôles de cohérence, verdicts, Pareto, Monte-Carlo, sensibilité, explications pas à pas, ouverture et enregistrement d'études compatibles avec le bureau. Répartition des tolérances (égale, proportionnelle, qualité ISO ou coût minimal par procédé) et comparaison de scénarios. Mécanisme à plusieurs chaînes avec tableau de bord des Cpk, et dossier de validation HTML qui refait les calculs sans le solveur (32 contrôles sur le réducteur). Outils : bibliothèque de 9 exemples, assistant d'ajustement, tables ISO 286, matériaux et dilatation | Tout : répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, assistants d'ajustement et de chaîne, tolérances géométriques, dossiers PDF, Word et HTML, enregistrement des études |
+| **Contenu** | Analyse complète : exemples, saisie (ISO 286, matériaux, effet thermique, décentrage), schéma en direct, contrôles de cohérence, verdicts, Pareto, Monte-Carlo, sensibilité, explications pas à pas, ouverture et enregistrement d'études compatibles avec le bureau. Répartition des tolérances (égale, proportionnelle, qualité ISO ou coût minimal par procédé) et comparaison de scénarios. Mécanisme à plusieurs chaînes avec tableau de bord des Cpk, et dossier de validation HTML qui refait les calculs sans le solveur (32 contrôles sur le réducteur). Parcours guidé en cinq étapes et assistant de chaîne (des pièces et de leurs contacts à la chaîne minimale). Outils : bibliothèque de 9 exemples, assistant d'ajustement, tables ISO 286, matériaux et dilatation | Tout : répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, assistants d'ajustement et de chaîne, tolérances géométriques, dossiers PDF, Word et HTML, enregistrement des études |
 | **Installation** | Aucune | Python 3.11 ou plus, installé au premier lancement (environ 1 Go) |
 
 Dans les deux cas, **tout est calculé sur votre ordinateur** : aucune cote n'est envoyée sur Internet.

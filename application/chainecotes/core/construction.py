@@ -12,6 +12,7 @@ normalement qu'une fois par pièce. Ce module n'importe ni streamlit ni plotly.
 from collections import deque
 
 from chainecotes.core.chaine import estVide
+from chainecotes.core.donnees import chargerJson
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.nombres import fr
 
@@ -23,6 +24,22 @@ _ID = "Chaine:Construction:"
 def surface(piece: str, nom: str) -> str:
     """Identifiant « Pièce.surface » d'une surface. Entrées : textes. Sortie : texte."""
     return f"{str(piece).strip()}.{str(nom).strip()}"
+
+
+def exempleAssistant() -> dict:
+    """Exemple de l'assistant (data/assistant_exemple.json) : arbre dans un carter fermé par un couvercle."""
+    return chargerJson("assistant_exemple.json")
+
+
+def surfaces(cotes: list[dict]) -> list[str]:
+    """Surfaces « Pièce.surface » citées par les cotes complètes, sans doublon, dans l'ordre."""
+    noeuds = []
+    for c in cotes:
+        piece = str(c.get("piece") or "").strip()
+        for cle in ("de", "vers"):
+            if piece and not estVide(c.get(cle)):
+                noeuds.append(surface(piece, c[cle]))
+    return list(dict.fromkeys(noeuds))
 
 
 def _lireCotes(cotes: list[dict]) -> list[dict]:
