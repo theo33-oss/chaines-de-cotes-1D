@@ -200,9 +200,11 @@ const App = (() => {
       $("etat").textContent = "Chargement de plotly…";
       await pyodide.pyimport("micropip").install("plotly>=5.20,<7");
       $("etat").textContent = "Chargement du calcul…";
-      const archive = await (await fetch("chainecotes.zip")).arrayBuffer();
+      // « no-cache » : le navigateur revalide à chaque visite (réponse 304 si rien n'a changé). Sans cela, GitHub Pages
+      // fait garder ces fichiers 10 minutes, et une page mise à jour recevrait l'ancien calcul.
+      const archive = await (await fetch("chainecotes.zip", { cache: "no-cache" })).arrayBuffer();
       pyodide.unpackArchive(archive, "zip", { extractDir: "/app" });
-      pyodide.FS.writeFile("/app/pont.py", await (await fetch("pont.py")).text());
+      pyodide.FS.writeFile("/app/pont.py", await (await fetch("pont.py", { cache: "no-cache" })).text());
       pyodide.runPython("import sys; sys.path.insert(0, '/app')");
       pont = pyodide.pyimport("pont");
     } catch (e) {
