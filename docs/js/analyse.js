@@ -378,6 +378,10 @@
     noms: () => lireMaillons().map((m) => m.nom),
     tref: () => nombre($("r-tref").value) || 20,
     probleme: lireProbleme,
+    // cartouche et révisions de l'étude (reportés dans le fichier enregistré et dans le dossier de validation)
+    cartouche: () => etude.cartouche,
+    poserCartouche(c) { etude.cartouche = c && Object.keys(c).length ? c : null; },
+    revisions: () => etude.revisions,
     limites: () => [$("c-jmin").value, $("c-jmax").value],
     poserLimites(jmin, jmax) {
       $("c-jmin").value = jmin;

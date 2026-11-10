@@ -185,6 +185,74 @@
     </section>
   </div>
 
+  <!-- ===== Page « Mécanisme » (js/mecanisme.js) ===== -->
+  <div id="page-mecanisme" hidden>
+    <h2>Mécanisme (plusieurs chaînes)</h2>
+    <p class="legende">Un mécanisme réunit les chaînes de cotes (jeux fonctionnels) d'un même assemblage. Constituez-le à partir d'exemples, de fichiers ou de l'étude en cours, calculez toutes les chaînes d'un coup et repérez la plus fragile. Une chaîne en erreur n'empêche pas le calcul des autres.</p>
+    <h3>Constituer le mécanisme</h3>
+    <div class="grille">
+      <label>Nom du mécanisme<input id="mc-nom" type="text" value="Mécanisme"></label>
+      <label>Exemple à ajouter<select id="mc-exemple"></select></label>
+    </div>
+    <div class="ligne">
+      <button id="mc-ajout-exemple" type="button" class="secondaire">Ajouter l'exemple</button>
+      <button id="mc-ajout-etude" type="button" class="secondaire">Ajouter l'étude en cours</button>
+      <button id="mc-ajout-fichiers" type="button" class="secondaire">Ajouter des fichiers (.json)</button>
+      <input id="mc-fichiers" type="file" accept=".json,application/json" multiple hidden>
+    </div>
+    <p class="legende">Chaque fichier d'étude ajoute une chaîne ; un fichier de mécanisme ajoute toutes ses chaînes.</p>
+    <p id="mc-message" class="message" role="status" hidden></p>
+    <h3 id="mc-titre-liste">Chaînes (0)</h3>
+    <div id="mc-liste" class="cartes"></div>
+    <div class="ligne">
+      <button id="mc-enregistrer" type="button" class="secondaire">Enregistrer le mécanisme (.json)</button>
+      <button id="mc-ouvrir" type="button" class="secondaire">Ouvrir un mécanisme (.json)</button>
+      <input id="mc-fichier" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p class="legende">« Ouvrir » remplace toutes les chaînes du mécanisme en cours.</p>
+    <details>
+      <summary>Options du calcul</summary>
+      <div class="grille">
+        <label>Tirages Monte-Carlo<select id="mc-n"></select></label>
+        <label>Graine<input id="mc-graine" type="text" inputmode="numeric" value="1"></label>
+        <label>Seuil de Cpk<input id="mc-seuil" type="text" inputmode="decimal" value="1,33"></label>
+      </div>
+    </details>
+    <p><button id="mc-calculer" type="button" class="primaire">Calculer toutes les chaînes</button></p>
+    <p id="mc-erreur" class="message erreur" role="alert" hidden></p>
+    <section id="mc-resultat" hidden>
+      <h3>Tableau de bord</h3>
+      <p id="mc-verdict" class="message"></p>
+      <p id="mc-reduit" class="legende"></p>
+      <div id="mc-metriques"></div>
+      <div id="mc-fig" class="figure"></div>
+      <p id="mc-legende" class="legende"></p>
+      <div id="mc-tableau"></div>
+      <div id="mc-erreurs"></div>
+      <p><button id="mc-csv" type="button" class="secondaire">Tableau de bord (.csv)</button></p>
+    </section>
+  </div>
+
+  <!-- ===== Page « Dossier de validation » (js/dossier.js) ===== -->
+  <div id="page-dossier" hidden>
+    <h2>Dossier de validation</h2>
+    <p class="legende">Le dossier refait chaque grandeur de l'étude en cours (page Analyser) à la main, sans le solveur, et la compare au résultat du solveur ; il relit aussi la table ISO 286 et confronte le Monte-Carlo à la formule. Le fichier HTML obtenu est à joindre à votre note de calcul.</p>
+    <h3>Cartouche du dossier</h3>
+    <div id="dos-champs" class="grille"></div>
+    <p class="legende">Le cartouche est enregistré avec l'étude (fichier .json) et repris par le dossier. Le statut « Validé » enregistre l'empreinte du problème : le bureau signale toute modification faite ensuite.</p>
+    <p><button id="dos-generer" type="button" class="primaire">Générer le dossier de validation</button></p>
+    <p id="dos-erreur" class="message erreur" role="alert" hidden></p>
+    <section id="dos-resultat" hidden>
+      <p id="dos-bilan" class="message"></p>
+      <div id="dos-ecarts"></div>
+      <div class="ligne">
+        <button id="dos-telecharger" type="button" class="primaire">Télécharger le dossier (.html)</button>
+        <button id="dos-imprimer" type="button" class="secondaire">Ouvrir pour imprimer en PDF</button>
+      </div>
+      <p class="legende">Les graphiques du dossier sont interactifs et chargent Plotly depuis Internet à l'ouverture du fichier. Les dossiers PDF et Word, avec images des graphiques, sont dans l'application de bureau. « Ouvrir pour imprimer » ouvre le dossier dans un nouvel onglet : utilisez Ctrl+P puis « Enregistrer au format PDF ».</p>
+    </section>
+  </div>
+
   <!-- ===== Page « Bibliothèque d'exemples » (js/exemples.js) ===== -->
   <div id="page-exemples" hidden>
     <h2>Bibliothèque d'exemples</h2>
@@ -292,7 +360,7 @@
 
 <footer>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
-  <p class="legende">Version navigateur : analyse d'une chaîne, répartition des tolérances, comparaison de scénarios, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (mécanisme à plusieurs chaînes, assistant de chaîne, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
+  <p class="legende">Version navigateur : analyse d'une chaîne, répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, dossier de validation HTML, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (assistant de chaîne, parcours guidé, dossiers PDF et Word avec images) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
   <p class="legende">© 2026 Théo Brun.</p>
 </footer>
 
@@ -302,6 +370,8 @@
 <script src="js/analyse.js"></script>
 <script src="js/repartir.js"></script>
 <script src="js/comparer.js"></script>
+<script src="js/mecanisme.js"></script>
+<script src="js/dossier.js"></script>
 <script src="js/exemples.js"></script>
 <script src="js/ajustement.js"></script>
 <script src="js/iso286.js"></script>

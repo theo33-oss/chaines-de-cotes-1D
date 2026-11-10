@@ -9,14 +9,16 @@ import copy
 import io
 import json
 import math
-
-import pandas as pd
+from typing import TYPE_CHECKING
 
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.nombres import fr
 from chainecotes.core.montecarlo import GRAINE_DEFAUT, N_DEFAUT
 from chainecotes.services.calcul import calculerChaine
 from chainecotes.services.projet_io import APPLICATION, exporterProbleme, importerProbleme
+
+if TYPE_CHECKING:  # pandas ne se charge que pour les exports tableur : la page web n'en a pas besoin
+    import pandas as pd
 
 FORMAT = "mecanisme"
 VERSION = 1
@@ -218,23 +220,21 @@ def calculerMecanisme(
     }
 
 
-def tableauDeBord(lignes: list[dict], seuilCpk: float | None = None) -> pd.DataFrame:
-    """Tableau de bord du mécanisme, une ligne par chaîne.
+def colonnesTableauDeBord(lignes: list[dict], seuilCpk: float | None = None) -> dict[str, list]:
+    """Colonnes du tableau de bord du mécanisme, une ligne par chaîne (sans pandas).
 
     Entrées : lignes (sortie « lignes » de calculerMecanisme), seuilCpk (ajoute la colonne « Cpk ≥ seuil »).
-    Sortie : DataFrame Chaîne, Verdict, Jeu mini (mm), Jeu maxi (mm), Cp, Cpk, [Cpk ≥ seuil,] ppm (formule),
+    Sortie : dict {titre: textes} Chaîne, Verdict, Jeu mini (mm), Jeu maxi (mm), Cp, Cpk, [Cpk ≥ seuil,] ppm (formule),
     ppm (Monte-Carlo), Maillon dominant, Erreur ; nombres à la française.
     """
-    t = pd.DataFrame(
-        {
-            "Chaîne": [x["nom"] for x in lignes],
-            "Verdict": [x["verdict"] for x in lignes],
-            "Jeu mini (mm)": [fr(x["jeuMini"]) for x in lignes],
-            "Jeu maxi (mm)": [fr(x["jeuMaxi"]) for x in lignes],
-            "Cp": [fr(x["cp"], ".3g") for x in lignes],
-            "Cpk": [fr(x["cpk"], ".3g") for x in lignes],
-        }
-    )
+    t = {
+        "Chaîne": [x["nom"] for x in lignes],
+        "Verdict": [x["verdict"] for x in lignes],
+        "Jeu mini (mm)": [fr(x["jeuMini"]) for x in lignes],
+        "Jeu maxi (mm)": [fr(x["jeuMaxi"]) for x in lignes],
+        "Cp": [fr(x["cp"], ".3g") for x in lignes],
+        "Cpk": [fr(x["cpk"], ".3g") for x in lignes],
+    }
     if seuilCpk is not None:
         t["Cpk ≥ seuil"] = ["—" if x["cpk"] is None else ("oui" if x["cpk"] >= seuilCpk else "NON") for x in lignes]
     t["ppm (formule)"] = [fr(x["ppmFormule"], ".3g") for x in lignes]
@@ -242,6 +242,13 @@ def tableauDeBord(lignes: list[dict], seuilCpk: float | None = None) -> pd.DataF
     t["Maillon dominant"] = [x["dominant"] or "—" for x in lignes]
     t["Erreur"] = [x["erreur"] or "" for x in lignes]
     return t
+
+
+def tableauDeBord(lignes: list[dict], seuilCpk: float | None = None) -> "pd.DataFrame":
+    """Tableau de bord du mécanisme en DataFrame (voir colonnesTableauDeBord)."""
+    import pandas as pd
+
+    return pd.DataFrame(colonnesTableauDeBord(lignes, seuilCpk))
 
 
 def verdictGlobal(resultat: dict) -> tuple[str, str]:
@@ -280,6 +287,8 @@ def exporterTableauDeBord(resultat: dict) -> bytes:
     Entrée : resultat (sortie de calculerMecanisme). Sortie : fichier .xlsx (bytes), feuilles « Tableau de bord » (une
     ligne par chaîne) et « Synthèse » (verdict global, pire Cpk, seuil, chaînes à reprendre).
     """
+    import pandas as pd
+
     from chainecotes.services.projet_io import _neutre
 
     tampon = io.BytesIO()

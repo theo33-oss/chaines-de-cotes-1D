@@ -74,7 +74,7 @@ const App = (() => {
         const td = tr.insertCell();
         td.textContent = c;
         if (j > 0) td.className = "num";
-        if (t.classes && j === ligne.length - 1) td.className = "verdict " + t.classes[i];
+        if (t.classes && j === (t.colonneClasse ?? ligne.length - 1)) td.className = "verdict " + t.classes[i];
       });
     });
     enveloppe.append(tab);
@@ -169,6 +169,11 @@ const App = (() => {
     return tableau({ entetes: [premiere, ...noms], lignes: t.plages.map((p, i) => [p, ...noms.map((n) => fr(t.colonnes[n][i]))]) });
   }
 
+  // Paquets Python lourds, chargés à la première utilisation seulement (ex. jinja2 pour le dossier de validation).
+  async function paquets(noms) {
+    await pyodide.loadPackage(noms);
+  }
+
   // ---------- pages et démarrage ----------
 
   function enregistrerPage(page) {
@@ -220,6 +225,6 @@ const App = (() => {
     $("etat").textContent = "Prêt. Choisissez un exemple ou saisissez votre chaîne, puis cliquez sur Calculer.";
   }
 
-  const exposition = { $, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, enregistrerPage, afficherPage, demarrer };
+  const exposition = { $, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, enregistrerPage, afficherPage, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();

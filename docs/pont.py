@@ -41,8 +41,12 @@ from chainecotes.plots.ajustement import figureZones
 from chainecotes.plots.materiaux import figureDilatation
 from chainecotes.plots.optimisation import figureCoutsMaillons, figureITAvantApres, figureScenarios
 from chainecotes.plots.schema import figureSchema
+from chainecotes.plots.mecanisme import figureCpkMecanisme
+from chainecotes.services import mecanisme as meca
 from chainecotes.services import procedes_atelier, projet_io
 from chainecotes.services import repartition as rep
+from chainecotes.services.cartouche import CHAMPS as CHAMPS_CARTOUCHE
+from chainecotes.services.cartouche import STATUTS, empreinte
 from chainecotes.services.scenarios import comparerScenarios
 from chainecotes.services.calcul import apercuChaine, calculerChaine
 from chainecotes.services.conclusion import conclusionEtude
@@ -659,6 +663,97 @@ def comparer(texteA: str, texteB: str, nomB: str = "B") -> str:
         },
         allow_nan=False,
     )
+
+
+# ---------- mécanisme (plusieurs chaînes) ----------
+
+CLASSE_VERDICT = {"conforme au pire des cas": "succes", "conforme en statistique seulement": "avertissement",
+                  "non conforme": "erreur", "erreur de calcul": "info"}
+
+
+def mecaChaine(texte: str) -> str:
+    """Chaîne de la page « Analyser » prête à entrer dans un mécanisme : nettoyée et validée (JSON {"probleme"} ou {"erreur"})."""
+    try:
+        p = _nettoyer(json.loads(texte), garderCartouche=True)
+        return json.dumps({"probleme": projet_io.importerProbleme(projet_io.exporterProbleme(p))}, allow_nan=False)
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+
+
+def mecaImporter(texte: str) -> str:
+    """Relit un mécanisme, ou un fichier d'étude simple promu en mécanisme d'une chaîne (JSON nom + chaines, ou erreur)."""
+    try:
+        return json.dumps(meca.importerMecanisme(texte), allow_nan=False)
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+
+
+def mecaExporter(texte: str) -> str:
+    """Fichier d'un mécanisme (même format que le bureau) : JSON {"contenu"} ou {"erreur"}."""
+    try:
+        return json.dumps({"contenu": meca.exporterMecanisme(json.loads(texte))})
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+
+
+def mecaCalculer(texte: str, n: int = 50_000, graine: int = 1, seuil: float = 1.33) -> str:
+    """Calcule toutes les chaînes d'un mécanisme ; une chaîne en erreur n'empêche pas les autres (JSON)."""
+    try:
+        r = meca.calculerMecanisme(json.loads(texte), int(n), int(graine), float(seuil))
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    niveau, phrase = meca.verdictGlobal(r)
+    g, cols = r["global"], meca.colonnesTableauDeBord(r["lignes"], float(seuil))
+    lignes = [[cols[t][i] for t in cols] for i in range(len(r["lignes"]))]
+    fig, legende = figureCpkMecanisme(r["lignes"], float(seuil))
+    pire = g["pireCpk"]
+    csv = "\r\n".join(";".join(projet_io._neutre(c) for c in ligne) for ligne in [list(cols), *lignes])  # ; et virgule décimale : Excel en français
+    return json.dumps(
+        {
+            "niveau": niveau, "phrase": phrase,
+            "reduit": f"Monte-Carlo réduit à {r['nTirages']} tirages par chaîne pour tenir le temps de calcul." if r["nTirages"] < int(n) else "",
+            "metriques": [["Pire Cpk", fr(pire, ".3g") if pire is not None else "—"], ["Chaînes hors tolérance", f"{len(g['horsTolerance'])} sur {g['nChaines']}"]],
+            "pireChaine": g["chainePireCpk"] or "",
+            "enErreur": [{"nom": x["nom"], "message": x["erreur"]} for x in r["lignes"] if x["erreur"]],
+            "tableau": {**_table(list(cols), lignes), "colonneClasse": 1,
+                        "classes": [CLASSE_VERDICT.get(x["verdict"], "info") for x in r["lignes"]]},
+            "fig": json.loads(fig.to_json()), "legende": legende, "csv": csv,
+        },
+        allow_nan=False,
+    )
+
+
+# ---------- dossier de validation ----------
+
+
+def cartouche() -> str:
+    """Champs du cartouche d'un dossier (clé, libellé) et statuts possibles, en JSON."""
+    return json.dumps({"champs": [{"cle": c, "libelle": lib} for c, lib in CHAMPS_CARTOUCHE], "statuts": list(STATUTS)})
+
+
+def empreinteProbleme(texte: str) -> str:
+    """Empreinte du problème (posée au statut « Validé ») : la même que celle que le bureau recalcule à l'ouverture."""
+    return empreinte(_nettoyer(json.loads(texte)))
+
+
+def dossier(texte: str) -> str:
+    """Dossier de validation HTML : contrôles refaits sans le solveur, bilan et graphiques (JSON, voir validation.py).
+
+    Les graphiques sont interactifs (Plotly) : le navigateur n'a pas de moteur d'images pour les PNG du bureau.
+    """
+    from chainecotes.services.graphiques_dossier import graphiquesDossier  # kaleido n'est pas demandé (avecImages=False)
+    from chainecotes.services.validation import dossierValidation
+
+    try:
+        probleme = _nettoyer(json.loads(texte), garderCartouche=True)
+        bundle = calculerChaine(probleme)
+        d = dossierValidation(probleme, bundle, graphiquesDossier(bundle, avecImages=False))
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    except (ValueError, TypeError, KeyError) as e:
+        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+    ecarts = [{"nom": c["nom"], "attendu": fr(c["attendu"], ".6g"), "obtenu": fr(c["obtenu"], ".6g")} for c in d["controles"] if c["statut"] != "OK"]
+    return json.dumps({"html": d["html"], "nOk": d["nOk"], "nTotal": d["nTotal"], "bilan": d["bilan"], "ecarts": ecarts}, allow_nan=False)
 
 
 # ---------- fichiers d'étude (.json du bureau) ----------

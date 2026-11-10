@@ -78,5 +78,39 @@ cp = json.loads(pont.comparer(red, json.dumps(r["apres"]), "B (répartition)"))
 assert not cp["identiques"] and cp["phrases"] and len(cp["maillons"]["lignes"]) == n and cp["fig"]["data"], cp
 assert json.loads(pont.comparer(red, red))["identiques"]
 assert json.loads(pont.procedes())["procedes"]
+# ---- phase 4 : mécanisme et dossier de validation
+red_ch = json.loads(pont.mecaChaine(pont.charger("reducteur_jeu_axial")))["probleme"]
+boi_ch = json.loads(pont.mecaChaine(pont.charger("boitier_electronique")))["probleme"]
+mauvais_ch = json.loads(pont.mecaChaine(json.dumps({"condition": {}, "reglages": {}, "maillons": [{"sens": "+", "cote": "abc"}]})))
+assert "erreur" in mauvais_ch
+mec = {"nom": "Essai", "chaines": [red_ch, boi_ch]}
+ex = json.loads(pont.mecaExporter(json.dumps(mec)))
+assert json.loads(pont.mecaImporter(ex["contenu"]))["chaines"] == json.loads(json.dumps(mec["chaines"])), "aller-retour mécanisme"
+assert len(json.loads(pont.mecaImporter(pont.charger("reducteur_jeu_axial") and json.dumps({"application": "chaines-de-cotes-1d", "version": 1, "probleme": red_ch})))["chaines"]) == 1  # étude simple promue
+assert "erreur" in json.loads(pont.mecaImporter("pas du json"))
+assert "erreur" in json.loads(pont.mecaExporter(json.dumps({"nom": "vide", "chaines": []})))
+mr = json.loads(pont.mecaCalculer(json.dumps(mec), 20000, 1, 1.33))
+assert mr["tableau"]["lignes"] and len(mr["tableau"]["lignes"]) == 2 and mr["fig"]["data"] and mr["csv"].count("\r\n") == 2, mr.get("erreur")
+assert mr["tableau"]["classes"] == ["avertissement", "avertissement"] or set(mr["tableau"]["classes"]) <= {"succes", "avertissement", "erreur", "info"}
+cas_erreur = {"nom": "E", "chaines": [red_ch, {"condition": {"nom": "X"}, "reglages": {}, "maillons": [{"sens": "+", "cote": 10}]}]}
+mre = json.loads(pont.mecaCalculer(json.dumps(cas_erreur), 20000, 1, 1.33))
+assert mre["enErreur"] and mre["tableau"]["classes"][1] == "info", mre["tableau"]["classes"]  # une chaîne en erreur n'empêche pas l'autre
+ch = json.loads(pont.cartouche()); assert ch["statuts"] and ch["champs"][0]["cle"] == "projet"
+assert len(pont.empreinteProbleme(pont.charger("reducteur_jeu_axial"))) == 16
+dr = json.loads(pont.dossier(json.dumps({**json.loads(pont.charger("reducteur_jeu_axial")), "cartouche": {"projet": "Essai <b>", "statut": "Brouillon"}})))
+assert dr["nTotal"] > 20 and dr["nOk"] == dr["nTotal"] and not dr["ecarts"], (dr["bilan"], dr["ecarts"][:2])
+assert "Essai &lt;b&gt;" in dr["html"] and "<b>" not in dr["html"].split("Essai", 1)[1][:30], "cartouche échappé"
+assert "plotly" in dr["html"].lower() and "<img" not in dr["html"].split("<figure>", 1)[1][:80]
+assert "erreur" in json.loads(pont.dossier(json.dumps({"condition": {}, "reglages": {}, "maillons": [{"sens": "+", "cote": "abc"}]})))
+# une étude validée sur la page doit rester « valide » quand le bureau la rouvre (même empreinte)
+from chainecotes.services.cartouche import etatValidation  # noqa: E402
+
+for ident in ("reducteur_jeu_axial", "thermique_par_cote", "ajustements_h7_h6_n7"):
+    p = json.loads(pont.charger(ident))
+    p["cartouche"] = {"statut": "Validé", "empreinte": pont.empreinteProbleme(json.dumps(p))}
+    relu = json.loads(pont.ouvrir(json.loads(pont.sauver(json.dumps(p)))["contenu"]))["probleme"]
+    assert etatValidation(relu) == "valide", (ident, etatValidation(relu))
+    relu["maillons"][0]["cote"] += 1  # toute modification ensuite est signalée
+    assert etatValidation(relu) == "modifie"
 print("saisie invalide ->", vide["erreur"])
 print("fichier invalide ->", mauvais["erreur"])
