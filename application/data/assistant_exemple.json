@@ -1,0 +1,20 @@
+{
+  "titre": "Arbre dans un carter fermé par un couvercle",
+  "description": "Jeu axial entre le bout de l'arbre et la face intérieure du couvercle. L'arbre s'appuie sur une cale posée au fond du carter ; le couvercle s'appuie sur l'ouverture du carter. Les cotes « Arbre : épaulement → portée » et « Carter : ouverture → bride » ne sont pas dans la chaîne minimale.",
+  "condition": {"nom": "Jeu axial", "jmin": 0.3, "jmax": 1.3},
+  "depart": "Arbre.bout",
+  "arrivee": "Couvercle.interieur",
+  "cotes": [
+    {"piece": "Carter", "de": "fond", "vers": "ouverture", "cote": 60.0, "iso": null, "es": 0.15, "ei": -0.15, "loi": "normale"},
+    {"piece": "Carter", "de": "ouverture", "vers": "bride", "cote": 10.0, "iso": null, "es": 0.1, "ei": -0.1, "loi": "normale"},
+    {"piece": "Cale", "de": "a", "vers": "b", "cote": 2.0, "iso": null, "es": 0.05, "ei": -0.05, "loi": "normale"},
+    {"piece": "Arbre", "de": "epaulement", "vers": "bout", "cote": 54.2, "iso": null, "es": 0.0, "ei": -0.2, "loi": "normale"},
+    {"piece": "Arbre", "de": "epaulement", "vers": "portee", "cote": 20.0, "iso": null, "es": 0.1, "ei": -0.1, "loi": "normale"},
+    {"piece": "Couvercle", "de": "interieur", "vers": "appui", "cote": 3.0, "iso": null, "es": 0.1, "ei": -0.1, "loi": "normale"}
+  ],
+  "contacts": [
+    {"a": "Cale.a", "b": "Carter.fond"},
+    {"a": "Arbre.epaulement", "b": "Cale.b"},
+    {"a": "Couvercle.appui", "b": "Carter.ouverture"}
+  ]
+}

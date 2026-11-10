@@ -1,0 +1,263 @@
+{
+  "Source": "Exemple pédagogique du site (valeurs d'illustration, hors application MATLAB) : exemples ajoutés par le site, sans référence MATLAB.",
+  "exemples": [
+    {
+      "id": "reducteur_jeu_axial",
+      "titre": "Réducteur : jeu axial d'un arbre intermédiaire (6 pièces) – avec méthodologie",
+      "description": "Arbre intermédiaire d'un réducteur : carter, deux roulements, pignon, entretoise et roue se suivent sur l'axe. Le jeu axial doit rester entre 0,20 et 0,85 mm. Au pire des cas la chaîne ne passe pas de très peu, mais elle passe en statistique : un cas typique pour suivre la méthode de page en page.",
+      "source": "Exemple pédagogique du site (valeurs d'illustration, hors application MATLAB)",
+      "methodologie": [
+        "**Calcul de la chaîne** : chargez l'exemple, cliquez sur « Calculer » et lisez les deux verdicts. Ici le pire des cas est hors tolérance (jeu maxi 0,892 mm pour 0,85 mm permis) mais le Cpk statistique est supérieur à 2.",
+        "**Calcul, onglet Sensibilité** : repérez les cotes qui pèsent le plus sur la dispersion du jeu. Le module « Faire varier les tolérances » permet d'essayer un resserrement cote par cote et de voir le verdict changer tout de suite.",
+        "**Optimisation, Répartition par coût** : choisissez le critère « pire des cas », un procédé par pièce, puis « Calculer ». Le site resserre les tolérances là où c'est le moins cher. Cliquez sur « Appliquer au problème » quand le résultat vous convient (vous pouvez annuler juste après).",
+        "**Assistant d'ajustement** : pour les portées de roulements et les alésages, choisissez un ajustement normalisé (par exemple H7 / k6 ou H7 / p6), puis recopiez-le dans la colonne ISO 286 du tableau.",
+        "**Retour à Calcul** : recalculez. Le pire des cas doit maintenant passer. Ouvrez l'onglet « Dossier de validation » pour refaire les contrôles à la main, au format HTML, PDF ou Word.",
+        "**Optimisation, Comparer deux scénarios** : comparez la version de départ et la version retenue (jeux, Cpk, ppm, tolérances modifiées), pour la revue de conception.",
+        "**Fichiers, puis Mécanisme** : exportez le tableau de cotation pour le dessin, enregistrez le problème, puis ajoutez cette chaîne aux autres jeux de l'assemblage dans la page Mécanisme."
+      ],
+      "condition": {
+        "nom": "Jeu axial J",
+        "jmin": 0.2,
+        "jmax": 0.85
+      },
+      "reglages": {
+        "kSigma": 3,
+        "tref": 20.0,
+        "modeT": "uniforme",
+        "tservice": 20.0
+      },
+      "maillons": [
+        {
+          "nom": "Carter (entre épaulements)",
+          "sens": "+",
+          "cote": 150.3,
+          "iso": null,
+          "es": 0.1,
+          "ei": 0.0,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Roulement gauche (largeur)",
+          "sens": "-",
+          "cote": 24.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.12,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Pignon (moyeu)",
+          "sens": "-",
+          "cote": 40.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.1,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Entretoise",
+          "sens": "-",
+          "cote": 30.0,
+          "iso": "h9",
+          "es": null,
+          "ei": null,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Roue (moyeu)",
+          "sens": "-",
+          "cote": 32.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.1,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Roulement droit (largeur)",
+          "sens": "-",
+          "cote": 24.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.12,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        }
+      ]
+    },
+    {
+      "id": "boitier_electronique",
+      "titre": "Boîtier électronique : jeu de montage de 5 pièces, lois de dispersion différentes",
+      "description": "Une carte, une entretoise, un radiateur et un composant dans un boîtier. Chaque pièce vient d'un procédé différent : les cotes suivent une loi normale (usinage), uniforme (radiateur extrudé) ou triangulaire (carte et composant). Le jeu de montage doit rester entre 0,20 et 1,10 mm.",
+      "source": "Exemple pédagogique du site (valeurs d'illustration, hors application MATLAB)",
+      "condition": {
+        "nom": "Jeu de montage J",
+        "jmin": 0.2,
+        "jmax": 1.1
+      },
+      "reglages": {
+        "kSigma": 3,
+        "tref": 20.0,
+        "modeT": "uniforme",
+        "tservice": 20.0
+      },
+      "maillons": [
+        {
+          "nom": "Boîtier (profondeur interne)",
+          "sens": "+",
+          "cote": 85.0,
+          "iso": null,
+          "es": 0.15,
+          "ei": -0.15,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Carte électronique",
+          "sens": "-",
+          "cote": 1.6,
+          "iso": null,
+          "es": 0.1,
+          "ei": -0.1,
+          "loi": "triangulaire",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Entretoise filetée",
+          "sens": "-",
+          "cote": 20.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.1,
+          "loi": "normale",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Radiateur (hauteur)",
+          "sens": "-",
+          "cote": 35.0,
+          "iso": null,
+          "es": 0.15,
+          "ei": -0.15,
+          "loi": "uniforme",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        },
+        {
+          "nom": "Composant (hauteur hors tout)",
+          "sens": "-",
+          "cote": 27.8,
+          "iso": null,
+          "es": 0.1,
+          "ei": -0.1,
+          "loi": "triangulaire",
+          "materiau": null,
+          "alpha": null,
+          "tservice": 20.0
+        }
+      ]
+    },
+    {
+      "id": "boite_vitesses_chaude",
+      "titre": "Boîte de vitesses à 90 °C : carter aluminium, arbre acier et bague bronze (5 pièces)",
+      "description": "Le carter en aluminium se dilate plus que l'arbre en acier : le jeu axial augmente quand la boîte chauffe. Chaque pièce a sa matière et sa température de service (mode « par cote »).",
+      "source": "Exemple pédagogique du site (valeurs d'illustration, hors application MATLAB)",
+      "condition": {
+        "nom": "Jeu axial J",
+        "jmin": 0.05,
+        "jmax": 0.4
+      },
+      "reglages": {
+        "kSigma": 3,
+        "tref": 20.0,
+        "modeT": "par_cote",
+        "tservice": 90.0
+      },
+      "maillons": [
+        {
+          "nom": "Carter aluminium",
+          "sens": "+",
+          "cote": 119.9,
+          "iso": null,
+          "es": 0.05,
+          "ei": 0.0,
+          "loi": "normale",
+          "materiau": "Aluminium 6061",
+          "alpha": null,
+          "tservice": 90.0
+        },
+        {
+          "nom": "Roulement avant (largeur)",
+          "sens": "-",
+          "cote": 20.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.1,
+          "loi": "normale",
+          "materiau": "Acier C45",
+          "alpha": null,
+          "tservice": 90.0
+        },
+        {
+          "nom": "Arbre (épaulement à épaulement)",
+          "sens": "-",
+          "cote": 72.0,
+          "iso": "h8",
+          "es": null,
+          "ei": null,
+          "loi": "normale",
+          "materiau": "Acier C45",
+          "alpha": null,
+          "tservice": 90.0
+        },
+        {
+          "nom": "Bague bronze",
+          "sens": "-",
+          "cote": 8.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.05,
+          "loi": "normale",
+          "materiau": "Bronze phosphoreux",
+          "alpha": null,
+          "tservice": 90.0
+        },
+        {
+          "nom": "Roulement arrière (largeur)",
+          "sens": "-",
+          "cote": 20.0,
+          "iso": null,
+          "es": 0.0,
+          "ei": -0.1,
+          "loi": "normale",
+          "materiau": "Acier C45",
+          "alpha": null,
+          "tservice": 90.0
+        }
+      ]
+    }
+  ]
+}

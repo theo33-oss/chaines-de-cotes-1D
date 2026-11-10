@@ -1,0 +1,171 @@
+{
+ "Source": "Ajustements recommandés ISO 286 (série courante) ; usages indicatifs d'ordre général, à confirmer par le calcul et l'essai. Les jeux ne sont jamais stockés ici : calculés par iso286.",
+ "fonctions": {
+  "libre": "Jeu large (libre)",
+  "glissant": "Glissant",
+  "tournant": "Tournant (rotation précise)",
+  "coulissant": "Coulissant sans jeu notable",
+  "main": "Montage à la main (léger serrage)",
+  "pressage_leger": "Pressage léger",
+  "pressage_moyen": "Pressage moyen",
+  "pressage_fort": "Pressage fort / frette"
+ },
+ "ajustements": [
+  {
+   "id": "H11_c11",
+   "alesageNormal": "H11/c11",
+   "arbreNormal": "C11/h11",
+   "famille": "Jeu large",
+   "natureAttendue": "avec jeu",
+   "description": "Grand jeu, qualités grossières : tolère dilatations, défauts d'alignement et salissures.",
+   "usage": "Articulations rustres, axes de charnières, pièces de machines agricoles ou de levage, assemblages exposés à la saleté.",
+   "risque": "Guidage imprécis : aucun centrage ni précision de position.",
+   "adequation": {
+    "libre": 3
+   }
+  },
+  {
+   "id": "H9_d9",
+   "alesageNormal": "H9/d9",
+   "arbreNormal": "D9/h9",
+   "famille": "Jeu large",
+   "natureAttendue": "avec jeu",
+   "description": "Jeu net pour rotation libre sans exigence de précision.",
+   "usage": "Paliers lisses de transmission longue, arbres tournant librement, axes peu chargés.",
+   "risque": "Jeu variable d'une pièce à l'autre, vibrations possibles en rotation rapide.",
+   "adequation": {
+    "libre": 2,
+    "tournant": 1
+   }
+  },
+  {
+   "id": "H8_f7",
+   "alesageNormal": "H8/f7",
+   "arbreNormal": "F8/h7",
+   "famille": "Jeu moyen",
+   "natureAttendue": "avec jeu",
+   "description": "Jeu modéré, rotation correcte avec lubrification.",
+   "usage": "Paliers lisses courants, arbres de machines-outils, pompes, engrenages tournant sur arbre.",
+   "risque": "Jeu à vérifier en température ; lubrification nécessaire.",
+   "adequation": {
+    "libre": 1,
+    "glissant": 1,
+    "tournant": 3
+   }
+  },
+  {
+   "id": "H7_g6",
+   "alesageNormal": "H7/g6",
+   "arbreNormal": "G7/h6",
+   "famille": "Jeu faible",
+   "natureAttendue": "avec jeu",
+   "description": "Jeu faible pour guidage précis en translation ou rotation lente.",
+   "usage": "Coulisseaux, broches de guidage, axes de positionnement, tiroirs de distributeurs.",
+   "risque": "Jeu faible : risque de grippage si mal lubrifié, désalignement ou dilatation différentielle.",
+   "adequation": {
+    "glissant": 3,
+    "tournant": 2,
+    "coulissant": 2
+   }
+  },
+  {
+   "id": "H7_h6",
+   "alesageNormal": "H7/h6",
+   "arbreNormal": "H7/h6",
+   "famille": "Jeu très faible (jeu nul possible)",
+   "natureAttendue": "avec jeu",
+   "description": "Jeu nul possible au minimum : pièces qui coulissent à la main, bon centrage.",
+   "usage": "Centrages démontables, douilles de perçage, pièces de positionnement montées à la main.",
+   "risque": "Jeu minimal nul : coincement possible avec défaut de forme ou de température.",
+   "adequation": {
+    "glissant": 2,
+    "coulissant": 3,
+    "main": 1
+   }
+  },
+  {
+   "id": "H7_js6",
+   "alesageNormal": "H7/js6",
+   "arbreNormal": "JS7/h6",
+   "famille": "Ajustement incertain léger",
+   "natureAttendue": "incertain",
+   "description": "Jeu ou léger serrage selon les tolérances réelles : montage à la main ou au maillet léger.",
+   "usage": "Pièces à démonter souvent mais bien centrées : bagues, poulies, roues dentées sur arbre clavetées.",
+   "risque": "Résultat dépend du tirage des pièces : jeu ou serrage possibles, à contrôler en série.",
+   "adequation": {
+    "coulissant": 1,
+    "main": 2
+   }
+  },
+  {
+   "id": "H7_k6",
+   "alesageNormal": "H7/k6",
+   "arbreNormal": "K7/h6",
+   "famille": "Incertain moyen",
+   "natureAttendue": "incertain",
+   "description": "Montage au maillet, très bon centrage, serrage léger ou jeu très faible.",
+   "usage": "Bagues de roulement côté tournant léger, poulies, accouplements, pièces clavetées bien centrées.",
+   "risque": "Montage et démontage au maillet ; serrage possible : à vérifier si le démontage fréquent est requis.",
+   "adequation": {
+    "main": 3,
+    "pressage_leger": 1
+   }
+  },
+  {
+   "id": "H7_n6",
+   "alesageNormal": "H7/n6",
+   "arbreNormal": "N7/h6",
+   "famille": "Serrage léger à incertain",
+   "natureAttendue": "incertain",
+   "description": "Serrage faible à moyen : montage à la presse légère ou au maillet fort.",
+   "usage": "Couronnes sur moyeux, bagues de roulement, pièces à entraînement sans clavette soumises à faibles couples.",
+   "risque": "Démontage difficile ; peut être serré ou incertain selon la cote.",
+   "adequation": {
+    "main": 1,
+    "pressage_leger": 3,
+    "pressage_moyen": 1
+   }
+  },
+  {
+   "id": "H7_p6",
+   "alesageNormal": "H7/p6",
+   "arbreNormal": "P7/h6",
+   "famille": "Serrage moyen",
+   "natureAttendue": "serré",
+   "description": "Serrage net : montage à la presse, démontage rare.",
+   "usage": "Douilles et bagues ajustées, assemblages permanents de pièces peu chargées.",
+   "risque": "Contraintes de montage dans le moyeu ; montage à la presse recommandé.",
+   "adequation": {
+    "pressage_leger": 2,
+    "pressage_moyen": 3
+   }
+  },
+  {
+   "id": "H7_s6",
+   "alesageNormal": "H7/s6",
+   "arbreNormal": "S7/h6",
+   "famille": "Serrage fort",
+   "natureAttendue": "serré",
+   "description": "Serrage fort : transmission d'efforts sans clavette, montage à la presse ou par dilatation.",
+   "usage": "Bagues de bronze dans moyeux de fonte, couronnes fixées sur moyeux, assemblages permanents.",
+   "risque": "Fortes contraintes dans le moyeu ; démontage destructif ; vérifier la résistance du moyeu.",
+   "adequation": {
+    "pressage_moyen": 2,
+    "pressage_fort": 3
+   }
+  },
+  {
+   "id": "H7_u6",
+   "alesageNormal": "H7/u6",
+   "arbreNormal": "U7/h6",
+   "famille": "Serrage très fort (frettage)",
+   "natureAttendue": "serré",
+   "description": "Serrage très fort : montage par frettage thermique ou presse forte.",
+   "usage": "Frettage de couronnes et de bagues, assemblages définitifs soumis à de forts couples.",
+   "risque": "Contraintes élevées, risque d'éclatement du moyeu ; calcul de frettage conseillé ; montage à chaud ou à froid.",
+   "adequation": {
+    "pressage_fort": 3
+   }
+  }
+ ]
+}

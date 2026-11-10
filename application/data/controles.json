@@ -1,0 +1,7 @@
+{
+  "k_min": 2.0,
+  "k_max": 6.0,
+  "facteur_unite": 200,
+  "cpk_cible": 1.33,
+  "commentaire": "Seuils de plausibilité des contrôles (services/controles.py) : plage usuelle du procédé garanti k (± kσ) et écart de cote avec la médiane des autres maillons qui trahit une erreur mm / m / µm. cpk_cible : Cpk visé par la conclusion du parcours guidé (services/conclusion.py)."
+}

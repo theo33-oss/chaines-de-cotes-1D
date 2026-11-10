@@ -1,0 +1,12 @@
+{
+  "commentaire": "ISO 2768-1, dimensions linéaires sans indication de tolérance : écarts ± (mm) par plage de cote nominale et classe. Source : document « Tolérances générales ISO 2768-1 » fourni avec l'application (plages de 0,5 à 1000 mm). Les arêtes abattues et les angles ne sont pas repris.",
+  "classes": {"f": "fine", "m": "moyenne", "c": "grossière", "v": "très grossière"},
+  "bornes": [3, 6, 30, 120, 400, 1000],
+  "inferieure": 0.5,
+  "ecarts": {
+    "f": [0.05, 0.05, 0.1, 0.15, 0.2, 0.3],
+    "m": [0.1, 0.1, 0.2, 0.3, 0.5, 0.8],
+    "c": [0.2, 0.3, 0.5, 0.8, 1.2, 2.0],
+    "v": [null, 0.5, 1.0, 1.5, 2.5, 4.0]
+  }
+}

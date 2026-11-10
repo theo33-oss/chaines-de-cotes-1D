@@ -1,0 +1,24 @@
+CHAINES DE COTES 1D - MODE D'EMPLOI
+
+1. Installer Python 3.12 (une seule fois)
+   https://www.python.org/downloads/
+   Dans l'installateur, laisser "py launcher" coché.
+
+2. Décompresser le dossier reçu
+   Clic droit sur le .zip > Extraire tout.
+   Ne pas lancer l'application depuis l'intérieur du .zip.
+
+3. Double-cliquer sur 1_Ouvrir_application.bat
+   Si Windows affiche "Windows a protégé votre ordinateur" :
+   Informations complémentaires > Exécuter quand même.
+   Le premier lancement installe les bibliothèques : 5 à 10 minutes,
+   environ 1 Go, Internet nécessaire. Une fenêtre noire reste ouverte
+   pendant l'installation, ne la fermez pas.
+   Les fois suivantes, l'application s'ouvre en quelques secondes,
+   même sans Internet.
+
+4. Utiliser l'application
+   Elle s'ouvre dans sa propre fenêtre, sans navigateur.
+   Pour l'arrêter, fermez cette fenêtre.
+
+Vos données restent sur votre ordinateur : rien n'est envoyé sur Internet.

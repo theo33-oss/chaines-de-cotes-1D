@@ -1,0 +1,17 @@
+{
+  "commentaire": "Modèle de coût relatif cout = c·(IT/IT_ref)^(-n). Valeurs INDICATIVES d'ordre de grandeur (usages courants d'atelier), à ajuster par l'utilisateur selon son atelier : ce ne sont pas des prix.",
+  "fiabilite": "À valider : ordres de grandeur écrits par l'auteur du site, sans source publiée. À remplacer par les valeurs de votre atelier (page Optimisation, « Mes valeurs d'atelier »).",
+  "it_ref_mm": 0.1,
+  "procedes": [
+    {"id": "generique", "nom": "Procédé générique (modèle neutre)", "c": 1.0, "n": 1.0, "itmin": 1, "itmax": 18, "source": "Valeur neutre sans prétention de réalisme : coût inversement proportionnel à l'IT."},
+    {"id": "tournage", "nom": "Tournage", "c": 1.0, "n": 1.0, "itmin": 6, "itmax": 13, "source": "Indicatif : IT6 à IT13 courants en tournage."},
+    {"id": "fraisage", "nom": "Fraisage", "c": 1.1, "n": 1.0, "itmin": 7, "itmax": 13, "source": "Indicatif : IT7 à IT13 courants en fraisage."},
+    {"id": "rectification", "nom": "Rectification", "c": 2.5, "n": 1.4, "itmin": 4, "itmax": 8, "source": "Indicatif : IT4 à IT8, coût qui monte vite quand la tolérance se resserre."},
+    {"id": "alesage", "nom": "Alésage / alésoir", "c": 1.8, "n": 1.2, "itmin": 6, "itmax": 9, "source": "Indicatif : IT6 à IT9."},
+    {"id": "electroerosion", "nom": "Électroérosion", "c": 3.0, "n": 1.2, "itmin": 5, "itmax": 9, "source": "Indicatif : IT5 à IT9, procédé lent donc cher."},
+    {"id": "moulage_pression", "nom": "Moulage sous pression (alliages légers)", "c": 0.6, "n": 0.8, "itmin": 9, "itmax": 14, "source": "Indicatif : IT9 à IT14, coût d'outillage non inclus."},
+    {"id": "injection_plastique", "nom": "Injection plastique", "c": 0.5, "n": 0.9, "itmin": 10, "itmax": 15, "source": "Indicatif : IT10 à IT15 selon la matière et la cote."},
+    {"id": "fonderie_sable", "nom": "Fonderie sable", "c": 0.4, "n": 0.7, "itmin": 12, "itmax": 16, "source": "Indicatif : IT12 à IT16."},
+    {"id": "tolerie_laser", "nom": "Tôlerie / découpe laser", "c": 0.7, "n": 0.8, "itmin": 11, "itmax": 14, "source": "Indicatif : IT11 à IT14 sur contour découpé."}
+  ]
+}

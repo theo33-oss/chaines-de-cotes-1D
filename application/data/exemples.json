@@ -1,0 +1,84 @@
+{
+  "Source": "Exemples de l'application MATLAB Solveur (tableau de départ, pages d'aide 02, 04, 05, 12, 13, 14 et test_thermique.m). Les références (tests/golden) sont calculées par MATLAB à partir de ce fichier (tools/matlab/generer_golden.m).",
+  "Unites": "cotes, écarts et jeux en mm ; températures en °C ; alpha en 1e-6/K",
+  "exemples": [
+    {
+      "id": "tableau_depart",
+      "titre": "Tableau de départ de l'application",
+      "description": "Alésage de 100 H7 contre un arbre de 50 h6 et une pièce de 49 ± 0,05. Chaîne proposée à l'ouverture de l'application MATLAB (ses deux lignes vides de 0 mm sont omises : elles ne changent aucun résultat).",
+      "source": "Application MATLAB, startupFcn",
+      "condition": {"nom": "Jeu J", "jmin": 0.0, "jmax": null},
+      "reglages": {"kSigma": 3, "tref": 20.0, "modeT": "uniforme", "tservice": 20.0},
+      "maillons": [
+        {"nom": "Cote_1", "sens": "+", "cote": 100.0, "iso": "H7", "es": null, "ei": null, "loi": "normale", "materiau": "Acier C45", "alpha": null, "tservice": 20.0},
+        {"nom": "Cote_2", "sens": "-", "cote": 50.0, "iso": "h6", "es": null, "ei": null, "loi": "normale", "materiau": "Acier C45", "alpha": null, "tservice": 20.0},
+        {"nom": "Cote_3", "sens": "-", "cote": 49.0, "iso": null, "es": 0.05, "ei": -0.05, "loi": "normale", "materiau": "Acier C45", "alpha": null, "tservice": 20.0}
+      ]
+    },
+    {
+      "id": "ajustements_h7_h6_n7",
+      "titre": "Ajustements 100 H7 / 50 h6 / 49 N7",
+      "description": "Exemple des pages d'aide « Pire des cas et RSS » et « Cp, Cpk, ppm » : jeu au pire des cas de 1,008 à 1,084 mm, limites exigées 1,03 à 1,06 mm (Cpk ≈ 0,61).",
+      "source": "Aide MATLAB, pages 04 et 05",
+      "condition": {"nom": "Jeu J", "jmin": 1.03, "jmax": 1.06},
+      "reglages": {"kSigma": 3, "tref": 20.0, "modeT": "uniforme", "tservice": 20.0},
+      "maillons": [
+        {"nom": "Alésage", "sens": "+", "cote": 100.0, "iso": "H7", "es": null, "ei": null, "loi": "normale", "materiau": null, "alpha": null, "tservice": 20.0},
+        {"nom": "Arbre", "sens": "-", "cote": 50.0, "iso": "h6", "es": null, "ei": null, "loi": "normale", "materiau": null, "alpha": null, "tservice": 20.0},
+        {"nom": "Entretoise", "sens": "-", "cote": 49.0, "iso": "N7", "es": null, "ei": null, "loi": "normale", "materiau": null, "alpha": null, "tservice": 20.0}
+      ]
+    },
+    {
+      "id": "validation_100_40_59",
+      "titre": "Chaîne de validation 100 − 40 − 59",
+      "description": "Chaîne de résultat connu citée dans l'aide : jeu 1 ± 0,2 mm au pire des cas (tolérances ± 0,1, ± 0,05 et ± 0,05 choisies pour donner ± 0,2).",
+      "source": "Aide MATLAB, page 12",
+      "condition": {"nom": "Jeu J", "jmin": 0.8, "jmax": 1.2},
+      "reglages": {"kSigma": 3, "tref": 20.0, "modeT": "uniforme", "tservice": 20.0},
+      "maillons": [
+        {"nom": "Carter", "sens": "+", "cote": 100.0, "iso": null, "es": 0.1, "ei": -0.1, "loi": "normale", "materiau": null, "alpha": null, "tservice": 20.0},
+        {"nom": "Bague", "sens": "-", "cote": 40.0, "iso": null, "es": 0.05, "ei": -0.05, "loi": "normale", "materiau": null, "alpha": null, "tservice": 20.0},
+        {"nom": "Moyeu", "sens": "-", "cote": 59.0, "iso": null, "es": 0.05, "ei": -0.05, "loi": "normale", "materiau": null, "alpha": null, "tservice": 20.0}
+      ]
+    },
+    {
+      "id": "thermique_alu_acier",
+      "titre": "Dilatation : carter aluminium et pièces acier à 120 °C",
+      "description": "Exemple chiffré de l'aide « Effet thermique » : tolérances nulles, 100 mm d'aluminium (α = 23) contre 50 et 49 mm d'acier (α = 12), de 20 à 120 °C : le jeu passe de 1,000 à 1,1112 mm.",
+      "source": "Aide MATLAB, page 13 ; test_thermique.m, test 2",
+      "condition": {"nom": "Jeu J", "jmin": 1.0, "jmax": 1.2},
+      "reglages": {"kSigma": 3, "tref": 20.0, "modeT": "uniforme", "tservice": 120.0},
+      "maillons": [
+        {"nom": "Carter alu", "sens": "+", "cote": 100.0, "iso": null, "es": 0.0, "ei": 0.0, "loi": "normale", "materiau": null, "alpha": 23.0, "tservice": 120.0},
+        {"nom": "Arbre acier", "sens": "-", "cote": 50.0, "iso": null, "es": 0.0, "ei": 0.0, "loi": "normale", "materiau": null, "alpha": 12.0, "tservice": 120.0},
+        {"nom": "Bague acier", "sens": "-", "cote": 49.0, "iso": null, "es": 0.0, "ei": 0.0, "loi": "normale", "materiau": null, "alpha": 12.0, "tservice": 120.0}
+      ]
+    },
+    {
+      "id": "thermique_par_cote",
+      "titre": "Dilatation par cote : seul le carter chauffe",
+      "description": "Mode « par cote » de test_thermique.m (test 4) : le carter aluminium passe à 100 °C, les pièces acier restent à 20 °C ; décalage du jeu + 0,184 mm.",
+      "source": "test_thermique.m, test 4",
+      "condition": {"nom": "Jeu J", "jmin": 1.0, "jmax": 1.25},
+      "reglages": {"kSigma": 3, "tref": 20.0, "modeT": "par_cote", "tservice": 20.0},
+      "maillons": [
+        {"nom": "Carter alu", "sens": "+", "cote": 100.0, "iso": null, "es": 0.0, "ei": 0.0, "loi": "normale", "materiau": null, "alpha": 23.0, "tservice": 100.0},
+        {"nom": "Arbre acier", "sens": "-", "cote": 50.0, "iso": null, "es": 0.0, "ei": 0.0, "loi": "normale", "materiau": null, "alpha": 12.0, "tservice": 20.0},
+        {"nom": "Bague acier", "sens": "-", "cote": 49.0, "iso": null, "es": 0.0, "ei": 0.0, "loi": "normale", "materiau": null, "alpha": 12.0, "tservice": 20.0}
+      ]
+    },
+    {
+      "id": "cryogenie_azote",
+      "titre": "Montage cryogénique dans l'azote liquide (−196 °C)",
+      "description": "Carter 6061, arbre inox 316L et entretoise Ti-6Al-4V refroidis de 20 °C à −196 °C : la dilatation suit les courbes NIST du fichier des matériaux (contraction de 0,389 % pour le 6061, et non 0,50 % avec α × ΔT).",
+      "source": "Aide MATLAB, page 14 (courbes en température)",
+      "condition": {"nom": "Jeu J", "jmin": 0.5, "jmax": 1.2},
+      "reglages": {"kSigma": 3, "tref": 20.0, "modeT": "uniforme", "tservice": -196.0},
+      "maillons": [
+        {"nom": "Carter 6061", "sens": "+", "cote": 100.0, "iso": "H7", "es": null, "ei": null, "loi": "normale", "materiau": "Aluminium 6061", "alpha": null, "tservice": -196.0},
+        {"nom": "Arbre 316L", "sens": "-", "cote": 50.0, "iso": "h6", "es": null, "ei": null, "loi": "normale", "materiau": "Inox 316L", "alpha": null, "tservice": -196.0},
+        {"nom": "Entretoise TA6V", "sens": "-", "cote": 49.0, "iso": null, "es": 0.05, "ei": -0.05, "loi": "normale", "materiau": "Titane TA6V (grade 5)", "alpha": null, "tservice": -196.0}
+      ]
+    }
+  ]
+}

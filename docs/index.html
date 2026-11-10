@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaînes de cotes 1D</title>
+<meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Chaînes de cotes 1D</h1>
+  <p class="intro">Vérifiez qu'un <strong>jeu entre deux pièces reste dans ses limites</strong>, au pire des cas comme en statistique. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
+</header>
+
+<main>
+  <p id="etat" class="message info" role="status">Chargement du calcul… la première fois, comptez 10 à 30 secondes.</p>
+
+  <section aria-labelledby="t-depart">
+    <h2 id="t-depart">1. Partir d'un exemple</h2>
+    <div class="ligne">
+      <label for="exemple">Exemple</label>
+      <select id="exemple" disabled></select>
+      <button id="charger" type="button" disabled>Charger cet exemple</button>
+    </div>
+    <p id="description" class="legende"></p>
+  </section>
+
+  <section aria-labelledby="t-condition">
+    <h2 id="t-condition">2. Cote condition</h2>
+    <p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p>
+    <div class="grille">
+      <label>Nom<input id="c-nom" type="text" value="Jeu J"></label>
+      <label>Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
+      <label>Jmax (mm)<input id="c-jmax" type="text" inputmode="decimal"></label>
+    </div>
+    <details>
+      <summary>Réglages du calcul</summary>
+      <div class="grille">
+        <label>Procédé garanti k (± kσ)<input id="r-k" type="text" inputmode="decimal" value="3"></label>
+        <label>T référence (°C)<input id="r-tref" type="text" inputmode="decimal" value="20"></label>
+        <label>T service (°C)<input id="r-tserv" type="text" inputmode="decimal" value="20"></label>
+      </div>
+    </details>
+  </section>
+
+  <section aria-labelledby="t-maillons">
+    <h2 id="t-maillons">3. Maillons</h2>
+    <p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p>
+    <div class="defile">
+      <table id="maillons">
+        <thead><tr><th>Nom</th><th>Sens</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th><th><span class="cache">Supprimer</span></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
+  </section>
+
+  <p><button id="calculer" type="button" class="primaire" disabled>Calculer</button></p>
+
+  <section id="resultats" aria-live="polite" hidden>
+    <h2>Résultats</h2>
+    <p id="verdict" class="message"></p>
+    <p id="conseil"></p>
+    <div id="metriques" class="metriques"></div>
+    <ul id="avertissements" class="legende"></ul>
+    <div id="onglets" role="tablist" aria-label="Graphiques"></div>
+    <div id="graphique" role="tabpanel"></div>
+    <p id="legende-graphique" class="legende"></p>
+  </section>
+  <p id="erreur" class="message erreur" role="alert" hidden></p>
+</main>
+
+<footer>
+  <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
+  <p class="legende">Version navigateur limitée à l'analyse. L'application de bureau (répartition des tolérances, comparaison, mécanisme, dossiers PDF et Word) est dans le dépôt GitHub du projet. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
+  <p class="legende">© 2026 Théo Brun.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

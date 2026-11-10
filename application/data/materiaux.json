@@ -1,0 +1,3605 @@
+{
+ "Source": "Extrait automatiquement de coefficients_dilatation_materiaux.xlsx (application MATLAB) par tools/extraire_materiaux.py.",
+ "Unites": "alpha en 1e-6/K ; T en °C ; points : grandeur epsilon en %, alpha_moyen et alpha_instantane en 1e-6/K",
+ "materiaux": [
+  {
+   "nom": "Aluminium 1050A",
+   "famille": "Aluminium (série 1000)",
+   "alpha": 23.6,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 2011",
+   "famille": "Aluminium (série 2000)",
+   "alpha": 23.0,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 2014",
+   "famille": "Aluminium (série 2000)",
+   "alpha": 23.0,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 2017A (Dural)",
+   "famille": "Aluminium (série 2000)",
+   "alpha": 23.0,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "MIF2017A, Ref2017A"
+  },
+  {
+   "nom": "Aluminium 2024",
+   "famille": "Aluminium (série 2000)",
+   "alpha": 22.8,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al, AmesWeb"
+  },
+  {
+   "nom": "Aluminium 3003",
+   "famille": "Aluminium (série 3000)",
+   "alpha": 23.2,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 4032",
+   "famille": "Aluminium (série 4000)",
+   "alpha": 19.4,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 5005",
+   "famille": "Aluminium (série 5000)",
+   "alpha": 23.6,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "MSM-Al, ASM-Al"
+  },
+  {
+   "nom": "Aluminium 5052",
+   "famille": "Aluminium (série 5000)",
+   "alpha": 23.8,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 5083",
+   "famille": "Aluminium (série 5000)",
+   "alpha": 23.4,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al, MSM-Al"
+  },
+  {
+   "nom": "Aluminium 5086",
+   "famille": "Aluminium (série 5000)",
+   "alpha": 23.8,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "AmesWeb, ASM-Al"
+  },
+  {
+   "nom": "Aluminium 5754",
+   "famille": "Aluminium (série 5000)",
+   "alpha": 23.9,
+   "plage": "20-100",
+   "fiabilite": "Indicatif",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 6060",
+   "famille": "Aluminium (série 6000)",
+   "alpha": 23.4,
+   "plage": "20-100",
+   "fiabilite": "Indicatif",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Aluminium 6061",
+   "famille": "Aluminium (série 6000)",
+   "alpha": 23.4,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al, AmesWeb"
+  },
+  {
+   "nom": "Aluminium 6082",
+   "famille": "Aluminium (série 6000)",
+   "alpha": 23.4,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "Xom6082, Aalco"
+  },
+  {
+   "nom": "Aluminium 7050",
+   "famille": "Aluminium (série 7000)",
+   "alpha": 22.1,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Indicatif",
+   "sources": "Ref7050"
+  },
+  {
+   "nom": "Aluminium 7075",
+   "famille": "Aluminium (série 7000)",
+   "alpha": 23.4,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "Kaiser, ASM-Al"
+  },
+  {
+   "nom": "AlSi7Mg (≈ A356)",
+   "famille": "Aluminium de fonderie",
+   "alpha": 21.4,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "AlSi12 (≈ 413)",
+   "famille": "Aluminium de fonderie",
+   "alpha": 20.5,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "ASM-Al"
+  },
+  {
+   "nom": "Inox 304",
+   "famille": "Inox austénitique",
+   "alpha": 16.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 304L",
+   "famille": "Inox austénitique",
+   "alpha": 16.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "EN10088"
+  },
+  {
+   "nom": "Inox 303 (décolletage)",
+   "famille": "Inox austénitique",
+   "alpha": 16.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "EN10088"
+  },
+  {
+   "nom": "Inox 321",
+   "famille": "Inox austénitique",
+   "alpha": 16.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 316",
+   "famille": "Inox austénitique",
+   "alpha": 16.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 316L",
+   "famille": "Inox austénitique",
+   "alpha": 16.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 316Ti",
+   "famille": "Inox austénitique",
+   "alpha": 16.5,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox"
+  },
+  {
+   "nom": "Inox 904L",
+   "famille": "Inox austénitique",
+   "alpha": 15.8,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox"
+  },
+  {
+   "nom": "Inox 254 SMO (6 % Mo)",
+   "famille": "Inox austénitique",
+   "alpha": 16.5,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 310 (réfractaire)",
+   "famille": "Inox austénitique",
+   "alpha": 15.4,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "EN10088"
+  },
+  {
+   "nom": "A-286 (superalliage Fe)",
+   "famille": "Inox austénitique",
+   "alpha": 17.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "Bossard"
+  },
+  {
+   "nom": "Duplex 2205",
+   "famille": "Inox duplex",
+   "alpha": 13.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 430",
+   "famille": "Inox ferritique",
+   "alpha": 10.0,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox, EN10088"
+  },
+  {
+   "nom": "Inox 3CR12",
+   "famille": "Inox ferritique",
+   "alpha": 10.4,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "MSM-Inox"
+  },
+  {
+   "nom": "Inox 410",
+   "famille": "Inox martensitique",
+   "alpha": 10.5,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "EN10088"
+  },
+  {
+   "nom": "Inox 420",
+   "famille": "Inox martensitique",
+   "alpha": 10.5,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "EN10088"
+  },
+  {
+   "nom": "Inox 440C",
+   "famille": "Inox martensitique",
+   "alpha": 10.4,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "EN10088, AD-440C"
+  },
+  {
+   "nom": "Inox 17-4 PH",
+   "famille": "Inox à durcissement structural",
+   "alpha": 10.9,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "EN10088"
+  },
+  {
+   "nom": "Inox 13-8 Mo",
+   "famille": "Inox à durcissement structural",
+   "alpha": 10.6,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "AD-13X"
+  },
+  {
+   "nom": "Acier S235 / S355",
+   "famille": "Acier de construction",
+   "alpha": 12.0,
+   "plage": "valeur de calcul",
+   "fiabilite": "Norme",
+   "sources": "EC3"
+  },
+  {
+   "nom": "Acier C35E",
+   "famille": "Acier non allié",
+   "alpha": 11.1,
+   "plage": "20-100",
+   "fiabilite": "Norme",
+   "sources": "Bossard"
+  },
+  {
+   "nom": "Acier C45",
+   "famille": "Acier non allié",
+   "alpha": 11.0,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "Eschmann, XomC45"
+  },
+  {
+   "nom": "Acier 42CrMo4",
+   "famille": "Acier faiblement allié",
+   "alpha": 11.1,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "Mat42Cr"
+  },
+  {
+   "nom": "Acier 100Cr6 (roulements)",
+   "famille": "Acier faiblement allié",
+   "alpha": 11.4,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "AD-100Cr6, Ideal100"
+  },
+  {
+   "nom": "Acier D2 (Z160CDV12)",
+   "famille": "Acier à outils",
+   "alpha": 11.2,
+   "plage": "20-200",
+   "fiabilite": "Fabricant",
+   "sources": "Sverker"
+  },
+  {
+   "nom": "Acier H13 (Z40CDV5)",
+   "famille": "Acier à outils",
+   "alpha": 12.6,
+   "plage": "20-400",
+   "fiabilite": "Fabricant",
+   "sources": "Orvar"
+  },
+  {
+   "nom": "Maraging 18Ni (MARVAL M1)",
+   "famille": "Acier maraging",
+   "alpha": 10.6,
+   "plage": "20-200",
+   "fiabilite": "Fabricant",
+   "sources": "AD-M1"
+  },
+  {
+   "nom": "Fonte grise GJL-250",
+   "famille": "Fonte",
+   "alpha": 10.5,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "GJL250"
+  },
+  {
+   "nom": "Fonte (générique)",
+   "famille": "Fonte",
+   "alpha": 10.8,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "ETB"
+  },
+  {
+   "nom": "Titane T40 (grade 2)",
+   "famille": "Titane",
+   "alpha": 8.6,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "I&C"
+  },
+  {
+   "nom": "Titane TA6V (grade 5)",
+   "famille": "Titane",
+   "alpha": 8.6,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "I&C, AmesWeb"
+  },
+  {
+   "nom": "Inconel 718",
+   "famille": "Alliage de nickel",
+   "alpha": 13.0,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "AmesWeb, I&C"
+  },
+  {
+   "nom": "Inconel 625",
+   "famille": "Alliage de nickel",
+   "alpha": 12.8,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "AmesWeb, I&C"
+  },
+  {
+   "nom": "Monel 400",
+   "famille": "Alliage de nickel",
+   "alpha": 13.9,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "AmesWeb"
+  },
+  {
+   "nom": "Invar 36",
+   "famille": "Alliage à dilatation contrôlée",
+   "alpha": 1.2,
+   "plage": "20-100",
+   "fiabilite": "Recueil",
+   "sources": "Misumi, AmesWeb"
+  },
+  {
+   "nom": "Kovar",
+   "famille": "Alliage à dilatation contrôlée",
+   "alpha": 5.1,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "AmesWeb, ETB"
+  },
+  {
+   "nom": "Cuivre Cu-ETP",
+   "famille": "Cuivre et alliages",
+   "alpha": 16.9,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "DKI"
+  },
+  {
+   "nom": "Laiton de décolletage",
+   "famille": "Cuivre et alliages",
+   "alpha": 19.3,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "MSM-614"
+  },
+  {
+   "nom": "Laiton CuZn39Pb2",
+   "famille": "Cuivre et alliages",
+   "alpha": 20.0,
+   "plage": "20-100",
+   "fiabilite": "Fabricant",
+   "sources": "MSM-612"
+  },
+  {
+   "nom": "Laiton CuZn35 (≈ C27000)",
+   "famille": "Cuivre et alliages",
+   "alpha": 20.3,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "AmesWeb"
+  },
+  {
+   "nom": "Cuivre-béryllium",
+   "famille": "Cuivre et alliages",
+   "alpha": 16.7,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "I&C"
+  },
+  {
+   "nom": "Bronze d'aluminium (≈ C62300)",
+   "famille": "Cuivre et alliages",
+   "alpha": 16.2,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Recueil",
+   "sources": "I&C"
+  },
+  {
+   "nom": "Magnésium AZ31",
+   "famille": "Magnésium",
+   "alpha": 26.0,
+   "plage": "20 (ambiant)",
+   "fiabilite": "Indicatif",
+   "sources": "AZ31"
+  },
+  {
+   "nom": "PE-UHMW",
+   "famille": "Polymère",
+   "alpha": 200.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag, ETB"
+  },
+  {
+   "nom": "Polypropylène PP",
+   "famille": "Polymère",
+   "alpha": 150.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag"
+  },
+  {
+   "nom": "PTFE",
+   "famille": "Polymère",
+   "alpha": 135.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Misumi, Maag, ProPlast"
+  },
+  {
+   "nom": "POM-C (acétal)",
+   "famille": "Polymère",
+   "alpha": 110.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag, Misumi"
+  },
+  {
+   "nom": "PVDF",
+   "famille": "Polymère",
+   "alpha": 120.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag"
+  },
+  {
+   "nom": "Polyamide PA6",
+   "famille": "Polymère",
+   "alpha": 80.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag, Misumi"
+  },
+  {
+   "nom": "PMMA",
+   "famille": "Polymère",
+   "alpha": 70.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag"
+  },
+  {
+   "nom": "PVC rigide",
+   "famille": "Polymère",
+   "alpha": 70.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag"
+  },
+  {
+   "nom": "PET-C",
+   "famille": "Polymère",
+   "alpha": 70.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag"
+  },
+  {
+   "nom": "Polycarbonate PC",
+   "famille": "Polymère",
+   "alpha": 65.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag, Misumi"
+  },
+  {
+   "nom": "PEEK",
+   "famille": "Polymère",
+   "alpha": 50.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag, ProPlast"
+  },
+  {
+   "nom": "PEEK chargé fibres",
+   "famille": "Polymère",
+   "alpha": 27.0,
+   "plage": "ambiant",
+   "fiabilite": "Indicatif",
+   "sources": "Maag"
+  },
+  {
+   "nom": "Zircone",
+   "famille": "Céramique",
+   "alpha": 9.0,
+   "plage": "20-300",
+   "fiabilite": "Fabricant",
+   "sources": "Unicon"
+  },
+  {
+   "nom": "Macor (vitrocéramique usinable)",
+   "famille": "Céramique",
+   "alpha": 9.3,
+   "plage": "20-300",
+   "fiabilite": "Fabricant",
+   "sources": "Unicon"
+  },
+  {
+   "nom": "Alumine 99,5 %",
+   "famille": "Céramique",
+   "alpha": 7.7,
+   "plage": "20-300",
+   "fiabilite": "Fabricant",
+   "sources": "Unicon"
+  },
+  {
+   "nom": "Nitrure d'aluminium",
+   "famille": "Céramique",
+   "alpha": 4.3,
+   "plage": "20-300",
+   "fiabilite": "Fabricant",
+   "sources": "Unicon"
+  },
+  {
+   "nom": "Carbure de silicium",
+   "famille": "Céramique",
+   "alpha": 3.7,
+   "plage": "40-400",
+   "fiabilite": "Fabricant",
+   "sources": "Kyocera"
+  },
+  {
+   "nom": "Nitrure de silicium",
+   "famille": "Céramique",
+   "alpha": 2.8,
+   "plage": "40-400",
+   "fiabilite": "Fabricant",
+   "sources": "Kyocera"
+  },
+  {
+   "nom": "Verre borosilicate 3.3",
+   "famille": "Verre",
+   "alpha": 3.3,
+   "plage": "20-300",
+   "fiabilite": "Recueil",
+   "sources": "Misumi"
+  },
+  {
+   "nom": "Silice fondue",
+   "famille": "Verre",
+   "alpha": 0.54,
+   "plage": "ambiant",
+   "fiabilite": "Recueil",
+   "sources": "Misumi"
+  },
+  {
+   "nom": "Zerodur",
+   "famille": "Verre",
+   "alpha": 0.0,
+   "plage": "0-50",
+   "fiabilite": "Fabricant",
+   "sources": "Zerodur"
+  },
+  {
+   "nom": "Acier 9 % Ni",
+   "famille": "Acier faiblement allié",
+   "alpha": 10.6,
+   "plage": "-73 à 20",
+   "fiabilite": "Indicatif",
+   "sources": "NIST"
+  },
+  {
+   "nom": "Molybdène",
+   "famille": "Réfractaire",
+   "alpha": 4.7,
+   "plage": "-73 à 20",
+   "fiabilite": "Indicatif",
+   "sources": "NIST, Ekin"
+  },
+  {
+   "nom": "Bronze phosphoreux",
+   "famille": "Cuivre et alliages",
+   "alpha": 17.0,
+   "plage": "27 (300 K)",
+   "fiabilite": "Recueil",
+   "sources": "NIST, Ekin"
+  },
+  {
+   "nom": "G-10CR (sens normal)",
+   "famille": "Composite",
+   "alpha": 42.7,
+   "plage": "20 (dérivée)",
+   "fiabilite": "Recueil",
+   "sources": "NIST"
+  },
+  {
+   "nom": "G-10CR (sens chaîne)",
+   "famille": "Composite",
+   "alpha": 11.8,
+   "plage": "20 (dérivée)",
+   "fiabilite": "Recueil",
+   "sources": "NIST"
+  },
+  {
+   "nom": "Zircone TTZ (Mg-PSZ)",
+   "famille": "Céramique",
+   "alpha": 10.1,
+   "plage": "25-1000",
+   "fiabilite": "Fabricant",
+   "sources": "CoorsTek"
+  },
+  {
+   "nom": "Mullite",
+   "famille": "Céramique",
+   "alpha": 5.3,
+   "plage": "non précisée",
+   "fiabilite": "Fabricant",
+   "sources": "CoorsTek"
+  },
+  {
+   "nom": "Indium",
+   "famille": "Métal de joint",
+   "alpha": 29.0,
+   "plage": "20",
+   "fiabilite": "Recueil",
+   "sources": "Ekin"
+  },
+  {
+   "nom": "Brasure 97In-3Ag",
+   "famille": "Métal de joint",
+   "alpha": 22.0,
+   "plage": "ambiant",
+   "fiabilite": "Recueil",
+   "sources": "Ekin"
+  },
+  {
+   "nom": "Brasure 63Sn-37Pb",
+   "famille": "Métal de joint",
+   "alpha": 25.0,
+   "plage": "ambiant",
+   "fiabilite": "Recueil",
+   "sources": "Ekin"
+  }
+ ],
+ "courbes": [
+  {
+   "cle": "AL6061",
+   "description": "Aluminium 6061-T6 : équation NIST (4-293 K) + formule EN 1999-1-2 (20-500 °C)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4155,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -263.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4155,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4154,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4143,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4115,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -223.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4073,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -213.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4016,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3887,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3654,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -148.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3332,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -123.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2947,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -98.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2509,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2026,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -48.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1509,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -23.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0966,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 2.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0407,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 50.0,
+     "grandeur": "epsilon",
+     "valeur": 0.07,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "epsilon",
+     "valeur": 0.19,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 150.0,
+     "grandeur": "epsilon",
+     "valeur": 0.315,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 200.0,
+     "grandeur": "epsilon",
+     "valeur": 0.445,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 250.0,
+     "grandeur": "epsilon",
+     "valeur": 0.58,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "epsilon",
+     "valeur": 0.72,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 350.0,
+     "grandeur": "epsilon",
+     "valeur": 0.865,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 400.0,
+     "grandeur": "epsilon",
+     "valeur": 1.015,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 450.0,
+     "grandeur": "epsilon",
+     "valeur": 1.17,
+     "source": "EC9",
+     "confiance": "N"
+    },
+    {
+     "T": 500.0,
+     "grandeur": "epsilon",
+     "valeur": 1.33,
+     "source": "EC9",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "INOX300",
+   "description": "Inox austénitiques série 300 : équation NIST 304 (4-293 K) + EN 10088 1.4404 (20-500 °C)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -263.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2997,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2979,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -223.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2947,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -213.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2902,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2799,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2612,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -148.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2359,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -123.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2064,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -98.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1739,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1391,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -48.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1028,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -23.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0655,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 2.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0275,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 16.0,
+     "source": "Thyssen",
+     "confiance": "N"
+    },
+    {
+     "T": 200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 16.5,
+     "source": "Thyssen",
+     "confiance": "N"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 17.0,
+     "source": "Thyssen",
+     "confiance": "N"
+    },
+    {
+     "T": 400.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 17.5,
+     "source": "Thyssen",
+     "confiance": "N"
+    },
+    {
+     "T": 500.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 18.0,
+     "source": "Thyssen",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "DUPLEX2205",
+   "description": "Duplex 2205 (1.4462) : Outokumpu Forta (20-300 °C)",
+   "points": [
+    {
+     "T": 100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 13.0,
+     "source": "Outokumpu",
+     "confiance": "F"
+    },
+    {
+     "T": 200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 13.5,
+     "source": "Outokumpu",
+     "confiance": "F"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 14.0,
+     "source": "Outokumpu",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "PH17-4",
+   "description": "17-4 PH (1.4542) : Sandmeyer (21-427 °C)",
+   "points": [
+    {
+     "T": 427.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 11.3,
+     "source": "Sandmeyer",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "ACIER-G1",
+   "description": "Acier au carbone (S235/S355/C35/C45) : ASME B31.3 groupe 1 (-200 à 20 °C) + EN 1993-1-2 (20-1200 °C)",
+   "points": [
+    {
+     "T": -200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 9.9,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": -100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 10.7,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "epsilon",
+     "valeur": 0.0998,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 200.0,
+     "grandeur": "epsilon",
+     "valeur": 0.2318,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "epsilon",
+     "valeur": 0.3718,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 400.0,
+     "grandeur": "epsilon",
+     "valeur": 0.5198,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 500.0,
+     "grandeur": "epsilon",
+     "valeur": 0.6758,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 600.0,
+     "grandeur": "epsilon",
+     "valeur": 0.8398,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 700.0,
+     "grandeur": "epsilon",
+     "valeur": 1.0118,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 750.0,
+     "grandeur": "epsilon",
+     "valeur": 1.1,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 800.0,
+     "grandeur": "epsilon",
+     "valeur": 1.1,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 860.0,
+     "grandeur": "epsilon",
+     "valeur": 1.1,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 900.0,
+     "grandeur": "epsilon",
+     "valeur": 1.18,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 1000.0,
+     "grandeur": "epsilon",
+     "valeur": 1.38,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 1100.0,
+     "grandeur": "epsilon",
+     "valeur": 1.58,
+     "source": "EC3-12",
+     "confiance": "N"
+    },
+    {
+     "T": 1200.0,
+     "grandeur": "epsilon",
+     "valeur": 1.78,
+     "source": "EC3-12",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "ACIER-G2",
+   "description": "Acier faiblement allié : ASME B31.3 groupe 2 (-200 à 500 °C)",
+   "points": [
+    {
+     "T": -200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 10.8,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": -100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 11.7,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 13.1,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": 200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 13.6,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 14.0,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": 400.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 14.4,
+     "source": "ASME-B31",
+     "confiance": "M"
+    },
+    {
+     "T": 500.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 14.7,
+     "source": "ASME-B31",
+     "confiance": "M"
+    }
+   ]
+  },
+  {
+   "cle": "ACIER-9NI",
+   "description": "Acier 9 % Ni : tableau NIST (4-293 K)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -0.211,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.19,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.177,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.099,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "TA6V",
+   "description": "Ti-6Al-4V : équation NIST (4-293 K) + ASM/MatWeb (20-650 °C)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1736,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -263.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1736,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1736,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1734,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1724,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -223.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1707,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -213.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1682,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1623,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1515,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -148.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1366,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -123.0,
+     "grandeur": "epsilon",
+     "valeur": -0.119,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -98.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0994,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0785,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -48.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0569,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -23.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0353,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 2.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0143,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 8.6,
+     "source": "MatWeb",
+     "confiance": "A"
+    },
+    {
+     "T": 315.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 9.2,
+     "source": "MatWeb",
+     "confiance": "A"
+    },
+    {
+     "T": 650.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 9.7,
+     "source": "MatWeb",
+     "confiance": "A"
+    }
+   ]
+  },
+  {
+   "cle": "IN718",
+   "description": "Inconel 718 : tableau NIST (20-293 K) + ESPI / Combined Metals (20-300 °C)",
+   "points": [
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.239,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -0.237,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.224,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.21,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.114,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 13.0,
+     "source": "ESPI",
+     "confiance": "F"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 13.9,
+     "source": "CombMet",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "INVAR36",
+   "description": "Invar 36 : tableau NIST (4-293 K) + Carpenter (20-371 °C)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -0.04,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.04,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.036,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.015,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 93.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 1.3,
+     "source": "Carpenter",
+     "confiance": "F"
+    },
+    {
+     "T": 149.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 2.11,
+     "source": "Carpenter",
+     "confiance": "F"
+    },
+    {
+     "T": 260.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 4.18,
+     "source": "Carpenter",
+     "confiance": "F"
+    },
+    {
+     "T": 371.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 7.6,
+     "source": "Carpenter",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "KOVAR",
+   "description": "Kovar : Wikipedia / ESPI (25-450 °C)",
+   "points": [
+    {
+     "T": 200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 5.5,
+     "source": "Wikipedia",
+     "confiance": "A"
+    },
+    {
+     "T": 400.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 4.9,
+     "source": "ESPI",
+     "confiance": "F"
+    },
+    {
+     "T": 450.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 5.3,
+     "source": "ESPI",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "CU-OFHC",
+   "description": "Cuivre OFHC / Cu-ETP : α instantané NIST (4-300 K) + Ekin (20-100 °C)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 0.0023,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -263.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 0.033,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -253.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 0.27,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 2.23,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -193.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 8.34,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 10.49,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 15.21,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 27.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 16.58,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 100.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 16.8,
+     "source": "Ekin",
+     "confiance": "M"
+    }
+   ]
+  },
+  {
+   "cle": "CUBE2",
+   "description": "Cuivre-béryllium : tableau NIST (30-293 K)",
+   "points": [
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -0.316,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.296,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.277,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.151,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "BRONZE-P",
+   "description": "Bronze phosphoreux : Ekin (20-300 °C)",
+   "points": [
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 17.8,
+     "source": "Ekin",
+     "confiance": "M"
+    }
+   ]
+  },
+  {
+   "cle": "PTFE",
+   "description": "PTFE : équation NIST (4-293 K) ; la transition de 19 °C n'est pas représentée",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -2.1273,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -263.0,
+     "grandeur": "epsilon",
+     "valeur": -2.1274,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -2.1192,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -2.1022,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -2.0778,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -223.0,
+     "grandeur": "epsilon",
+     "valeur": -2.0473,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -213.0,
+     "grandeur": "epsilon",
+     "valeur": -2.012,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -1.9435,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -1.8395,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -148.0,
+     "grandeur": "epsilon",
+     "valeur": -1.717,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -123.0,
+     "grandeur": "epsilon",
+     "valeur": -1.5852,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -98.0,
+     "grandeur": "epsilon",
+     "valeur": -1.4387,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -1.2654,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -48.0,
+     "grandeur": "epsilon",
+     "valeur": -1.0469,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -23.0,
+     "grandeur": "epsilon",
+     "valeur": -0.7583,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 2.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3683,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "PA-NYLON",
+   "description": "Nylon (PA) : tableau NIST (4-293 K)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -1.39,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -1.26,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -1.17,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.67,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "PVC",
+   "description": "PVC : tableau NIST (4-293 K)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -1.03,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.83,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.75,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "PMMA",
+   "description": "PMMA : contraction 293→4 K (arXiv:2307.07496)",
+   "points": [
+    {
+     "T": -269.0,
+     "grandeur": "epsilon",
+     "valeur": -1.22,
+     "source": "Arxiv-2307",
+     "confiance": "M"
+    }
+   ]
+  },
+  {
+   "cle": "PEEK-450G",
+   "description": "PEEK 450G : Victrex (saut d'α à Tg = 143 °C)",
+   "points": [
+    {
+     "T": 20.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 55.0,
+     "source": "Victrex",
+     "confiance": "F"
+    },
+    {
+     "T": 143.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 55.0,
+     "source": "Victrex",
+     "confiance": "F"
+    },
+    {
+     "T": 144.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 140.0,
+     "source": "Victrex",
+     "confiance": "F"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 140.0,
+     "source": "Victrex",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "PEEK-CA30",
+   "description": "PEEK CA30 (fibres de carbone) : Victrex, moyenne des directions",
+   "points": [
+    {
+     "T": 20.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 40.0,
+     "source": "Victrex",
+     "confiance": "F"
+    },
+    {
+     "T": 143.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 40.0,
+     "source": "Victrex",
+     "confiance": "F"
+    },
+    {
+     "T": 144.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 100.0,
+     "source": "Victrex",
+     "confiance": "F"
+    },
+    {
+     "T": 300.0,
+     "grandeur": "alpha_instantane",
+     "valeur": 100.0,
+     "source": "Victrex",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "G10-NORMAL",
+   "description": "G-10CR, sens normal aux plis : équation NIST (10-293 K)",
+   "points": [
+    {
+     "T": -263.0,
+     "grandeur": "epsilon",
+     "valeur": -0.7146,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.7079,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -0.6997,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -0.6901,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -223.0,
+     "grandeur": "epsilon",
+     "valeur": -0.679,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -213.0,
+     "grandeur": "epsilon",
+     "valeur": -0.6665,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.642,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.6024,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -148.0,
+     "grandeur": "epsilon",
+     "valeur": -0.5512,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -123.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4916,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -98.0,
+     "grandeur": "epsilon",
+     "valeur": -0.4239,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.3483,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -48.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2649,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -23.0,
+     "grandeur": "epsilon",
+     "valeur": -0.174,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 2.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0759,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "G10-CHAINE",
+   "description": "G-10CR, sens chaîne : équation NIST (12-293 K)",
+   "points": [
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2416,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -243.0,
+     "grandeur": "epsilon",
+     "valeur": -0.238,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -233.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2339,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -223.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2293,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -213.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2242,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.2143,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1988,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -148.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1794,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -123.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1577,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -98.0,
+     "grandeur": "epsilon",
+     "valeur": -0.134,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.1085,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -48.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0817,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -23.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0537,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": 2.0,
+     "grandeur": "epsilon",
+     "valeur": -0.0249,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "MO",
+   "description": "Molybdène : tableau NIST (20-293 K)",
+   "points": [
+    {
+     "T": -253.0,
+     "grandeur": "epsilon",
+     "valeur": -0.092,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -196.0,
+     "grandeur": "epsilon",
+     "valeur": -0.087,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -173.0,
+     "grandeur": "epsilon",
+     "valeur": -0.082,
+     "source": "NIST",
+     "confiance": "N"
+    },
+    {
+     "T": -73.0,
+     "grandeur": "epsilon",
+     "valeur": -0.044,
+     "source": "NIST",
+     "confiance": "N"
+    }
+   ]
+  },
+  {
+   "cle": "ALUMINE",
+   "description": "Alumine : Unicon (20-300 °C) + CoorsTek (25-1000 °C)",
+   "points": [
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 7.7,
+     "source": "Unicon",
+     "confiance": "F"
+    },
+    {
+     "T": 1000.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 8.2,
+     "source": "CoorsTek",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "ZIRCONE-YTZP",
+   "description": "Zircone Y-TZP : Unicon (20-300 °C) + CoorsTek (25-1000 °C)",
+   "points": [
+    {
+     "T": 300.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 9.0,
+     "source": "Unicon",
+     "confiance": "F"
+    },
+    {
+     "T": 1000.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 10.3,
+     "source": "CoorsTek",
+     "confiance": "F"
+    }
+   ]
+  },
+  {
+   "cle": "SILICE-7980",
+   "description": "Silice fondue Corning 7980 : 0-200 °C",
+   "points": [
+    {
+     "T": 200.0,
+     "grandeur": "alpha_moyen",
+     "valeur": 0.57,
+     "source": "Corning",
+     "confiance": "F"
+    }
+   ]
+  }
+ ],
+ "affectations": [
+  {
+   "nom": "Aluminium 1050A",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 2011",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement des alliages traités au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 2014",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 2017A (Dural)",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 2024",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 3003",
+   "courbe": "AL6061",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 4032",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 5005",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 5052",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 5083",
+   "courbe": "AL6061",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 5086",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 5754",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 6060",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 6061",
+   "courbe": "AL6061",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C (6061 soudé ≈ T4)",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 6082",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 7050",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 150.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement des 7xxx au-delà de ~150 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Aluminium 7075",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 150.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement des 7xxx au-delà de ~150 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "AlSi7Mg (≈ A356)",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 175.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Survieillissement au-delà de ~175-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "AlSi12 (≈ 413)",
+   "courbe": "AL6061",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage, perte de résistance au-delà de ~150-200 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Inox 304",
+   "courbe": "INOX300",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C ; sensibilisation 450-850 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 304L",
+   "courbe": "INOX300",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 303 (décolletage)",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C ; sensibilisation 450-850 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 321",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 316",
+   "courbe": "INOX300",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C ; sensibilisation 450-850 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 316L",
+   "courbe": "INOX300",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 316Ti",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 904L",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 254 SMO (6 % Mo)",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 480.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage au-delà de 480 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 310 (réfractaire)",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 1100.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "310S utilisable jusqu'à 1100 °C en air sec (Euro Inox)",
+   "confiance": "M"
+  },
+  {
+   "nom": "A-286 (superalliage Fe)",
+   "courbe": "INOX300",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Duplex 2205",
+   "courbe": "DUPLEX2205",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 316.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fragilisation de la ferrite (475 °C) : 316 °C maxi selon l'ASME BPVC ; résilience exigée vers -40 °C, pas de cryogénie",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 430",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 250.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fragilisation à 475 °C : service long limité à 250 °C ; ferritique fragile à froid (ordre de grandeur)",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 3CR12",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 250.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Service long limité à 250 °C ; ferritique fragile à froid (ordre de grandeur)",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 410",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 650.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Résistance à chaud jusqu'à ~650 °C, perte de dureté au-delà du revenu ; déconseillé en cryogénie",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 420",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 650.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Résistance à chaud jusqu'à ~650 °C, perte de dureté au-delà du revenu ; déconseillé en cryogénie",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 440C",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 650.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Résistance à chaud jusqu'à ~650 °C, perte de dureté au-delà du revenu ; déconseillé en cryogénie",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inox 17-4 PH",
+   "courbe": "PH17-4",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 300.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Ne pas utiliser au-dessus de 300 °C (Sandmeyer) ; martensitique, déconseillé en cryogénie",
+   "confiance": "F"
+  },
+  {
+   "nom": "Inox 13-8 Mo",
+   "courbe": "PH17-4",
+   "recalage": true,
+   "tmin": -40.0,
+   "tmax": 300.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Durcissement structural : 300 °C maxi (comme le 17-4 PH) ; déconseillé en cryogénie",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier S235 / S355",
+   "courbe": "ACIER-G1",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 750.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid (S355J2 : résilience garantie à -20 °C) ; transformation α→γ dès 750 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier C35E",
+   "courbe": "ACIER-G1",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 750.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid ; transformation α→γ dès 750 °C ; ne pas dépasser la température de revenu - 50 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier C45",
+   "courbe": "ACIER-G1",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": 750.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid ; transformation α→γ dès 750 °C ; ne pas dépasser la température de revenu - 50 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier 42CrMo4",
+   "courbe": "ACIER-G2",
+   "recalage": true,
+   "tmin": -40.0,
+   "tmax": 750.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid ; ne pas dépasser la température de revenu - 50 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier 100Cr6 (roulements)",
+   "courbe": "ACIER-G2",
+   "recalage": true,
+   "tmin": -40.0,
+   "tmax": 750.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid ; ne pas dépasser la température de revenu - 50 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier D2 (Z160CDV12)",
+   "courbe": "ACIER-G2",
+   "recalage": true,
+   "tmin": -40.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid ; ne pas dépasser la température de revenu - 50 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier H13 (Z40CDV5)",
+   "courbe": "ACIER-G2",
+   "recalage": true,
+   "tmin": -40.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Transition ductile-fragile à froid ; ne pas dépasser la température de revenu - 50 °C",
+   "confiance": "E"
+  },
+  {
+   "nom": "Maraging 18Ni (MARVAL M1)",
+   "courbe": "ACIER-G2",
+   "recalage": true,
+   "tmin": -40.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Ne pas dépasser la température de vieillissement",
+   "confiance": "E"
+  },
+  {
+   "nom": "Acier 9 % Ni",
+   "courbe": "ACIER-9NI",
+   "recalage": false,
+   "tmin": -196.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Acier pour gaz liquéfiés : ductile jusqu'à -196 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Fonte grise GJL-250",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fonte grise fragile ; GJS-400 ductile jusqu'à ~-40 °C selon la nuance (ordre de grandeur)",
+   "confiance": "E"
+  },
+  {
+   "nom": "Fonte (générique)",
+   "courbe": "",
+   "recalage": false,
+   "tmin": -40.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fonte fragile à froid (ordre de grandeur)",
+   "confiance": "E"
+  },
+  {
+   "nom": "Titane T40 (grade 2)",
+   "courbe": "TA6V",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": 427.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Usage jusqu'à ~427 °C (Ti-6Al-4V)",
+   "confiance": "M"
+  },
+  {
+   "nom": "Titane TA6V (grade 5)",
+   "courbe": "TA6V",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 427.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Usage jusqu'à ~427 °C ; absorption d'hydrogène au-delà de 130 °C ; préférer la nuance ELI en cryogénie",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inconel 718",
+   "courbe": "IN718",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 700.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fluage-rupture jusqu'à 700 °C (ESA) ; retrait permanent de 0,08 % au vieillissement",
+   "confiance": "M"
+  },
+  {
+   "nom": "Inconel 625",
+   "courbe": "IN718",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Monel 400",
+   "courbe": "IN718",
+   "recalage": true,
+   "tmin": -269.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Invar 36",
+   "courbe": "INVAR36",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 200.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Faible dilatation perdue vers 204 °C (point de Curie 279 °C, Carpenter)",
+   "confiance": "F"
+  },
+  {
+   "nom": "Kovar",
+   "courbe": "KOVAR",
+   "recalage": false,
+   "tmin": null,
+   "tmax": 440.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Point d'inflexion vers 440 °C ; au-delà, dilatation « normale »",
+   "confiance": "F"
+  },
+  {
+   "nom": "Cuivre Cu-ETP",
+   "courbe": "CU-OFHC",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Recuit vers 500 °C : perte de l'écrouissage (pas une limite dimensionnelle)",
+   "confiance": "M"
+  },
+  {
+   "nom": "Laiton de décolletage",
+   "courbe": "CU-OFHC",
+   "recalage": true,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Laiton CuZn39Pb2",
+   "courbe": "CU-OFHC",
+   "recalage": true,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Laiton CuZn35 (≈ C27000)",
+   "courbe": "CU-OFHC",
+   "recalage": true,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Cuivre-béryllium",
+   "courbe": "CUBE2",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Bronze d'aluminium (≈ C62300)",
+   "courbe": "CU-OFHC",
+   "recalage": true,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Bronze phosphoreux",
+   "courbe": "BRONZE-P",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Magnésium AZ31",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "PE-UHMW",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Polypropylène PP",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "PTFE",
+   "courbe": "PTFE",
+   "recalage": false,
+   "tmin": -269.0,
+   "tmax": 260.0,
+   "zmin": 18.0,
+   "zmax": 30.0,
+   "motif": "Transitions cristallines à 19 et 30 °C : cote ambiguë de plusieurs dixièmes de % entre 18 et 30 °C (coter à température maîtrisée) ; 260 °C en continu",
+   "confiance": "A"
+  },
+  {
+   "nom": "POM-C (acétal)",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "PVDF",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Polyamide PA6",
+   "courbe": "PA-NYLON",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Varie aussi avec l'humidité absorbée",
+   "confiance": ""
+  },
+  {
+   "nom": "PMMA",
+   "courbe": "PMMA",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "PVC rigide",
+   "courbe": "PVC",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "PET-C",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Polycarbonate PC",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "PEEK",
+   "courbe": "PEEK-450G",
+   "recalage": false,
+   "tmin": null,
+   "tmax": 143.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Plus de stabilité dimensionnelle au-delà de Tg = 143 °C (α × 2,5)",
+   "confiance": "F"
+  },
+  {
+   "nom": "PEEK chargé fibres",
+   "courbe": "PEEK-CA30",
+   "recalage": true,
+   "tmin": null,
+   "tmax": 143.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Plus de stabilité dimensionnelle au-delà de Tg = 143 °C ; fortement anisotrope",
+   "confiance": "F"
+  },
+  {
+   "nom": "G-10CR (sens normal)",
+   "courbe": "G10-NORMAL",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fortement anisotrope (contraction normale ≈ 3 × celle du sens chaîne)",
+   "confiance": ""
+  },
+  {
+   "nom": "G-10CR (sens chaîne)",
+   "courbe": "G10-CHAINE",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fortement anisotrope",
+   "confiance": ""
+  },
+  {
+   "nom": "Zircone",
+   "courbe": "ZIRCONE-YTZP",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Zircone TTZ (Mg-PSZ)",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Mullite",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Macor (vitrocéramique usinable)",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Alumine 99,5 %",
+   "courbe": "ALUMINE",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Température maximale d'utilisation 1800 °C (CoorsTek)",
+   "confiance": ""
+  },
+  {
+   "nom": "Nitrure d'aluminium",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Carbure de silicium",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Nitrure de silicium",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Verre borosilicate 3.3",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Silice fondue",
+   "courbe": "SILICE-7980",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Point de contrainte 893 °C (Corning 7980)",
+   "confiance": ""
+  },
+  {
+   "nom": "Zerodur",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": 130.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "CTE dépendant de l'historique thermique au-dessus de 130 °C ; 600 °C maxi (Schott)",
+   "confiance": "F"
+  },
+  {
+   "nom": "Molybdène",
+   "courbe": "MO",
+   "recalage": false,
+   "tmin": null,
+   "tmax": null,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Pas de limite trouvée dans la recherche",
+   "confiance": ""
+  },
+  {
+   "nom": "Indium",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": 157.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fusion à 157 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Brasure 97In-3Ag",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": 143.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fusion à 143 °C",
+   "confiance": "M"
+  },
+  {
+   "nom": "Brasure 63Sn-37Pb",
+   "courbe": "",
+   "recalage": false,
+   "tmin": null,
+   "tmax": 183.0,
+   "zmin": null,
+   "zmax": null,
+   "motif": "Fusion à 183 °C",
+   "confiance": "M"
+  }
+ ],
+ "sources": [
+  {
+   "cle": "ASM-Al",
+   "source": "AmesWeb - CTE des alliages d'aluminium (valeurs ASM, 20-100 °C)",
+   "lien": "https://amesweb.info/Materials/Thermal_Expansion_Coefficient_of_Aluminum.aspx"
+  },
+  {
+   "cle": "AmesWeb",
+   "source": "AmesWeb - CTE des métaux à température ambiante",
+   "lien": "https://amesweb.info/Materials/Linear-Thermal-Expansion-Coefficient-Metals.aspx"
+  },
+  {
+   "cle": "Kaiser",
+   "source": "Kaiser Aluminum - fiche 7075 (20-100 °C)",
+   "lien": "https://Protolabs.com/media/uyxfxevh/7075_t6-cnc.pdf"
+  },
+  {
+   "cle": "Xom6082",
+   "source": "Xometry - fiche aluminium 6082",
+   "lien": "https://xometry.asia/wp-content/uploads/2021/03/1773391398-Aluminium-Alloy-6082-Datasheet.pdf"
+  },
+  {
+   "cle": "Aalco",
+   "source": "Aalco - fiche 6082-T6",
+   "lien": "https://www.aalco.co.uk/datasheets/Aluminium-Alloy-DNV-Certified-Marine-Extrusions-Extrusions_419.ashx"
+  },
+  {
+   "cle": "MSM-Al",
+   "source": "Metall Service Menziken - semi-produits aluminium (20-100 °C)",
+   "lien": "https://www.metallservice.ch/msm/msm-home/services/infoservice/mechanische-kennwerte-für-walzblankes-alu-halbzeug-2.pdf"
+  },
+  {
+   "cle": "MIF2017A",
+   "source": "MakeItFrom - 2017A (AlCu4MgSi(A), A-U4G)",
+   "lien": "https://www.makeitfrom.com/material-properties/2017A-AlCu4MgSiA-3.1325-H14-Aluminum"
+  },
+  {
+   "cle": "Ref2017A",
+   "source": "Referans Metal - 2017A T4510/T4511",
+   "lien": "https://referansmetal.com/alasimli-aluminyum/product/443/uzay-havacilik-savunma/boru-profil-ekstruzyon/astm-b221-alcu4mgsia-2017a-t4510t4511?lang=de"
+  },
+  {
+   "cle": "Ref7050",
+   "source": "Referans Metal - 7050-T7451 (AMS 4050)",
+   "lien": "https://www.referansmetal.com/alasimli-aluminyum/product/58/uzay-havacilik-savunma/levha-plaka/ams-4050-alzn6cumgzr-7050-t7451?lang=en"
+  },
+  {
+   "cle": "MSM-Inox",
+   "source": "Metall Service Menziken - propriétés physiques inox selon EN 10088-1 (20-100 °C)",
+   "lien": "https://www.metallservice.ch/msm/msm-home/services/metall-lexion/physikalische-eigenschaften-edelstahl-rostfrei.pdf"
+  },
+  {
+   "cle": "EN10088",
+   "source": "TubingChina - tableau EN 10088-1 par famille (20-100 °C) + données INCO",
+   "lien": "https://tubingchina.com/EN-10088-1-Elevated-temperature-physical-properties-of-stainless-steel.htm"
+  },
+  {
+   "cle": "AD-440C",
+   "source": "Aubert & Duval - XDBD (X105CrMo17, 440C)",
+   "lien": "https://www.aubertduval.com/wp-content/uploads/2024/12/XDBD_GB.pdf"
+  },
+  {
+   "cle": "AD-13X",
+   "source": "Aubert & Duval - MARVAL 13X (X3CrNiMoAl13-8-2)",
+   "lien": "https://aubertduval.com/wp-content/uploads/2024/12/MARVAL13X_FR.pdf"
+  },
+  {
+   "cle": "Bossard",
+   "source": "Bossard - matériaux de visserie selon DIN EN 10269",
+   "lien": "https://media.bossard.com/-/media/bossard-group/website/documents/technical-resources/de/f_017_de.pdf"
+  },
+  {
+   "cle": "EC3",
+   "source": "Eurocode Applied - EN 1993-1-1 §3.2.6 (aciers de construction)",
+   "lien": "https://cdn.eurocodeapplied.com/design/en1993/steel-design-properties"
+  },
+  {
+   "cle": "Eschmann",
+   "source": "Eschmann Stahl - C45U (1.1730)",
+   "lien": "https://www.eschmannstahl.de/app/uploads/sites/296/2024/07/T_ES_ULW_65.pdf"
+  },
+  {
+   "cle": "XomC45",
+   "source": "Xometry - fiche acier C45 (1.0503)",
+   "lien": "https://xometry.pro/wp-content/uploads/2023/09/Steel-1.0503.pdf"
+  },
+  {
+   "cle": "Mat42Cr",
+   "source": "Matmatch - 42CrMoS4 (EN 10277-5)",
+   "lien": "https://matmatch.com/de/materials/minfm64142-en-10277-5-grade-42crmos4-cold-drawn-and-quenched-and-tempered-c-qt-"
+  },
+  {
+   "cle": "AD-100Cr6",
+   "source": "Aubert & Duval - RADW (100Cr6)",
+   "lien": "https://www.aubertduval.com/wp-content/uploads/2024/12/RADW_GB.pdf"
+  },
+  {
+   "cle": "Ideal100",
+   "source": "Ideal-tek - 100Cr6 (20-100 °C)",
+   "lien": "https://www.ideal-tek.com/public/files/100Cr6 Technical DataSheet.pdf"
+  },
+  {
+   "cle": "Sverker",
+   "source": "Uddeholm - Sverker 21 (D2, 1.2379)",
+   "lien": "https://uddeholm.com/app/uploads/sites/247/2024/09/Tech-Uddeholm-Sverker-21-EN.pdf"
+  },
+  {
+   "cle": "Orvar",
+   "source": "Uddeholm - Orvar 2 Microdized (H13, 1.2344)",
+   "lien": "https://www.uddeholm.com/app/uploads/sites/45/2018/01/Uddeholm_Orvar_2_M-eng-_p_1305_e5.pdf"
+  },
+  {
+   "cle": "AD-M1",
+   "source": "Aubert & Duval - MARVAL M1 (maraging X2NiCoMo18-8-5)",
+   "lien": "https://www.aubertduval.com/wp-media/uploads/sites/2/2017/06/MARVALM1_FR.pdf"
+  },
+  {
+   "cle": "GJL250",
+   "source": "MfgRobots - EN-GJL-250 (EN 1561)",
+   "lien": "https://www.mfgrobots.com/Article/material/metal/39356.html"
+  },
+  {
+   "cle": "ETB",
+   "source": "Engineering ToolBox - coefficients de dilatation linéaire",
+   "lien": "https://engineeringtoolbox.com/linear-expansion-coefficients-d_95.html"
+  },
+  {
+   "cle": "I&C",
+   "source": "Instrumentation & Control - tableau CTE métaux (titane, nickel)",
+   "lien": "https://instrumentationandcontrol.net/thermal-expansion-coefficient-table.html"
+  },
+  {
+   "cle": "MSM-614",
+   "source": "Metall Service Menziken - CuZn39Pb3 (CW614N)",
+   "lien": "https://metallservice.ch/msm/msm-home/services/infoservice/produktinfos-datenblätter/buntmetalle/cuzn39pb3.pdf"
+  },
+  {
+   "cle": "MSM-612",
+   "source": "Metall Service Menziken - CuZn39Pb2 (CW612N)",
+   "lien": "https://metallservice.ch/msm/msm-home/services/infoservice/produktinfos-datenblätter/buntmetalle/cuzn39pb2-2.pdf"
+  },
+  {
+   "cle": "DKI",
+   "source": "Fiche DKI Cu-HCP / Cu-ETP, citée sur mikrocontroller.net",
+   "lien": "https://www.mikrocontroller.net/topic/450979"
+  },
+  {
+   "cle": "Misumi",
+   "source": "Misumi - tableau des coefficients de dilatation",
+   "lien": "https://us.misumi-ec.com/blog/thermal-expansion-coefficients/"
+  },
+  {
+   "cle": "Maag",
+   "source": "Maagtechnic - aperçu des plastiques techniques (FR)",
+   "lien": "https://maagtechnic.ch/content/dam/ch/kunststofftechnik/Maagtechnic-Apercu-matieres-plastiques-techniques-machines-2026.pdf"
+  },
+  {
+   "cle": "ProPlast",
+   "source": "Professional Plastics - propriétés thermiques des plastiques",
+   "lien": "https://www.professionalplastics.com/professionalplastics/content/downloads/ThermalPropertiesofPlasticMaterials.pdf"
+  },
+  {
+   "cle": "Unicon",
+   "source": "Unicon - propriétés des céramiques (RT-300 °C)",
+   "lien": "https://unicon.co.jp/english/product/material/material_table.html"
+  },
+  {
+   "cle": "Kyocera",
+   "source": "Kyocera - dilatation des céramiques fines (40-400 °C)",
+   "lien": "https://global.kyocera.com/prdct/fc/list/tokusei/bouchou/index.html"
+  },
+  {
+   "cle": "Zerodur",
+   "source": "Wikipedia - Zerodur (données Schott)",
+   "lien": "https://Www.Wikipedia.org/wiki/Zerodur"
+  },
+  {
+   "cle": "AZ31",
+   "source": "Document NASA/DoE - composites magnésium (AZ31)",
+   "lien": "https://corpora.tika.apache.org/base/docs/govdocs1/485/485286.pdf"
+  },
+  {
+   "cle": "NIST",
+   "source": "NIST Cryogenic Material Properties (Bradley & Radebaugh) : équations et tableaux de contraction 4-300 K",
+   "lien": "trc.nist.gov/cryogenics/materials"
+  },
+  {
+   "cle": "EC9",
+   "source": "EN 1999-1-2 (Eurocode 9) : dilatation des alliages d'aluminium, 0-500 °C",
+   "lien": "Norme EN 1999-1-2"
+  },
+  {
+   "cle": "EC3-12",
+   "source": "EN 1993-1-2 §3.4.1.1 (Eurocode 3) : dilatation de l'acier au carbone, 20-1200 °C",
+   "lien": "Norme EN 1993-1-2"
+  },
+  {
+   "cle": "ASME-B31",
+   "source": "Tableau type ASME B31.3 C-1M reproduit par piping-world.com (source secondaire)",
+   "lien": "piping-world.com"
+  },
+  {
+   "cle": "Thyssen",
+   "source": "thyssenkrupp Materials : fiche 1.4404 (coefficients EN 10088 20-500 °C)",
+   "lien": "thyssenkrupp-materials.com"
+  },
+  {
+   "cle": "Outokumpu",
+   "source": "Outokumpu : fiches Forta (2205) et Supra (316L)",
+   "lien": "outokumpu.com"
+  },
+  {
+   "cle": "Sandmeyer",
+   "source": "Sandmeyer Steel : fiche 17-4 PH",
+   "lien": "sandmeyersteel.com"
+  },
+  {
+   "cle": "MatWeb",
+   "source": "MatWeb (valeurs ASM) : Ti-6Al-4V",
+   "lien": "matweb.com"
+  },
+  {
+   "cle": "ESPI",
+   "source": "ESPI Metals : fiches Inconel 718 et Kovar",
+   "lien": "espimetals.com"
+  },
+  {
+   "cle": "CombMet",
+   "source": "Combined Metals : fiche fil Inconel 718",
+   "lien": "combmet.com"
+  },
+  {
+   "cle": "Carpenter",
+   "source": "Carpenter Technology : fiche Invar 36",
+   "lien": "carpentertechnology.com"
+  },
+  {
+   "cle": "Wikipedia",
+   "source": "Wikipedia : Kovar",
+   "lien": "wikipedia.org"
+  },
+  {
+   "cle": "Ekin",
+   "source": "J. Ekin, Experimental Techniques for Low-Temperature Measurements, annexes",
+   "lien": "researchmeasurements.com"
+  },
+  {
+   "cle": "Arxiv-2307",
+   "source": "arXiv:2307.07496 (contractions de référence reprises du NIST)",
+   "lien": "arxiv.org/abs/2307.07496"
+  },
+  {
+   "cle": "Victrex",
+   "source": "Victrex : PEEK 450G et CA30 (ISO 11359)",
+   "lien": "victrex.com"
+  },
+  {
+   "cle": "CoorsTek",
+   "source": "CoorsTek : céramiques techniques (alumine, zircone, mullite)",
+   "lien": "coorstek.com"
+  },
+  {
+   "cle": "Corning",
+   "source": "Corning 7980, fiche Abrisa Technologies",
+   "lien": "abrisatechnologies.com"
+  },
+  {
+   "cle": "Recherche-T",
+   "source": "Recherche « Dilatation thermique en fonction de la température (4 K → hautes températures) », 19/10/2026 (PDF du dossier Doc pr Claude)",
+   "lien": "Doc pr Claude"
+  }
+ ]
+}
