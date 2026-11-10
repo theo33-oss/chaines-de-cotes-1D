@@ -17,6 +17,26 @@ QUALITES = tuple(range(1, 19))
 _ID = "Chaine:Iso286:saisie"
 _DESIGNATION = re.compile(r"^\s*(?:(\d+(?:[.,]\d+)?)\s*)?([A-Za-z]{1,2})\s*(\d{1,2})\s*$")
 
+COTES_USUELLES = [
+    1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40, 42, 45, 48, 50, 55,
+    60, 63, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 125, 130, 140, 150, 160, 170, 180, 200, 220, 250, 280, 300,
+    315, 350, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1250, 1600, 2000, 2500, 3150,
+]  # fmt: skip
+USAGE_QUALITE = {
+    1: "étalons", 4: "calibres", 5: "précision", 6: "précision", 7: "ajustements courants", 8: "usage courant",
+    9: "usage courant", 11: "grossier", 12: "grossier", 14: "brut", 16: "brut",
+}  # fmt: skip
+
+
+def libellesPlages(bornes: list[float]) -> list[str]:
+    """Libellés des plages de cotes nominales de la table (« jusqu'à 3 », « 3 à 6 »…).
+
+    Entrée : bornes (mm, borne supérieure de chaque plage). Sortie : liste de textes (mm).
+    """
+    return [
+        f"jusqu'à {fr(b, 'g')}" if i == 0 else f"{fr(bornes[i - 1], 'g')} à {fr(b, 'g')}" for i, b in enumerate(bornes)
+    ]
+
 
 def _table() -> dict:
     return chargerJson("iso286.json")

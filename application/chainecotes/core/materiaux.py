@@ -11,6 +11,7 @@ Un proxy recalé est mis à l'échelle par Facteur = α (onglet Matériaux) / α
 import functools
 import math
 import re
+import unicodedata
 
 import numpy as np
 from scipy.interpolate import PchipInterpolator
@@ -225,3 +226,40 @@ def _bornesPlage(plage: str):
     """Bornes d'une plage écrite « a-b » (ex. « 20-100 »), None sinon."""
     b = re.match(r"^\s*(-?\d+)\s*-\s*(-?\d+)\s*$", plage or "")
     return (float(b.group(1)), float(b.group(2))) if b else None
+
+
+def domaineEmploi(m: dict) -> str:
+    """Domaine d'emploi d'un matériau en clair : T min, T max, zone sensible et motif.
+
+    Entrée : m (élément de listeMateriaux). Sortie : texte (°C), vide si rien n'est connu.
+    """
+    morceaux = []
+    if not math.isnan(m["tmin"]) or not math.isnan(m["tmax"]):
+        morceaux.append(f"{fr(m['tmin'], 'g')} à {fr(m['tmax'], 'g')} °C")
+    if not math.isnan(m["zmin"]):
+        morceaux.append(f"zone sensible {fr(m['zmin'], 'g')} à {fr(m['zmax'], 'g')} °C")
+    if m["motif"]:
+        morceaux.append(m["motif"])
+    return " ; ".join(morceaux)
+
+
+def _sansAccent(texte: str) -> str:
+    """Texte en minuscules sans accents, pour comparer une recherche à un contenu."""
+    return "".join(c for c in unicodedata.normalize("NFD", str(texte).lower()) if unicodedata.category(c) != "Mn")
+
+
+def filtrerLignes(lignes: list[dict], texte: str, familles: list[str]) -> list[dict]:
+    """Lignes du tableau dont la famille est choisie (toutes si vide) et qui contiennent tous les mots cherchés.
+
+    Entrées : lignes (dict du tableau, colonnes « Famille » et textes), texte (mots séparés par des espaces),
+    familles (liste de familles ; vide = toutes). Sortie : sous-liste de lignes, dans l'ordre.
+    """
+    mots = _sansAccent(texte).split()
+    gardees = []
+    for ligne in lignes:
+        if familles and ligne["Famille"] not in familles:
+            continue
+        contenu = _sansAccent(" ".join(str(v) for v in ligne.values()))
+        if all(mot in contenu for mot in mots):
+            gardees.append(ligne)
+    return gardees

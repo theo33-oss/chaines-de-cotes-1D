@@ -66,3 +66,43 @@ def choisirAjustement(cote: float, fonction: str, systeme: str = "alesage", arro
             "usage": a["usage"], "description": a["description"], "avertissement": avert,
         }))  # fmt: skip
     return [{"rang": i, **c[2]} for i, c in enumerate(sorted(candidats, key=lambda c: c[:2]), 1)]
+
+
+def pieces(designation: str, cote: float) -> tuple[dict, dict]:
+    """Lit les deux pièces d'un ajustement « H7/g6 » à une cote (écarts de l'application MATLAB).
+
+    Entrées : designation (texte « alésage/arbre »), cote (mm). Sortie : (alésage, arbre) = dicts de lireDesignation
+    (es, ei en mm ; IT en µm). Erreur : ErreurChaine si une désignation est illisible ou hors table.
+    """
+    trou, arbre = (lireDesignation(p, cote) for p in designation.split("/"))
+    return trou, arbre
+
+
+def _nomLibre(nom: str, pris: set[str]) -> str:
+    """Nom de maillon qui n'existe pas encore : « Arbre », puis « Arbre (2) », « Arbre (3) »…"""
+    candidat, i = nom, 2
+    while candidat in pris:
+        candidat, i = f"{nom} ({i})", i + 1
+    return candidat
+
+
+def maillonsAjustement(designation: str, cote: float, nomsPris=(), tref: float = 20.0) -> list[dict]:
+    """Les deux maillons d'un ajustement : l'alésage (sens +) puis l'arbre (sens −), prêts à ajouter à une chaîne.
+
+    Entrées : designation (« H7/g6 »), cote (mm), nomsPris (noms déjà utilisés : les nouveaux sont numérotés),
+    tref (°C, température de service des maillons). Sortie : liste de deux dicts de maillon.
+    Erreur : ErreurChaine si la désignation est illisible.
+    """
+    trou, arbre = pieces(designation, cote)
+    pris, sortie = set(nomsPris), []
+    for piece, nom, sens in ((trou, "Alésage", "+"), (arbre, "Arbre", "-")):
+        nom = _nomLibre(nom, pris)
+        pris.add(nom)
+        sortie.append(
+            {
+                "nom": nom, "sens": sens, "cote": float(cote), "iso": piece["designation"].split()[-1],
+                "es": None, "ei": None, "loi": "normale", "materiau": None, "alpha": None,
+                "tservice": float(tref), "derive": 0.0,
+            }
+        )  # fmt: skip
+    return sortie

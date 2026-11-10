@@ -154,6 +154,21 @@ const App = (() => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  // Nombre venu d'une table JSON écrit à la française (« 0,8 ») ; case absente → vide.
+  const fr = (v) => (v === null || v === undefined ? "" : String(v).replace(".", ","));
+
+  // Liste déroulante remplie : options = [[valeur, texte], …].
+  function remplir(select, options, valeur) {
+    select.replaceChildren(...options.map(([v, t]) => Object.assign(document.createElement("option"), { value: v, textContent: t })));
+    if (valeur !== undefined) select.value = String(valeur);
+    return select;
+  }
+
+  // Tableau de valeurs de plages (data/iso286.json) : {plages, colonnes} → table, colonnes choisies.
+  function matrice(t, noms, premiere = "Plage de cote (mm)") {
+    return tableau({ entetes: [premiere, ...noms], lignes: t.plages.map((p, i) => [p, ...noms.map((n) => fr(t.colonnes[n][i]))]) });
+  }
+
   // ---------- pages et démarrage ----------
 
   function enregistrerPage(page) {
@@ -201,5 +216,6 @@ const App = (() => {
     $("etat").textContent = "Prêt. Choisissez un exemple ou saisissez votre chaîne, puis cliquez sur Calculer.";
   }
 
-  return { $, nombre, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, telecharger, enregistrerPage, demarrer };
+  const exposition = { $, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, enregistrerPage, afficherPage, demarrer };
+  return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();

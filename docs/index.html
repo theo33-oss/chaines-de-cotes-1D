@@ -96,11 +96,115 @@
       <div id="panneau" role="tabpanel"></div>
     </section>
   </div>
+
+  <!-- ===== Page « Bibliothèque d'exemples » (js/exemples.js) ===== -->
+  <div id="page-exemples" hidden>
+    <h2>Bibliothèque d'exemples</h2>
+    <p class="legende">Les six premiers exemples viennent de l'application MATLAB d'origine ou de son aide (leurs résultats sont vérifiés contre MATLAB). Les suivants sont des exemples pédagogiques, à plusieurs pièces. « Ouvrir dans Analyser » en fait l'étude en cours (il remplace la chaîne ouverte) et lance le calcul ; vous pourrez ensuite le modifier librement. L'aperçu donne le jeu au pire des cas, sans Monte-Carlo.</p>
+    <div id="exemples-liste" class="cartes"></div>
+  </div>
+
+  <!-- ===== Page « Assistant d'ajustement » (js/ajustement.js) ===== -->
+  <div id="page-ajustement" hidden>
+    <h2>Assistant d'ajustement</h2>
+    <p class="legende">Choisissez la cote, la fonction attendue et le système (alésage normal ou arbre normal) : les ajustements ISO 286 recommandés sont classés du mieux adapté au moins adapté, avec leurs jeux calculés à cette cote. « Utiliser dans la chaîne » ajoute l'alésage et l'arbre à l'étude de la page Analyser.</p>
+    <div class="grille">
+      <label>Cote nominale (mm)<select id="aj-cote"></select></label>
+      <label id="aj-autre-bloc" hidden>Cote (mm)<input id="aj-autre" type="text" inputmode="decimal" value="50"></label>
+      <label>Fonction souhaitée<select id="aj-fonction"></select></label>
+      <label>Système<select id="aj-systeme"><option value="alesage">Alésage normal (H)</option><option value="arbre">Arbre normal (h)</option></select></label>
+    </div>
+    <p id="aj-erreur" class="message" role="alert" hidden></p>
+    <div id="aj-resultat" hidden>
+      <h3>Ajustements candidats</h3>
+      <div id="aj-candidats"></div>
+      <label class="large">Ajustement à détailler<select id="aj-choix"></select></label>
+      <h3 id="aj-titre-detail"></h3>
+      <div id="aj-pieces"></div>
+      <p id="aj-description"></p>
+      <p id="aj-usage" class="legende"></p>
+      <p id="aj-avertissement" class="message avertissement" hidden></p>
+      <div id="aj-jeux"></div>
+      <div id="aj-fig" class="figure"></div>
+      <p id="aj-legende" class="legende"></p>
+      <p id="aj-nature" class="legende"></p>
+      <p><button id="aj-utiliser" type="button" class="primaire">Utiliser dans la chaîne</button></p>
+      <p id="aj-message" class="message" role="status" hidden></p>
+    </div>
+  </div>
+
+  <!-- ===== Page « Tables ISO 286 » (js/iso286.js) ===== -->
+  <div id="page-iso286" hidden>
+    <h2>Tables ISO 286</h2>
+    <p class="legende">Écarts et intervalles de tolérance de l'ISO 286 (qualités IT1 à IT18, positions a à zc pour les arbres et A à ZC pour les alésages). Les écarts sont donnés en mm dans la calculatrice et en µm dans les tables.</p>
+    <h3>Calculatrice</h3>
+    <div class="ligne">
+      <label class="case"><input type="radio" name="iso-mode" value="listes" checked> Cote, position et qualité</label>
+      <label class="case"><input type="radio" name="iso-mode" value="texte"> Désignation</label>
+    </div>
+    <div id="iso-listes" class="grille">
+      <label>Cote nominale (mm)<select id="iso-cote"></select></label>
+      <label id="iso-autre-bloc" hidden>Cote (mm)<input id="iso-autre" type="text" inputmode="decimal" value="50"></label>
+      <label>Pièce<select id="iso-piece"><option>Alésage</option><option>Arbre</option></select></label>
+      <label>Position<select id="iso-lettre"></select></label>
+      <label>Qualité IT<select id="iso-qualite"></select></label>
+    </div>
+    <div id="iso-texte" class="grille" hidden>
+      <label>Désignation ISO 286<input id="iso-designation" type="text" value="50 H7"></label>
+    </div>
+    <p class="legende">Désignation : cote en mm puis position et qualité, minuscule pour un arbre (h7), majuscule pour un alésage (H7).</p>
+    <p id="iso-erreur" class="message erreur" role="alert" hidden></p>
+    <p id="iso-avertissement" class="message avertissement" hidden></p>
+    <div id="iso-resultat" class="cartes"></div>
+    <h3>Intervalles de tolérance IT (µm)</h3>
+    <p class="legende">Une ligne par plage de cote nominale (mm), une colonne par qualité ; case vide : qualité non définie.</p>
+    <div id="iso-it"></div>
+    <h3>Écarts fondamentaux (µm)</h3>
+    <p class="legende">Écart le plus proche de la ligne zéro, tel que la table le donne : écart supérieur es (a à h) ou inférieur ei (j à zc) des arbres ; écart inférieur EI (A à H) ou supérieur ES avant correction Δ (J à ZC) des alésages.</p>
+    <div class="grille">
+      <label>Pièce<select id="iso-fpiece"><option>Arbre</option><option>Alésage</option></select></label>
+      <label>Position (colonne de la table)<select id="iso-fposition"></select></label>
+    </div>
+    <div id="iso-fond"></div>
+    <h3>Règles de lecture</h3>
+    <ul class="details">
+      <li><strong>Arbre</strong> de a à h : la table donne es, puis ei = es − IT. De j à zc : la table donne ei, puis es = ei + IT.</li>
+      <li><strong>Alésage</strong> de A à H : la table donne EI, puis ES = EI + IT. De J à ZC : la table donne ES, corrigé de Δ pour K, M, N en qualités 3 à 8 et pour P à ZC en qualités 3 à 7, puis EI = ES − IT.</li>
+      <li><strong>js et JS</strong> : écarts symétriques ± IT/2. Pour les qualités 7 à 11, l'ISO 286-1 ramène un IT impair au pair inférieur avant de diviser par deux. L'application MATLAB de référence garde ± IT/2 exactement : le calcul de la chaîne suit MATLAB et affiche un avertissement quand les deux valeurs diffèrent.</li>
+    </ul>
+    <details><summary>Correction Δ des alésages (µm)</summary><div id="iso-delta"></div></details>
+    <p id="iso-source" class="legende"></p>
+  </div>
+
+  <!-- ===== Page « Matériaux et dilatation » (js/materiaux.js) ===== -->
+  <div id="page-materiaux" hidden>
+    <h2>Matériaux et dilatation</h2>
+    <p class="legende">Les matériaux de l'application MATLAB, avec leur coefficient de dilatation α à température ambiante, leur courbe de dilatation en température et leurs limites d'emploi. Le calcul de la chaîne utilise α moyen entre la température de référence des cotes (Tref) et la température de service : ΔL = α · L · (T − Tref).</p>
+    <h3>Tableau des matériaux</h3>
+    <div class="grille">
+      <label>Rechercher un matériau<input id="mat-recherche" type="search" placeholder="inox, aluminium 6061, NIST…"></label>
+    </div>
+    <fieldset class="familles"><legend>Catégories (aucune cochée : toutes)</legend><div id="mat-familles"></div></fieldset>
+    <p id="mat-compte" class="legende" role="status"></p>
+    <div id="mat-tableau"></div>
+    <h3>Courbe de dilatation et calculatrice</h3>
+    <div class="grille">
+      <label>Matériau<select id="mat-nom"></select></label>
+      <label>Tref (°C)<input id="mat-tref" type="text" inputmode="decimal" value="20"></label>
+      <label>T de service (°C)<input id="mat-t" type="text" inputmode="decimal" value="100"></label>
+    </div>
+    <p id="mat-erreur" class="message erreur" role="alert" hidden></p>
+    <div id="mat-metriques"></div>
+    <div id="mat-messages"></div>
+    <div id="mat-fig" class="figure"></div>
+    <p id="mat-legende" class="legende"></p>
+    <details><summary>Sources et courbes du classeur</summary><div id="mat-sources"></div></details>
+  </div>
 </main>
 
 <footer>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
-  <p class="legende">Version navigateur : analyse d'une chaîne. L'application de bureau (répartition des tolérances, comparaison, mécanisme, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
+  <p class="legende">Version navigateur : analyse d'une chaîne, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (répartition des tolérances, comparaison, mécanisme, dossiers PDF et Word) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
   <p class="legende">© 2026 Théo Brun.</p>
 </footer>
 
@@ -108,6 +212,10 @@
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js"></script>
 <script src="js/analyse.js"></script>
+<script src="js/exemples.js"></script>
+<script src="js/ajustement.js"></script>
+<script src="js/iso286.js"></script>
+<script src="js/materiaux.js"></script>
 <script>App.demarrer();</script>
 </body>
 </html>

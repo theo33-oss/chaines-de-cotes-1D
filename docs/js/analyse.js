@@ -116,6 +116,14 @@
     return probleme;
   }
 
+  // Maillon d'un problème (champs absents ou null possibles) → ligne du tableau ; les champs non saisis vont dans extra.
+  function versLigne(m) {
+    return {
+      ...MAILLON_VIDE, ...Object.fromEntries(CHAMPS_CONNUS.filter((k) => m[k] != null).map((k) => [k, m[k]])),
+      extra: Object.fromEntries(Object.entries(m).filter(([k]) => !CHAMPS_CONNUS.includes(k))),
+    };
+  }
+
   function poserProbleme(p) {
     const c = p.condition || {}, r = p.reglages || {};
     $("c-nom").value = c.nom ?? "Jeu J";
@@ -127,10 +135,7 @@
     $("r-mode").value = r.modeT ?? "uniforme";
     $("r-dec").value = r.decentrage ?? 0;
     $("r-tolgen").value = r.tolGenerale ?? "";
-    const maillons = (p.maillons || []).map((m) => ({
-      ...MAILLON_VIDE, ...Object.fromEntries(CHAMPS_CONNUS.filter((k) => m[k] != null).map((k) => [k, m[k]])),
-      extra: Object.fromEntries(Object.entries(m).filter(([k]) => !CHAMPS_CONNUS.includes(k))),
-    }));
+    const maillons = (p.maillons || []).map(versLigne);
     afficherMaillons(maillons);
     // la température de chaque maillon (20 °C dans les fichiers du bureau) ne compte pas : seuls un matériau, un α,
     // le mode « par cote » ou une température de service différente de la référence activent l'effet thermique
@@ -351,6 +356,28 @@
     colonnesThermiques();
     apercu();
   }
+
+  // Points d'entrée pour les autres pages (exemples, assistant d'ajustement) : elles alimentent la chaîne de cette page.
+  App.analyser = {
+    // Remplace l'étude par un problème (dict du pont) et lance le calcul.
+    charger(probleme) {
+      etude = { cartouche: null, revisions: [] };
+      poserProbleme(probleme);
+      $("resultats").hidden = true;
+      App.message($("erreur"), "erreur", "");
+      messageFichier("info", "");
+      apercu();
+      calculer();
+    },
+    // Ajoute des maillons (dicts du pont) à la suite de ceux de la chaîne.
+    ajouterMaillons(liste) {
+      afficherMaillons([...lireMaillons(), ...liste.map(versLigne)]);
+      $("resultats").hidden = true;
+      apercu();
+    },
+    noms: () => lireMaillons().map((m) => m.nom),
+    tref: () => nombre($("r-tref").value) || 20,
+  };
 
   App.enregistrerPage({ id: "analyser", titre: "Analyser", apres });
 })();

@@ -2,9 +2,11 @@
 exemples pédagogiques du site (data/exemples_atelier.json, sans référence MATLAB)."""
 
 import copy
+import math
 
 from chainecotes.core.donnees import chargerJson
 from chainecotes.core.errors import ErreurChaine
+from chainecotes.plots._common import intervalle
 
 FICHIERS = ("exemples.json", "exemples_atelier.json")
 _PRESENTATION = ("id", "titre", "description", "source", "methodologie")
@@ -35,3 +37,36 @@ def chargerExemple(identifiant: str) -> dict:
         if e["id"] == identifiant:
             return copy.deepcopy({k: v for k, v in e.items() if k not in _PRESENTATION})
     raise ErreurChaine("Chaine:Exemples:inconnu", f"Exemple inconnu : {identifiant!r}.")
+
+
+def texteCondition(condition: dict) -> str:
+    """Cote condition écrite en clair : nom et intervalle [Jmin ; Jmax] en mm (côté sans limite ouvert).
+
+    Entrée : condition (dict nom, jmin, jmax en mm ou None). Sortie : texte.
+    """
+    jmin = -math.inf if condition.get("jmin") is None else condition["jmin"]
+    jmax = math.inf if condition.get("jmax") is None else condition["jmax"]
+    return f"{condition['nom']} attendu dans {intervalle(jmin, jmax)} mm"
+
+
+def lignesMaillons(probleme: dict, apercu: dict) -> list[dict]:
+    """Lignes de présentation des maillons d'un problème (écarts lus dans l'aperçu calculé s'il existe).
+
+    Entrées : probleme (dict condition, reglages, maillons), apercu (sortie de apercuChaine).
+    Sortie : liste de dict Maillon, Sens, Cote (mm), ISO, ES (mm), EI (mm), Loi, Matériau, T service (°C).
+    """
+    calcules = apercu["res"]["maillons"] if "res" in apercu else probleme["maillons"]
+    return [
+        {
+            "Maillon": m["nom"],
+            "Sens": "−" if m["sens"] == "-" else "+",
+            "Cote (mm)": m["cote"],
+            "ISO": m["iso"] or "",
+            "ES (mm)": m["es"],
+            "EI (mm)": m["ei"],
+            "Loi": m["loi"],
+            "Matériau": m["materiau"] or "",
+            "T service (°C)": m["tservice"],
+        }
+        for m in calcules
+    ]

@@ -34,5 +34,28 @@ ap = json.loads(pont.apercu(json.dumps({"condition": {}, "reglages": {}, "maillo
 assert ap["erreur"] and ap["fig"], ap
 mauvais = json.loads(pont.sauver(json.dumps({"condition": {}, "reglages": {"kSigma": 3, "tref": 20, "modeT": "x"}, "maillons": []})))
 assert "erreur" in mauvais, mauvais
+# ---- phase 2 : exemples, ISO 286, ajustements, matériaux
+cartes = json.loads(pont.cartes())
+assert len(cartes) == len(exemples) and all(c["maillons"]["lignes"] and (c["pireCas"] or c["erreur"]) for c in cartes)
+assert json.loads(pont.schemaExemple(cartes[0]["id"]))["fig"]["layout"]["annotations"]
+d = json.loads(pont.iso286Donnees())
+assert len(d["it"]["plages"]) == len(d["it"]["colonnes"]["IT7"]) and "h" in d["arbre"]["colonnes"] and "H" in d["alesage"]["colonnes"]
+h7 = json.loads(pont.iso286Lire("50 H7"))["valeurs"][0]["valeurs"]
+assert h7 == [["ES (mm)", "0,025"], ["EI (mm)", "0"], ["IT (µm)", "25"]], h7
+assert len(json.loads(pont.iso286Lire("50 js7"))["valeurs"]) == 2  # IT7 impair : valeur MATLAB et valeur normalisée
+assert "erreur" in json.loads(pont.iso286Lire("40 Q7"))
+fonctions = json.loads(pont.ajustementFonctions())["fonctions"]
+aj = json.loads(pont.ajustement(50, "tournant", "alesage"))
+assert aj["noms"][0] == "H8/f7" and aj["choisi"]["jeux"] == [["Jeu mini", "0,0250 mm"], ["Jeu maxi", "0,0890 mm"]], (aj["noms"], fonctions)
+assert json.loads(pont.ajustement(50, "tournant", "alesage", "H7/g6"))["choisi"]["designation"] == "H7/g6"
+assert "erreur" in json.loads(pont.ajustement(5000, "tournant", "alesage")) and json.loads(pont.ajustement(5000, "tournant", "alesage"))["erreur"]
+m = json.loads(pont.maillonsAjustement("H7/g6", 50, json.dumps(["Arbre"]), 20))["maillons"]
+assert [x["nom"] for x in m] == ["Alésage", "Arbre (2)"] and [x["sens"] for x in m] == ["+", "-"]
+t = json.loads(pont.materiauxTableau("inox", "[]"))
+assert 0 < len(t["tableau"]["lignes"]) < t["total"] and t["familles"]
+dil = json.loads(pont.dilatation("Acier C45", 20, 100))
+assert dil["metriques"][0][1].startswith("12,4") and dil["fig"]["data"], dil["metriques"]
+assert "erreur" in json.loads(pont.dilatation("Acier C45", 20, -300))
+assert json.loads(pont.materiauxSources())["sources"]["lignes"]
 print("saisie invalide ->", vide["erreur"])
 print("fichier invalide ->", mauvais["erreur"])

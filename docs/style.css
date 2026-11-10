@@ -103,6 +103,22 @@ td.verdict.info { background: #E4E0F3; color: #3D246C; }
 #menu { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
 #menu button[aria-current="true"] { background: var(--accent); color: var(--sur-accent); }
 #panneau ul { padding-left: 20px; }
+h3 { font-size: 1.1rem; margin: 22px 0 6px; }
+h4 { margin: 4px 0 8px; font-size: 1rem; }
+.cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; align-items: start; }
+.carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 6px; padding: 4px 16px 16px; min-width: 0; }
+.carte h3 { margin-top: 12px; }
+.carte table, #iso-it table, #iso-fond table, #iso-delta table, #mat-tableau table, #mat-sources table, #aj-candidats table { min-width: 0; }
+.carte ol { padding-left: 22px; }
+label.large { margin: 12px 0; max-width: 420px; }
+fieldset.familles { border: 1px solid var(--bord); border-radius: 4px; margin: 8px 0; padding: 6px 12px; }
+fieldset.familles > div { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+fieldset.familles label.case { margin: 2px 0; font-size: .85rem; }
+.message.info + *, #aj-jeux { margin-top: 4px; }
+#iso-it .defile, #iso-delta .defile, #mat-tableau .defile { max-height: 440px; overflow: auto; }
+th, td { vertical-align: top; }
+#menu button { min-width: 0; }
+.ligne label.case { margin: 4px 8px 4px 0; }
 a { color: var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) a { color: #C8BDF0; } }
 footer { margin-top: 40px; border-top: 1px solid var(--bord); padding-top: 8px; }

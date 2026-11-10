@@ -7,78 +7,19 @@ courante » ajoute l'alésage et l'arbre à la fin des maillons du problème cou
 import copy
 
 import pandas as pd
-import plotly.graph_objects as go
 
 from chainecotes.bureau import state
 from chainecotes.bureau.widgets import Page, Zone
-from chainecotes.core.ajustement import choisirAjustement, fonctionsDisponibles
+from chainecotes.core.ajustement import choisirAjustement, fonctionsDisponibles, maillonsAjustement, pieces
 from chainecotes.core.donnees import chargerJson
 from chainecotes.core.errors import ErreurChaine
-from chainecotes.core.iso286 import lireDesignation
-from chainecotes.plots._common import BLEU, GRIS, VERMILLON, fr, miseEnPage, teinte
+from chainecotes.core.iso286 import COTES_USUELLES
+from chainecotes.plots._common import fr
+from chainecotes.plots.ajustement import figureZones
 
 AUTRE_COTE = "Autre valeur…"
-COTES_USUELLES = [  # mêmes cotes que la page Tables ISO 286
-    1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40, 42, 45, 48, 50, 55,
-    60, 63, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 125, 130, 140, 150, 160, 170, 180, 200, 220, 250, 280, 300,
-    315, 350, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1250, 1600, 2000, 2500, 3150,
-]  # fmt: skip
 SYSTEMES = {"alesage": "Alésage normal (H)", "arbre": "Arbre normal (h)"}
 CLE_MESSAGE = "ajust.message"
-
-
-def pieces(designation: str, cote: float) -> tuple[dict, dict]:
-    """Lit les deux pièces d'un ajustement « H7/g6 » à une cote (écarts de l'application MATLAB).
-
-    Entrées : designation (texte « alésage/arbre »), cote (mm). Sortie : (alésage, arbre) = dicts de lireDesignation
-    (es, ei en mm ; IT en µm). Erreur : ErreurChaine si une désignation est illisible ou hors table.
-    """
-    trou, arbre = (lireDesignation(p, cote) for p in designation.split("/"))
-    return trou, arbre
-
-
-def figureZones(designation: str, cote: float) -> tuple[go.Figure, str]:
-    """Schéma simple des zones de tolérance de l'alésage et de l'arbre autour de la ligne zéro (cote nominale).
-
-    Entrées : designation (« H7/g6 »), cote (mm). Sortie : (figure Plotly, légende) ; écarts en µm.
-    Erreur : ErreurChaine si la désignation est illisible.
-    """
-    trou, arbre = pieces(designation, cote)
-    fig = go.Figure()
-    for piece, nom, couleur in ((trou, "Alésage", BLEU), (arbre, "Arbre", VERMILLON)):
-        es, ei = piece["es"] * 1000, piece["ei"] * 1000
-        fig.add_trace(
-            go.Bar(
-                x=[f"{nom} {piece['designation'].split()[-1]}"],
-                y=[max(es - ei, 0.2)],  # largeur minimale visible si la tolérance est nulle
-                base=[ei],
-                marker={"color": teinte(couleur, 0.55), "line": {"color": couleur, "width": 2}},
-                name=nom,
-                hovertemplate=f"{nom} : de {fr(ei, 'g')} à {fr(es, 'g')} µm<extra></extra>",
-                showlegend=False,
-            )
-        )
-    fig.add_hline(
-        y=0, line={"color": GRIS, "width": 2}, annotation_text="cote nominale", annotation_position="top left"
-    )
-    miseEnPage(fig, f"Zones de tolérance de {designation} à {fr(cote, 'g')} mm", 380)
-    fig.update_yaxes(title_text="Écart par rapport à la cote nominale (µm)")
-    fig.update_layout(bargap=0.55)
-    jeuMini = round(trou["ei"] - arbre["es"], 9)
-    jeuMaxi = round(trou["es"] - arbre["ei"], 9)
-    return fig, (
-        f"Alésage de {fr(trou['ei'] * 1000, 'g')} à {fr(trou['es'] * 1000, 'g')} µm, arbre de "
-        f"{fr(arbre['ei'] * 1000, 'g')} à {fr(arbre['es'] * 1000, 'g')} µm : jeu de {fr(jeuMini, 'g')} à "
-        f"{fr(jeuMaxi, 'g')} mm."
-    )
-
-
-def _nomLibre(nom: str, pris: set[str]) -> str:
-    """Nom de maillon qui n'existe pas encore : « Arbre », puis « Arbre (2) », « Arbre (3) »…"""
-    candidat, i = nom, 2
-    while candidat in pris:
-        candidat, i = f"{nom} ({i})", i + 1
-    return candidat
 
 
 def ajouterALaChaine(designation: str, cote: float) -> None:
@@ -87,21 +28,11 @@ def ajouterALaChaine(designation: str, cote: float) -> None:
     Entrées : designation (« H7/g6 »), cote (mm). Sortie : aucune ; les maillons existants ne sont pas modifiés, le
     résultat du dernier calcul est oublié. Erreur : ErreurChaine si la désignation est illisible.
     """
-    trou, arbre = pieces(designation, cote)
     nouveau = copy.deepcopy(state.probleme())
-    pris = {m["nom"] for m in nouveau["maillons"]}
     tref = (nouveau.get("reglages") or {}).get("tref")
-    tref = 20.0 if tref is None else float(tref)
-    for piece, nom, sens in ((trou, "Alésage", "+"), (arbre, "Arbre", "-")):
-        nom = _nomLibre(nom, pris)
-        pris.add(nom)
-        nouveau["maillons"].append(
-            {
-                "nom": nom, "sens": sens, "cote": float(cote), "iso": piece["designation"].split()[-1],
-                "es": None, "ei": None, "loi": "normale", "materiau": None, "alpha": None,
-                "tservice": tref, "derive": 0.0,
-            }
-        )  # fmt: skip
+    nouveau["maillons"] += maillonsAjustement(
+        designation, cote, {m["nom"] for m in nouveau["maillons"]}, 20.0 if tref is None else float(tref)
+    )
     state.definirProbleme(nouveau)
     state.effacerResultat()
 

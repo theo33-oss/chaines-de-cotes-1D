@@ -7,21 +7,43 @@ Rien n'est calculé en JavaScript : la page ne fait qu'afficher ce que ce module
 import json
 import math
 
+from chainecotes.core import ajustement as ajust
 from chainecotes.core.chaine import capabilitesMaillons, libelleVerdict
+from chainecotes.core.donnees import chargerJson
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.formules import texVersHtml
 from chainecotes.core.inertiel import analyseInertielle, verdictBender
-from chainecotes.core.materiaux import PERSONNALISE, nomsMateriaux
+from chainecotes.core.iso286 import (
+    COTES_USUELLES,
+    LETTRES_ALESAGE,
+    LETTRES_ARBRE,
+    QUALITES,
+    USAGE_QUALITE,
+    libellesPlages,
+    lireDesignation,
+)
+from chainecotes.core.materiaux import (
+    PERSONNALISE,
+    alphaMateriau,
+    courbesMateriaux,
+    domaineEmploi,
+    filtrerLignes,
+    listeMateriaux,
+    nomsMateriaux,
+    sourcesMateriaux,
+)
 from chainecotes.core.nombres import fr
 from chainecotes.core.sensibilite import gainSiResserre, indicesSensibilite
 from chainecotes.plots import graphiques
 from chainecotes.plots._common import intervalle
+from chainecotes.plots.ajustement import figureZones
+from chainecotes.plots.materiaux import figureDilatation
 from chainecotes.plots.schema import figureSchema
 from chainecotes.services import projet_io
 from chainecotes.services.calcul import apercuChaine, calculerChaine
 from chainecotes.services.conclusion import conclusionEtude
 from chainecotes.services.controles import controlerProbleme
-from chainecotes.services.exemples import chargerExemple, listeExemples
+from chainecotes.services.exemples import chargerExemple, lignesMaillons, listeExemples, texteCondition
 from chainecotes.services.explications import explicationsCalcul
 
 N_TIRAGES = 100_000  # plus léger que le bureau (200 000) : la page tourne sur le processeur du visiteur
@@ -288,6 +310,231 @@ def calculer(texte: str) -> str:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
         return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+
+
+# ---------- bibliothèque d'exemples ----------
+
+
+def _g(v) -> str:
+    """Valeur d'un tableau d'exemple : nombre à la française, vide pour une case absente."""
+    return "" if v is None else (fr(v, "g") if isinstance(v, (int, float)) else str(v))
+
+
+def cartes() -> str:
+    """Une carte par exemple : présentation, cote condition, maillons et pire des cas (sans Monte-Carlo), en JSON."""
+    sortie = []
+    for e in listeExemples():
+        probleme = chargerExemple(e["id"])
+        ap = apercuChaine(probleme)
+        lignes = lignesMaillons(probleme, ap)
+        carte = {
+            "id": e["id"], "titre": e["titre"], "description": e["description"], "source": e.get("source", ""),
+            "methodologie": e.get("methodologie", []), "condition": texteCondition(probleme["condition"]),
+            "maillons": _table(list(lignes[0]), [[_g(v) for v in ligne.values()] for ligne in lignes]),
+            "erreur": ap.get("erreur"), "pireCas": None,
+        }
+        if "erreur" not in ap:
+            p = ap["verdicts"]["pireCas"]
+            carte["pireCas"] = {"mini": f"{fr(p['min'])} mm", "maxi": f"{fr(p['max'])} mm", "ok": p["ok"]}
+        sortie.append(carte)
+    return json.dumps(sortie, allow_nan=False)
+
+
+def schemaExemple(identifiant: str) -> str:
+    """Schéma d'un exemple (construit à la demande : une figure par carte alourdirait la page)."""
+    fig, legende = figureSchema(chargerExemple(identifiant))
+    return json.dumps({"fig": json.loads(fig.to_json()), "legende": legende})
+
+
+# ---------- tables ISO 286 ----------
+
+
+def _ecarts(r: dict, titre: str) -> dict:
+    """Écarts d'une désignation lue, en texte : ES/EI (alésage) ou es/ei (arbre), IT et zone de cote."""
+    sup, inf = ("ES", "EI") if r["type"] == "alésage" else ("es", "ei")
+    return {
+        "titre": titre,
+        "valeurs": [[f"{sup} (mm)", fr(r["es"], "g")], [f"{inf} (mm)", fr(r["ei"], "g")], ["IT (µm)", fr(r["IT"], "g")]],
+        "legende": f"{r['designation']} ({r['type']}) : cote de {fr(r['cote'] + r['ei'], 'g')} à "
+        f"{fr(r['cote'] + r['es'], 'g')} mm ; plage de la table : {r['plage']}.",
+    }
+
+
+def iso286Donnees() -> str:
+    """Tables ISO 286 et listes de la calculatrice (valeurs de data/iso286.json, rien n'est recopié), en JSON."""
+    t = chargerJson("iso286.json")
+    plages = libellesPlages(t["bornes"])
+
+    def tableau(colonnes: dict) -> dict:
+        return {"plages": plages, "colonnes": colonnes}
+
+    return json.dumps(
+        {
+            "cotesUsuelles": list(COTES_USUELLES),
+            "borneMax": t["bornes"][-1],
+            "lettresArbre": list(LETTRES_ARBRE),
+            "lettresAlesage": list(LETTRES_ALESAGE),
+            "qualites": [{"q": q, "texte": f"IT{q}" + (f" · {USAGE_QUALITE[q]}" if q in USAGE_QUALITE else "")} for q in QUALITES],
+            "it": tableau({f"IT{q}": t["it"][str(q)] for q in QUALITES}),
+            "arbre": tableau(t["arbre"]),
+            "alesage": tableau(t["alesage"]),
+            "delta": tableau({f"Δ qualité {q}": v for q, v in t["delta"].items()}),
+            "source": t["Source"],
+        }
+    )
+
+
+def iso286Lire(texte: str) -> str:
+    """Lit une désignation (« 50 H7 ») : valeur de l'application MATLAB et valeur normalisée ISO 286-1 (JSON)."""
+    try:
+        matlab, norme = lireDesignation(texte, arrondiJs=False), lireDesignation(texte, arrondiJs=True)
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    if (matlab["es"], matlab["ei"]) == (norme["es"], norme["ei"]):
+        titre = f"{matlab['designation']} : valeur normalisée, identique à l'application MATLAB"
+        return json.dumps({"avertissement": "", "valeurs": [_ecarts(matlab, titre)]})
+    return json.dumps(
+        {
+            "avertissement": matlab["avertissement"],
+            "valeurs": [
+                _ecarts(matlab, "Valeur de l'application MATLAB (utilisée par le calcul de la chaîne)"),
+                _ecarts(norme, "Valeur normalisée ISO 286-1"),
+            ],
+        }
+    )
+
+
+# ---------- assistant d'ajustement ----------
+
+
+def ajustementFonctions() -> str:
+    """Fonctions d'ajustement proposées (JSON {code: libellé}) et cotes usuelles."""
+    return json.dumps({"fonctions": ajust.fonctionsDisponibles(), "cotes": list(COTES_USUELLES), "borneMax": chargerJson("iso286.json")["bornes"][-1]})
+
+
+def ajustement(cote: float, fonction: str, systeme: str, choix: str = "") -> str:
+    """Ajustements candidats classés, et détail (écarts, jeux, schéma) de celui qui est choisi (le premier par défaut)."""
+    try:
+        candidats = ajust.choisirAjustement(float(cote), fonction, systeme)
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    if not candidats:
+        return json.dumps({"erreur": None, "candidats": None, "choisi": None})
+    noms = [c["designation"] for c in candidats]
+    c = candidats[noms.index(choix)] if choix in noms else candidats[0]
+    trou, arbre = ajust.pieces(c["designation"], float(cote))
+    fig, legende = figureZones(c["designation"], float(cote))
+    pieces = []
+    for piece, titre in ((trou, "Alésage"), (arbre, "Arbre")):
+        sup, inf = ("ES", "EI") if piece["type"] == "alésage" else ("es", "ei")
+        pieces.append([[f"{titre} {sup} (mm)", fr(piece["es"], "g")], [f"{titre} {inf} (mm)", fr(piece["ei"], "g")],
+                       [f"{titre} IT (µm)", fr(piece["IT"], "g")]])
+    return json.dumps(
+        {
+            "erreur": None,
+            "noms": noms,
+            "candidats": _table(
+                ["Rang", "Ajustement", "Jeu mini (mm)", "Jeu maxi (mm)", "Nature", "IT alésage (µm)", "IT arbre (µm)", "Usage"],
+                [[x["rang"], x["designation"], fr(x["jeuMini"], ".4f"), fr(x["jeuMaxi"], ".4f"), x["nature"],
+                  fr(x["ITAlesage"], "g"), fr(x["ITArbre"], "g"), x["usage"]] for x in candidats],
+            ),
+            "choisi": {
+                "designation": c["designation"], "pieces": pieces, "description": c["description"],
+                "usage": f"Usage : {c['usage']} Risque : {c['risque']}", "avertissement": c["avertissement"],
+                "jeux": [["Jeu mini", f"{fr(c['jeuMini'], '.4f')} mm"], ["Jeu maxi", f"{fr(c['jeuMaxi'], '.4f')} mm"]],
+                "nature": f"Nature à cette cote : {c['nature']}.",
+            },
+            "fig": json.loads(fig.to_json()),
+            "legende": legende,
+        },
+        allow_nan=False,
+    )
+
+
+def maillonsAjustement(designation: str, cote: float, nomsPris: str = "[]", tref: float = 20.0) -> str:
+    """Alésage (sens +) et arbre (sens −) d'un ajustement, prêts à ajouter à la chaîne de la page « Analyser » (JSON)."""
+    try:
+        return json.dumps({"maillons": ajust.maillonsAjustement(designation, float(cote), json.loads(nomsPris), float(tref))})
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+
+
+# ---------- matériaux et dilatation ----------
+
+
+def _lignesMateriaux() -> list[dict]:
+    return [
+        {
+            "Matériau": m["nom"], "Famille": m["famille"], "α (10⁻⁶/K)": m["alpha"] * 1e6, "Plage de α (°C)": m["plage"],
+            "Fiabilité": m["fiabilite"], "Sources": m["sources"],
+            "Courbe": m["courbeNom"] + (" (recalée)" if m["recale"] else ""), "Domaine d'emploi": domaineEmploi(m),
+        }
+        for m in listeMateriaux()
+        if m["nom"] != PERSONNALISE
+    ]
+
+
+def materiauxTableau(texte: str = "", familles: str = "[]") -> str:
+    """Tableau des matériaux filtré par mots et par familles (JSON) ; liste de toutes les familles."""
+    toutes = _lignesMateriaux()
+    lignes = filtrerLignes(toutes, texte, json.loads(familles))
+    return json.dumps(
+        {
+            "familles": sorted({x["Famille"] for x in toutes}),
+            "total": len(toutes),
+            "tableau": _table(list(toutes[0]), [[fr(v, ".2f") if isinstance(v, float) else v for v in x.values()] for x in lignes]),
+        }
+    )
+
+
+def materiauxSources() -> str:
+    """Sources citées et courbes de dilatation du classeur (JSON)."""
+    courbes = [c for c in courbesMateriaux() if c["points"]]
+    return json.dumps(
+        {
+            "sources": _table(["Clé", "Source", "Lien"], [[s["cle"], s["source"], s["lien"]] for s in sourcesMateriaux()]),
+            "courbes": _table(
+                ["Courbe", "Description", "Points", "Températures (°C)"],
+                [[c["cle"], c["description"], len(c["points"]),
+                  f"{fr(min(p['T'] for p in c['points']), 'g')} à {fr(max(p['T'] for p in c['points']), 'g')}"] for c in courbes],
+            ),
+        }
+    )
+
+
+def dilatation(nom: str, tref: float, temperature: float) -> str:
+    """α moyen et allongement d'un matériau entre Tref et T, avis sur le domaine d'emploi et courbe de dilatation."""
+    m = next((x for x in listeMateriaux() if x["nom"] == nom and x["nom"] != PERSONNALISE), None)
+    if m is None:
+        return json.dumps({"erreur": f"Matériau inconnu : {nom!r}."})
+    tref, temperature = float(tref), float(temperature)
+    if temperature < -273.15 or tref < -273.15:
+        return json.dumps({"erreur": "Une température ne peut pas être sous le zéro absolu (−273,15 °C)."})
+    r = alphaMateriau(nom, temperature, tref)
+    messages = []
+    a100 = alphaMateriau(nom, 100.0, 20.0)["alpha"]
+    if m["courbeNom"] and not m["recale"] and abs(a100 / m["alpha"] - 1) > 0.05:
+        messages.append({"niveau": "avertissement", "texte": f"Le calcul suit la courbe générique {m['courbeNom']} : α moyen 20-100 °C = "
+                         f"{fr(a100 * 1e6, '.2f')} × 10⁻⁶/K (tableau : {fr(m['alpha'] * 1e6, '.2f')})."})
+    if r["horsDomaine"]:
+        messages.append({"niveau": "avertissement", "texte": f"Hors domaine à {fr(temperature, 'g')} °C : {r['motif']}."})
+    elif math.isnan(m["tmin"]) and math.isnan(m["tmax"]):
+        messages.append({"niveau": "avertissement", "texte": "Domaine d'emploi non renseigné pour ce matériau : vérifiez qu'il tient à cette température."})
+    else:
+        messages.append({"niveau": "succes", "texte": f"{fr(temperature, 'g')} °C est dans le domaine d'emploi connu de ce matériau."})
+    fig, legende = figureDilatation(m, tref)
+    return json.dumps(
+        {
+            "metriques": [
+                ["α moyen entre Tref et T", f"{fr(r['alpha'] * 1e6, '.3f')} × 10⁻⁶/K"],
+                ["Allongement relatif ΔL/L", f"{fr(r['alpha'] * (temperature - tref) * 1e6, '.1f')} µm/m"],
+            ],
+            "messages": messages,
+            "fig": json.loads(fig.to_json()),
+            "legende": legende,
+        },
+        allow_nan=False,
+    )
 
 
 # ---------- fichiers d'étude (.json du bureau) ----------

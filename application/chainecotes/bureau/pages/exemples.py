@@ -1,50 +1,18 @@
 """Page « Bibliothèque d'exemples » : une carte par exemple (maillons, cote condition, aperçu, schéma) à charger."""
 
-import math
-
 import pandas as pd
 
 from chainecotes.bureau import state
 from chainecotes.bureau.widgets import Page, Zone
-from chainecotes.plots._common import fr, intervalle
+from chainecotes.plots._common import fr
 from chainecotes.plots.schema import figureSchema
 from chainecotes.services.calcul import apercuChaine
-from chainecotes.services.exemples import chargerExemple, listeExemples
+from chainecotes.services.exemples import chargerExemple, lignesMaillons, listeExemples, texteCondition
 
 
 def tableauMaillons(probleme: dict, apercu: dict) -> pd.DataFrame:
-    """Tableau de présentation des maillons d'un problème (écarts lus dans l'aperçu calculé s'il existe).
-
-    Entrées : probleme (dict condition, reglages, maillons), apercu (sortie de apercuChaine).
-    Sortie : DataFrame Maillon, Sens, Cote (mm), ISO, ES (mm), EI (mm), Loi, Matériau, T service (°C).
-    """
-    calcules = apercu["res"]["maillons"] if "res" in apercu else probleme["maillons"]
-    return pd.DataFrame(
-        [
-            {
-                "Maillon": m["nom"],
-                "Sens": "−" if m["sens"] == "-" else "+",
-                "Cote (mm)": m["cote"],
-                "ISO": m["iso"] or "",
-                "ES (mm)": m["es"],
-                "EI (mm)": m["ei"],
-                "Loi": m["loi"],
-                "Matériau": m["materiau"] or "",
-                "T service (°C)": m["tservice"],
-            }
-            for m in calcules
-        ]
-    )
-
-
-def texteCondition(condition: dict) -> str:
-    """Cote condition écrite en clair : nom et intervalle [Jmin ; Jmax] en mm (côté sans limite ouvert).
-
-    Entrée : condition (dict nom, jmin, jmax en mm ou None). Sortie : texte.
-    """
-    jmin = -math.inf if condition.get("jmin") is None else condition["jmin"]
-    jmax = math.inf if condition.get("jmax") is None else condition["jmax"]
-    return f"{condition['nom']} attendu dans {intervalle(jmin, jmax)} mm"
+    """Tableau de présentation des maillons d'un problème (voir services.exemples.lignesMaillons)."""
+    return pd.DataFrame(lignesMaillons(probleme, apercu))
 
 
 class PageExemples(Page):
