@@ -38,6 +38,13 @@ assert "erreur" in mauvais, mauvais
 cartes = json.loads(pont.cartes())
 assert len(cartes) == len(exemples) and all(c["maillons"]["lignes"] and (c["pireCas"] or c["erreur"]) for c in cartes)
 assert json.loads(pont.schemaExemple(cartes[0]["id"]))["fig"]["layout"]["annotations"]
+# image d'un maillon : gardée par enregistrer / ouvrir, repérée sur le schéma, sans effet sur l'empreinte de validation
+_p = json.loads(pont.charger(cartes[0]["id"]))
+_e0 = pont.empreinteProbleme(json.dumps(_p))
+_p["maillons"][0]["image"] = "roulement"
+_o = json.loads(pont.ouvrir(json.loads(pont.sauver(json.dumps(_p)))["contenu"]))
+assert _o["probleme"]["maillons"][0]["image"] == "roulement" and pont.empreinteProbleme(json.dumps(_p)) == _e0
+assert any(a.get("name") == "libelle:0" for a in json.loads(pont.apercu(json.dumps(_p)))["fig"]["layout"]["annotations"])
 d = json.loads(pont.iso286Donnees())
 assert len(d["it"]["plages"]) == len(d["it"]["colonnes"]["IT7"]) and "h" in d["arbre"]["colonnes"] and "H" in d["alesage"]["colonnes"]
 h7 = json.loads(pont.iso286Lire("50 H7"))["valeurs"][0]["valeurs"]

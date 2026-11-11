@@ -27,7 +27,7 @@ _FRACTION_MIN = 0.008
 def _maillonsCalcules(res: dict) -> list[dict]:
     """Maillons d'une saisie valide : nom, signe, cote (mm), écarts (mm), libellé « Alésage 100 H7 »."""
     sortie = []
-    for m in res["maillons"]:
+    for i, m in enumerate(res["maillons"]):
         if m["geometrie"]:
             valeur = f"{TYPES_GEOMETRIE[m['geometrie']][1]} {fr(m['es'] - m['ei'], 'g')}"
         elif m["iso"]:
@@ -41,6 +41,7 @@ def _maillonsCalcules(res: dict) -> list[dict]:
         sortie.append(
             {
                 "nom": m["nom"],
+                "indice": i,
                 "signe": signe,
                 "cote": m["cote"],
                 "es": m["es"],
@@ -64,7 +65,15 @@ def _maillonsBruts(probleme: dict) -> list[dict]:
         nom = str(m.get("nom") or f"Maillon {i + 1}")
         signe = -1.0 if str(m.get("sens", "+")).strip() in ("-", "−") else 1.0
         sortie.append(
-            {"nom": nom, "signe": signe, "cote": cote, "es": 0.0, "ei": 0.0, "libelle": f"{nom} {fr(cote, 'g')}"}
+            {
+                "nom": nom,
+                "indice": i,
+                "signe": signe,
+                "cote": cote,
+                "es": 0.0,
+                "ei": 0.0,
+                "libelle": f"{nom} {fr(cote, 'g')}",
+            }
         )
     return sortie
 
@@ -106,7 +115,8 @@ def figureSchema(probleme: dict, apercu: dict | None = None) -> tuple[go.Figure,
     Entrées : probleme (dict condition, reglages, maillons), apercu (sortie de apercuChaine, calculée si None).
     Sortie : (figure Plotly, légende) ; abscisses en mm, une ligne par maillon (escalier vertical) ; flèche de la
     cote condition verte si le pire cas tient [Jmin ; Jmax], rouge sinon, grise si la saisie est invalide.
-    Les flèches portent le nom « maillon:i » (i à partir de 0) ou « condition ».
+    Les flèches portent le nom « maillon:i » (i à partir de 0) ou « condition » ; le texte du maillon de rang i dans
+    la saisie porte le nom « libelle:i » (la page web y accroche l'image de la pièce).
     """
     if apercu is None:
         apercu = apercuChaine(probleme)
@@ -155,6 +165,7 @@ def figureSchema(probleme: dict, apercu: dict | None = None) -> tuple[go.Figure,
         aGauche = (m["x0"] + m["x1"]) / 2 < (min(xs) + max(xs)) / 2
         notes.append(
             {
+                "name": f"libelle:{m['indice']}",
                 "x": min(m["x0"], m["x1"]) if aGauche else max(m["x0"], m["x1"]),
                 "xanchor": "left" if aGauche else "right",
                 "y": y,

@@ -9,8 +9,39 @@
   let materiaux = [];
   let ongletActif = "resultats";
 
-  const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice"];
-  const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "" };
+  const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice", "image"];
+  const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "", image: "" };
+
+  // Silhouettes de pièces (symboles « img-… » de index.html) : image facultative de chaque maillon sur le schéma
+  const IMAGES = { arbre: "Arbre", "arbre-epaule": "Arbre épaulé", carter: "Carter", roulement: "Roulement", entretoise: "Entretoise",
+    rondelle: "Rondelle", circlips: "Circlips", ecrou: "Écrou", vis: "Vis", bague: "Bague à collerette", coussinet: "Coussinet", pignon: "Pignon",
+    poulie: "Poulie", clavette: "Clavette", couvercle: "Couvercle", joint: "Joint torique", ressort: "Ressort", cale: "Cale de réglage",
+    goupille: "Goupille", plaque: "Plaque" };
+  // Le schéma est une image Plotly : la silhouette y entre en SVG autonome, aux couleurs du fond clair de la figure.
+  const STYLE_IMAGE = "<style>.pi-s{stroke:#3D246C;stroke-width:1.6;fill:#CFC6EC;stroke-linejoin:round}"
+    + ".pi-n{stroke:#3D246C;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}"
+    + ".pi-a{stroke:#3D246C;stroke-width:1;stroke-dasharray:7 2 1.5 2;fill:none;opacity:.7}</style>";
+  const sourceImage = (id) => "data:image/svg+xml," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${STYLE_IMAGE}${$("img-" + id).innerHTML}</svg>`);
+
+  // Ajoute au schéma du pont la silhouette de chaque maillon qui en a une, à côté de son texte (décalé d'autant).
+  function vignettes(fig, maillons) {
+    const L = fig.layout, mg = L.margin || {};
+    if (!maillons.some((m) => IMAGES[m.image])) return;
+    L.height = 150 + 44 * (maillons.length + 1); // lignes plus hautes : la silhouette reste lisible
+    // Plotly place une image dans une boîte en unités des axes : boîte de 26 px de côté, calculée d'après la taille du tracé
+    const COTE = 26;
+    const pxX = Math.max($("apercu-fig").clientWidth - (mg.l ?? 80) - (mg.r ?? 80), 100) / (L.xaxis.range[1] - L.xaxis.range[0]);
+    const pxY = (L.height - (mg.t ?? 100) - (mg.b ?? 80)) / (L.yaxis.range[1] - L.yaxis.range[0]);
+    L.images = [];
+    maillons.forEach((m, i) => {
+      const note = (L.annotations || []).find((a) => a.name === "libelle:" + i);
+      if (!note || !IMAGES[m.image]) return;
+      note.xshift = note.xanchor === "left" ? 30 : -30;
+      L.images.push({ source: sourceImage(m.image), xref: "x", yref: "y", x: note.x, y: note.y + 3 / pxY, xanchor: note.xanchor, yanchor: "bottom",
+        sizex: COTE / pxX, sizey: COTE / pxY, sizing: "contain", layer: "above" });
+    });
+  }
 
   // Étude affichée à l'ouverture : 6 cotes (4 dans un sens, 2 dans l'autre) ; les cotes C et F ont une grande tolérance
   // (± 0,1 mm), les autres une tolérance fine. Jeu de 0,25 à 0,90 mm pour 0,20 à 1,00 demandé : conforme au pire des cas.
@@ -72,6 +103,18 @@
       td.append(el);
       tr.append(td);
     });
+    // image de la pièce : aperçu + liste ; colonne affichée seulement si « Représentation » est cochée
+    const tdImage = Object.assign(document.createElement("td"), { className: "td-image" });
+    const choix = liste("m-image", [["", "(aucune)"], ...Object.entries(IMAGES)], IMAGES[m.image] ? m.image : "");
+    choix.setAttribute("aria-label", `Image de la pièce, maillon ${numero}`);
+    const vue = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    vue.setAttribute("viewBox", "0 0 40 40");
+    vue.setAttribute("aria-hidden", "true");
+    const montrer = () => { vue.innerHTML = choix.value ? `<use href="#img-${choix.value}"/>` : ""; }; // valeur prise dans IMAGES
+    choix.addEventListener("change", montrer);
+    montrer();
+    tdImage.append(vue, choix);
+    tr.append(tdImage);
     const sup = document.createElement("button");
     sup.type = "button";
     sup.textContent = "✕";
@@ -104,6 +147,7 @@
       materiau: tr.querySelector(".m-mat").value,
       alpha: tr.querySelector(".m-alpha").value,
       tservice: tr.querySelector(".m-tserv").value,
+      image: tr.querySelector(".m-image").value,
       extra: tr._extra,
     }));
   }
@@ -116,6 +160,7 @@
       ...m.extra,
       nom: m.nom, sens: m.sens, loi: m.loi, iso: m.iso.trim(),
       cote: nombre(m.cote), es: nombre(m.es), ei: nombre(m.ei),
+      image: m.image, // gardée même si « Représentation » est décochée
       ...(therm ? { materiau: m.materiau, alpha: nombre(m.alpha), tservice: nombre(m.tservice) } : {}),
     }));
     const probleme = {
@@ -156,6 +201,7 @@
     const avecThermique = maillons.some((m) => m.materiau || m.alpha !== "")
       || r.modeT === "par_cote" || (r.tservice != null && r.tservice !== (r.tref ?? 20));
     $("thermique").checked = avecThermique;
+    $("representation").checked = maillons.some((m) => m.image);
     colonnesThermiques();
   }
 
@@ -163,6 +209,7 @@
     const t = $("maillons");
     t.classList.toggle("therm", $("thermique").checked);
     t.classList.toggle("tcote", $("thermique").checked && $("r-mode").value === "par_cote");
+    t.classList.toggle("images", $("representation").checked);
   }
 
   // ---------- aperçu en direct ----------
@@ -183,6 +230,7 @@
     }
     if (r.erreur) App.message($("apercu-verdict"), "avertissement", "Saisie à compléter : " + r.erreur);
     else App.message($("apercu-verdict"), r.pireCas.niveau, r.pireCas.texte);
+    if ($("representation").checked) vignettes(r.fig, lireMaillons());
     App.tracer($("apercu-fig"), r.fig);
     $("apercu-legende").textContent = r.erreur ? "" : r.legende;
     $("controles").replaceChildren(...r.controles.map((c) => {
@@ -428,6 +476,7 @@
     majGuide();
     $("thermique").addEventListener("change", () => { colonnesThermiques(); apercuDiffere(); });
     $("r-mode").addEventListener("change", colonnesThermiques);
+    $("representation").addEventListener("change", colonnesThermiques); // l'aperçu suit (écouteur « change » de la page)
     $("page-analyser").addEventListener("input", apercuDiffere);
     $("page-analyser").addEventListener("change", apercuDiffere);
     poserProbleme(CAS_DE_BASE);

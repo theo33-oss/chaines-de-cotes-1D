@@ -30,6 +30,10 @@ def empreinte(probleme: dict) -> str:
     Le cartouche n'y est pas : on peut compléter l'auteur ou la remarque d'une étude validée sans changer son empreinte.
     """
     base = {k: probleme.get(k) for k in ("condition", "reglages", "maillons")}
+    if isinstance(base["maillons"], list):  # l'image d'un maillon ne décide pas du calcul
+        base["maillons"] = [
+            {k: v for k, v in m.items() if k != "image"} if isinstance(m, dict) else m for m in base["maillons"]
+        ]
     texte = json.dumps(base, sort_keys=True, ensure_ascii=False, default=str)
     return hashlib.sha256(texte.encode("utf-8")).hexdigest()[:16]
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=512d523f">
+<link rel="stylesheet" href="style.css?v=8a6a68c6">
 </head>
 <body>
 <header>
@@ -87,11 +87,12 @@
       <div class="defile">
         <table id="maillons">
           <thead><tr><th>Nom</th><th>Sens</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th>
-            <th class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th class="th-therm th-tcote">T service (°C)</th><th><span class="cache">Supprimer</span></th></tr></thead>
+            <th class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th class="th-therm th-tcote">T service (°C)</th><th class="th-image">Image</th><th><span class="cache">Supprimer</span></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
+      <label class="case"><input id="representation" type="checkbox"> Représentation : afficher une image de pièce sur chaque flèche</label>
     </section>
 
     <section aria-labelledby="t-apercu" id="apercu-section" data-etape="3">
@@ -496,6 +497,30 @@
   </div>
 </main>
 
+<!-- silhouettes des pièces (colonne « Image » des maillons et schéma) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="silhouettes">
+    <symbol id="img-arbre" viewBox="0 0 40 40"><rect class="pi-s" x="4" y="13" width="32" height="14"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-arbre-epaule" viewBox="0 0 40 40"><path class="pi-s" d="M4 15h14v-6h18v22h-18v-6h-14z"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-carter" viewBox="0 0 40 40"><path class="pi-s" d="M4 5h32v9h-23v12h23v9h-32z"/></symbol>
+    <symbol id="img-roulement" viewBox="0 0 40 40"><rect class="pi-s" x="11" y="3" width="18" height="15"/><rect class="pi-s" x="11" y="22" width="18" height="15"/><circle class="pi-n" cx="20" cy="10.5" r="4.5"/><circle class="pi-n" cx="20" cy="29.5" r="4.5"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-entretoise" viewBox="0 0 40 40"><rect class="pi-s" x="7" y="8" width="26" height="7"/><rect class="pi-s" x="7" y="25" width="26" height="7"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-rondelle" viewBox="0 0 40 40"><rect class="pi-s" x="17" y="5" width="6" height="11"/><rect class="pi-s" x="17" y="24" width="6" height="11"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-circlips" viewBox="0 0 40 40"><path class="pi-n" d="M27 9a13 13 0 1 0 0 22" stroke-width="4"/><circle class="pi-s" cx="28" cy="9" r="2.4"/><circle class="pi-s" cx="28" cy="31" r="2.4"/></symbol>
+    <symbol id="img-ecrou" viewBox="0 0 40 40"><rect class="pi-s" x="12" y="5" width="16" height="30"/><path class="pi-n" d="M12 13h16M12 27h16"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-vis" viewBox="0 0 40 40"><rect class="pi-s" x="4" y="10" width="10" height="20"/><rect class="pi-s" x="14" y="15" width="22" height="10"/><path class="pi-n" d="M22 15v10M26 15v10M30 15v10"/></symbol>
+    <symbol id="img-bague" viewBox="0 0 40 40"><path class="pi-s" d="M7 5h6v7h20v5h-26z"/><path class="pi-s" d="M7 35h6v-7h20v-5h-26z"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-coussinet" viewBox="0 0 40 40"><rect class="pi-s" x="6" y="9" width="28" height="5"/><rect class="pi-s" x="6" y="26" width="28" height="5"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-pignon" viewBox="0 0 40 40"><path class="pi-s" d="M15 3h10v11h7v12h-7v11h-10v-11h-7v-12h7z"/><path class="pi-n" d="M15 7h10M15 33h10"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-poulie" viewBox="0 0 40 40"><path class="pi-s" d="M10 3h7l3 6 3-6h7v34h-7l-3-6-3 6h-7z"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-clavette" viewBox="0 0 40 40"><rect class="pi-s" x="5" y="14" width="30" height="12" rx="6"/></symbol>
+    <symbol id="img-couvercle" viewBox="0 0 40 40"><path class="pi-s" d="M8 4h8v11h16v10h-16v11h-8z"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-joint" viewBox="0 0 40 40"><circle class="pi-s" cx="20" cy="9" r="5.5"/><circle class="pi-s" cx="20" cy="31" r="5.5"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-ressort" viewBox="0 0 40 40"><path class="pi-n" d="M5 32l5-24 5 24 5-24 5 24 5-24 5 24" stroke-width="2.2"/></symbol>
+    <symbol id="img-cale" viewBox="0 0 40 40"><rect class="pi-s" x="17" y="5" width="6" height="30"/><path class="pi-n" d="M17 12l6-5M17 20l6-5M17 28l6-5M17 35l6-5"/></symbol>
+    <symbol id="img-goupille" viewBox="0 0 40 40"><rect class="pi-s" x="4" y="16" width="32" height="8" rx="4"/><path class="pi-a" d="M1 20H39"/></symbol>
+    <symbol id="img-plaque" viewBox="0 0 40 40"><rect class="pi-s" x="4" y="11" width="32" height="18"/><path class="pi-n" d="M8 29l10-18M17 29l10-18M26 29l10-18"/></symbol>
+  </defs></svg>
+
 <footer>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel.</p>
   <p class="legende">Version navigateur : analyse d'une chaîne, répartition des tolérances, comparaison de scénarios, mécanisme à plusieurs chaînes, dossier de validation HTML, assistant de chaîne, parcours guidé, exemples, ajustements, tables ISO 286 et matériaux. L'application de bureau (dossiers PDF et Word avec images, enregistrement direct sur le disque) est dans le <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">dépôt GitHub du projet</a>. Licence PolyForm Noncommercial 1.0.0 : usage non commercial autorisé, usage commercial sur autorisation écrite préalable.</p>
@@ -506,7 +531,7 @@
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js?v=173783d7"></script>
 <script src="js/accueil.js?v=38c7bc39"></script>
-<script src="js/chaine.js?v=1dbb9aba"></script>
+<script src="js/chaine.js?v=834f8216"></script>
 <script src="js/repartir.js?v=f9776382"></script>
 <script src="js/comparer.js?v=e9cbc222"></script>
 <script src="js/mecanisme.js?v=e7520fbf"></script>

@@ -151,3 +151,14 @@ button.petit { min-height: 0; padding: 2px 10px; font-size: inherit; }
 .trois .carte h4 { margin: 10px 0 2px; }
 .trois .carte p { margin: 0 0 12px; font-size: .9rem; flex: 1; }
 .trois .carte button { padding: 12px; }
+
+/* silhouettes des pièces : colonne « Image » visible seulement si « Représentation » est cochée */
+.pi-s { stroke: var(--encre); stroke-width: 1.6; fill: #CFC6EC; stroke-linejoin: round; }
+.pi-n { stroke: var(--encre); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pi-a { stroke: var(--encre); stroke-width: 1; stroke-dasharray: 7 2 1.5 2; fill: none; opacity: .7; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pi-s { fill: #4B3F7A; } }
+.th-image, .td-image { display: none; }
+#maillons.images .th-image, #maillons.images .td-image { display: table-cell; }
+.td-image { min-width: 190px; white-space: nowrap; }
+.td-image svg { width: 30px; height: 30px; vertical-align: middle; margin-right: 6px; }
+.td-image select { width: calc(100% - 40px); }
