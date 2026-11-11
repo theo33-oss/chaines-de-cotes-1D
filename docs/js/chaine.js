@@ -12,6 +12,20 @@
   const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice"];
   const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "" };
 
+  // Étude affichée à l'ouverture : 6 cotes (4 dans un sens, 2 dans l'autre) ; les cotes C et F ont une grande tolérance
+  // (± 0,1 mm), les autres une tolérance fine. Jeu de 0,25 à 0,90 mm pour 0,20 à 1,00 demandé : conforme au pire des cas.
+  const CAS_DE_BASE = {
+    condition: { nom: "Jeu J", jmin: 0.2, jmax: 1 },
+    maillons: [
+      { nom: "Pièce A", sens: "+", cote: 20, es: 0.05, ei: 0 },
+      { nom: "Pièce B", sens: "+", cote: 15, es: 0.05, ei: 0 },
+      { nom: "Pièce C (grande tolérance)", sens: "+", cote: 30, es: 0.1, ei: -0.1 },
+      { nom: "Pièce D", sens: "+", cote: 25, es: 0.05, ei: 0 },
+      { nom: "Carter E", sens: "-", cote: 50, es: 0.05, ei: -0.05 },
+      { nom: "Carter F (grande tolérance)", sens: "-", cote: 39.5, es: 0.1, ei: -0.1 },
+    ],
+  };
+
   // ---------- tableau des maillons ----------
 
   function champ(valeur, classe, numerique) {
@@ -382,10 +396,16 @@
     const exemples = JSON.parse(pont.exemples());
     const choix = $("exemple");
     choix.replaceChildren(...exemples.map((e) => Object.assign(document.createElement("option"), { value: e.id, textContent: e.titre })));
-    const decrire = () => { $("description").textContent = (exemples.find((e) => e.id === choix.value) || {}).description || ""; };
+    choix.prepend(Object.assign(document.createElement("option"), { value: "", textContent: "Cas de base : 6 cotes (modifiable)" }));
+    choix.value = "";
+    const decrire = () => {
+      $("description").textContent = (exemples.find((e) => e.id === choix.value) || {}).description
+        || "Cas de base affiché ci-dessous : 6 cotes (4 « + », 2 « − »), dont deux (C et F) à grande tolérance. Modifiez-le, ou choisissez un exemple.";
+    };
     choix.addEventListener("change", decrire);
     decrire();
     $("charger").addEventListener("click", () => {
+      if (!choix.value) return poserProbleme(CAS_DE_BASE), $("resultats").hidden = true, apercu(); // retour au cas de base
       etude = { cartouche: null, revisions: [] };
       poserProbleme(JSON.parse(pont.charger(choix.value)));
       $("resultats").hidden = true;
@@ -410,7 +430,7 @@
     $("r-mode").addEventListener("change", colonnesThermiques);
     $("page-analyser").addEventListener("input", apercuDiffere);
     $("page-analyser").addEventListener("change", apercuDiffere);
-    afficherMaillons([{ ...MAILLON_VIDE, nom: "Maillon 1" }, { ...MAILLON_VIDE, nom: "Maillon 2", sens: "-" }]);
+    poserProbleme(CAS_DE_BASE);
     colonnesThermiques();
     apercu();
   }
