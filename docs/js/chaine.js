@@ -221,7 +221,52 @@
     minuterie = setTimeout(apercu, 350);
   }
 
+  // ---------- historique : Ctrl+Z / Ctrl+Y sur toute l'étude (ajout, suppression, exemple chargé, saisie) ----------
+
+  const pile = []; // instantanés de l'étude (texte JSON) ; position = instantané affiché
+  let position = -1;
+  let restauration = false;
+  const MAX_HISTORIQUE = 100;
+
+  function majHistorique() {
+    $("annuler").disabled = position <= 0;
+    $("retablir").disabled = position >= pile.length - 1;
+  }
+
+  // Appelé à chaque aperçu (donc après chaque pause de saisie ou changement de structure) : garde l'état s'il a changé.
+  function memoriser() {
+    if (restauration) return;
+    const instantane = JSON.stringify(lireProbleme());
+    if (instantane === pile[position]) return;
+    pile.splice(position + 1);
+    pile.push(instantane);
+    if (pile.length > MAX_HISTORIQUE) pile.shift();
+    position = pile.length - 1;
+    majHistorique();
+  }
+
+  function aller(delta) {
+    clearTimeout(minuterie);
+    memoriser(); // une saisie en cours (moins de 350 ms) est d'abord gardée : on peut l'annuler
+    const cible = position + delta;
+    if (cible < 0 || cible >= pile.length) return;
+    position = cible;
+    const garder = $("representation").checked; // la case « Représentation » est un réglage d'affichage, pas une donnée
+    restauration = true;
+    try {
+      poserProbleme(JSON.parse(pile[position]));
+      $("representation").checked = garder;
+      colonnesThermiques();
+      $("resultats").hidden = true; // les résultats affichés ne sont plus ceux de l'étude
+      apercu();
+    } finally {
+      restauration = false;
+    }
+    majHistorique();
+  }
+
   function apercu() {
+    memoriser();
     let r;
     try {
       r = JSON.parse(pont.apercu(JSON.stringify(lireProbleme())));
@@ -466,6 +511,20 @@
     $("ouvrir").addEventListener("click", () => $("fichier").click());
     $("fichier").addEventListener("change", async (e) => { await ouvrirFichier(e.target.files[0]); e.target.value = ""; });
     $("enregistrer").addEventListener("click", enregistrer);
+    $("annuler").addEventListener("click", () => aller(-1));
+    $("retablir").addEventListener("click", () => aller(1));
+    document.addEventListener("keydown", (e) => {
+      if ($("page-analyser").hidden || e.altKey) return;
+      const touche = e.key.toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && touche === "z") aller(e.shiftKey ? 1 : -1);
+      else if (ctrl && touche === "y") aller(1);
+      else if (ctrl && touche === "s") enregistrer();
+      else if (ctrl && touche === "o") $("fichier").click();
+      else if (touche === "enter" && (ctrl || (e.target.tagName === "INPUT" && e.target.type === "text"))) {
+        if (!$("calculer").disabled) guide.actif ? allerEtape(3) : calculer();
+      } else return;
+      e.preventDefault();
+    });
     $("ajouter").addEventListener("click", () => { afficherMaillons([...lireMaillons(), { ...MAILLON_VIDE }]); apercuDiffere(); });
     $("calculer").addEventListener("click", calculer);
     $("guide-ouvrir").addEventListener("click", () => modeGuide(true, 0));

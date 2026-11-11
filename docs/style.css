@@ -162,3 +162,5 @@ button.petit { min-height: 0; padding: 2px 10px; font-size: inherit; }
 .td-image { min-width: 190px; white-space: nowrap; }
 .td-image svg { width: 30px; height: 30px; vertical-align: middle; margin-right: 6px; }
 .td-image select { width: calc(100% - 40px); }
+
+kbd { font: inherit; font-size: .85em; padding: 0 5px; border: 1px solid var(--bord); border-bottom-width: 2px; border-radius: 4px; background: var(--carte); }
