@@ -36,7 +36,7 @@
     App.message($("dos-erreur"), "erreur", "");
     $("dos-resultat").hidden = true;
     $("dos-generer").disabled = true;
-    $("etat").textContent = "Dossier en cours : chargement de jinja2 et refonte des calculs…";
+    $("dos-generer").textContent = "Dossier en cours… (quelques secondes)";
     try {
       await App.paquets(["jinja2"]); // gabarit du dossier, chargé à la première utilisation seulement
       App.analyser.poserCartouche(cartoucheSaisi());
@@ -56,7 +56,7 @@
       App.message($("dos-erreur"), "erreur", "Dossier impossible : " + e);
     } finally {
       $("dos-generer").disabled = false;
-      $("etat").textContent = $("dos-erreur").hidden ? "Dossier prêt." : "Dossier impossible : voir le message d'erreur.";
+      $("dos-generer").textContent = "Générer le dossier de validation";
     }
   }
 

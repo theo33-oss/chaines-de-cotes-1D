@@ -16,6 +16,7 @@
       App.analyser.guide(false);
       App.analyser.ouvrirFichier(); // le clic vient de l'utilisateur : le navigateur accepte d'ouvrir le sélecteur
     });
+    $("ac-assistant").addEventListener("click", () => App.afficherPage("assistant"));
     // liens vers tous les outils : construits ici, une fois toutes les pages enregistrées
     const titres = { analyser: "Analyser une chaîne", repartir: "Répartir les tolérances", comparer: "Comparer deux scénarios", mecanisme: "Mécanisme (plusieurs chaînes)",
       dossier: "Dossier de validation", assistant: "Assistant de chaîne", exemples: "Bibliothèque d'exemples", ajustement: "Choisir un ajustement ISO 286",

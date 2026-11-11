@@ -136,3 +136,18 @@ footer { margin-top: 40px; border-top: 1px solid var(--bord); padding-top: 8px; 
 #as-cotes td:nth-child(1), #as-cotes td:nth-child(9) { min-width: 130px; }
 #as-contacts td { min-width: 180px; }
 #as-cotes, #as-contacts { min-width: 0; }
+
+/* accueil, menu en deux rangées, état du chargement */
+#menu { flex-direction: column; gap: 6px; }
+#menu .rangee { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+#menu .rangee span { width: 3.6em; font-size: .8rem; color: var(--discret); text-transform: uppercase; letter-spacing: .04em; }
+#etat progress { display: block; width: 100%; height: 10px; margin-top: 8px; accent-color: #5C4B99; }
+button.petit { min-height: 0; padding: 2px 10px; font-size: inherit; }
+.vedette { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px 28px; align-items: center; margin: 12px 0; }
+.vedette svg { width: 100%; max-width: 420px; height: auto; }
+.vedette ol { margin: 0; padding-left: 22px; }
+.vedette li { margin: 8px 0; }
+.trois .carte { display: flex; flex-direction: column; padding: 4px 14px 14px; }
+.trois .carte h4 { margin: 10px 0 2px; }
+.trois .carte p { margin: 0 0 12px; font-size: .9rem; flex: 1; }
+.trois .carte button { padding: 12px; }

@@ -274,7 +274,7 @@
   function calculer() {
     App.message($("erreur"), "erreur", "");
     $("calculer").disabled = true;
-    $("etat").textContent = "Calcul en cours…";
+    $("calculer").textContent = "Calcul en cours…";
     // laisse le navigateur afficher le message avant le calcul, qui occupe le processeur quelques secondes
     setTimeout(() => {
       let r = null;
@@ -283,13 +283,16 @@
         if (r.erreur) {
           $("resultats").hidden = true;
           App.message($("erreur"), "erreur", r.erreur);
-        } else afficherResultats(r);
-        $("etat").textContent = r.erreur ? "Corrigez la saisie signalée." : "Calcul terminé.";
+        } else {
+          afficherResultats(r);
+          // mode expert : le verdict est sous le tableau des maillons, on y amène l'utilisateur
+          if (!guide.actif && !$("page-analyser").hidden) $("resultats").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       } catch (e) {
         App.message($("erreur"), "erreur", "Erreur inattendue : " + e);
-        $("etat").textContent = "Le calcul a échoué.";
       } finally {
         $("calculer").disabled = false;
+        $("calculer").textContent = "Calculer";
       }
     }, 30);
   }
@@ -306,7 +309,7 @@
     ["Point de départ", "Une chaîne de cotes répond à une question : <strong>le jeu entre deux pièces reste-t-il dans ses limites ?</strong> Partez d'un exemple, d'une étude déjà enregistrée, ou de la chaîne en cours."],
     ["Cote condition", "La <strong>cote condition</strong> est le jeu (ou le serrage, le dépassement) à garantir. Donnez-lui un nom et ses limites : <strong>Jmin</strong> est le plus petit jeu acceptable, <strong>Jmax</strong> le plus grand."],
     ["Maillons", "Ajoutez une ligne par cote de la chaîne : son <strong>sens</strong> (« + » si elle agrandit le jeu, « − » si elle le réduit), sa <strong>cote nominale</strong> et sa <strong>tolérance</strong> (désignation ISO comme H7, ou écarts ES / EI)."],
-    ["Calcul et verdict", "Lancez le calcul, puis lisez le verdict : il dit si le jeu tient et sur quelle cote agir."],
+    ["Calcul et verdict", "Le calcul est lancé à l'ouverture de cette étape. Lisez le verdict : il dit si le jeu tient et sur quelle cote agir. Après une modification, cliquez sur <strong>Calculer</strong>."],
     ["Dossier", "Complétez le cartouche, gardez une révision, puis enregistrez le dossier et l'étude."],
   ];
   const guide = { actif: false, etape: 0 };
@@ -333,6 +336,7 @@
     guide.etape = Math.min(Math.max(i, 0), ETAPES.length - 1);
     majGuide();
     window.scrollTo(0, 0);
+    if (guide.etape === 3) calculer(); // étape « Calcul et verdict » : pas de clic de plus
   }
 
   function modeGuide(actif, etape = 0) {

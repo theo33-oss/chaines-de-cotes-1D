@@ -5,19 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=1ae3490e">
+<link rel="stylesheet" href="style.css?v=512d523f">
 </head>
 <body>
 <header>
   <h1>Chaînes de cotes 1D</h1>
-  <p class="intro">Vérifiez qu'un <strong>jeu entre deux pièces reste dans ses limites</strong>, au pire des cas comme en statistique. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
+  <p class="intro legende">Calcul de tolérances d'un assemblage. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
   <nav id="menu" aria-label="Pages" hidden></nav>
 </header>
 
 <main>
-  <p id="etat" class="message info" role="status">Chargement du calcul… la première fois, comptez 10 à 30 secondes.</p>
+  <div id="etat" class="message info" role="status">
+    <span id="etat-texte">Préparation 1/4 : moteur Python… comptez 10 à 30 secondes la première fois. Vous pouvez lire la page en attendant.</span>
+    <progress id="avance" max="4" value="1"></progress>
+  </div>
+  <p id="etude-cours" class="legende" hidden><span id="etude-texte"></span> <button id="etude-modifier" type="button" class="secondaire petit">Voir ou modifier</button></p>
 
-  <!-- ===== Page « Analyser » (js/analyse.js) ===== -->
+  <!-- ===== Page « Analyser » (js/chaine.js) ===== -->
   <div id="page-analyser" hidden>
     <div id="guide" class="guide-seul">
       <h2>Nouvelle étude</h2>
@@ -98,7 +102,7 @@
       <ul id="controles" class="controles" aria-label="Contrôles de cohérence"></ul>
     </section>
 
-    <p data-etape="4"><button id="calculer" type="button" class="primaire">Calculer</button></p>
+    <p data-etape="4"><button id="calculer" type="button" class="primaire">Calculer</button> <span class="legende expert-seul">Le verdict s'affiche juste en dessous.</span></p>
     <p id="erreur" class="message erreur" role="alert" hidden data-etape="4"></p>
 
     <section id="resultats" aria-live="polite" hidden data-etape="4">
@@ -130,14 +134,39 @@
 
   <!-- ===== Page « Accueil » (js/accueil.js) ===== -->
   <div id="page-accueil" hidden>
-    <h2>Bienvenue dans Chaînes de cotes 1D</h2>
-    <p>Vérifiez qu'un <strong>jeu entre deux pièces reste dans ses limites</strong>, au pire des cas comme en statistique : l'outil répond en une phrase et indique sur quelle cote agir en premier.</p>
-    <div class="trois">
-      <button id="ac-exemple" type="button" class="primaire">Partir d'un exemple</button>
-      <button id="ac-guide" type="button" class="primaire">Créer une étude guidée</button>
-      <button id="ac-ouvrir" type="button" class="secondaire">Ouvrir une étude</button>
+    <h2>Le jeu entre deux pièces reste-t-il dans ses limites ?</h2>
+    <div class="vedette">
+      <svg viewBox="0 0 340 170" role="img" aria-label="Schéma : une pièce de longueur B logée dans un carter d'ouverture A ; le jeu J est l'espace qui reste, J = A − B.">
+        <path d="M20 30 V140 H320 V30 H290 V110 H50 V30 Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="2"/>
+        <rect x="50" y="50" width="205" height="60" fill="var(--accent)" stroke="currentColor" stroke-width="2"/>
+        <rect x="255" y="50" width="35" height="60" fill="#E8590C" opacity=".35"/>
+        <g stroke="currentColor" stroke-width="2" fill="none">
+          <path d="M50 22 H290 M50 16 V28 M290 16 V28 M56 18 L50 22 L56 26 M284 18 L290 22 L284 26"/>
+          <path d="M50 80 H255 M56 76 L50 80 L56 84 M249 76 L255 80 L249 84" stroke="#fff"/>
+        </g>
+        <g fill="currentColor" font-size="15" font-weight="600" text-anchor="middle">
+          <text x="170" y="14">A : ouverture du carter (+)</text>
+          <text x="152" y="72" fill="#fff">B : pièce (−)</text>
+          <text x="272" y="85" fill="#E8590C">J</text>
+          <text x="170" y="162">Jeu J = A − B</text>
+        </g>
+      </svg>
+      <ol>
+        <li><strong>Vous donnez le jeu à garantir</strong> : son minimum et son maximum (par exemple 0,2 à 0,85 mm).</li>
+        <li><strong>Vous listez les cotes</strong> qui fabriquent ce jeu, avec leurs tolérances.</li>
+        <li><strong>L'outil répond en une phrase</strong> : le jeu tient toujours, seulement en statistique, ou pas du tout, et dit quelle cote resserrer en premier.</li>
+      </ol>
     </div>
-    <p class="legende">Une étude est un fichier .json : celui de l'application de bureau s'ouvre ici, et inversement.</p>
+    <h3>Par où commencer ?</h3>
+    <div class="trois">
+      <div class="carte"><h4>Découvrir</h4><p>Un exemple déjà rempli (réducteur, roulement…) avec son verdict. Le plus rapide pour comprendre.</p>
+        <button id="ac-exemple" type="button" class="primaire" disabled>Partir d'un exemple</button></div>
+      <div class="carte"><h4>Créer ma chaîne</h4><p>Cinq étapes expliquées : le jeu, les cotes, le calcul, le verdict, le dossier.</p>
+        <button id="ac-guide" type="button" class="primaire" disabled>Créer une étude guidée</button></div>
+      <div class="carte"><h4>Reprendre</h4><p>Une étude enregistrée (fichier .json), faite ici ou dans l'application de bureau.</p>
+        <button id="ac-ouvrir" type="button" class="secondaire" disabled>Ouvrir une étude</button></div>
+    </div>
+    <p id="pret" class="legende" hidden>Vous ne savez pas quelles cotes entrent dans la chaîne ? <button id="ac-assistant" type="button" class="secondaire petit">Assistant de chaîne</button> la construit depuis vos pièces et leurs contacts.</p>
     <details>
       <summary>En savoir plus : méthodes, outils, limites</summary>
       <p>Cet outil calcule des <strong>chaînes de cotes à une dimension</strong>. Une chaîne de cotes relie une <strong>cote condition</strong> (un jeu, un serrage, un dépassement : la grandeur qui doit rester entre un minimum Jmin et un maximum Jmax pour que le mécanisme fonctionne) aux <strong>maillons</strong> qui la fabriquent : les cotes des pièces, chacune avec sa valeur nominale, son sens (« + » si elle agrandit la cote condition, « − » si elle la réduit) et sa <strong>tolérance</strong> (écarts ES / EI en mm ou désignation ISO 286 comme « 40 h7 »).</p>
@@ -475,13 +504,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=8d2029df"></script>
-<script src="js/accueil.js?v=a3743468"></script>
-<script src="js/analyse.js?v=f62d6720"></script>
+<script src="app.js?v=173783d7"></script>
+<script src="js/accueil.js?v=38c7bc39"></script>
+<script src="js/chaine.js?v=f7b09c40"></script>
 <script src="js/repartir.js?v=f9776382"></script>
 <script src="js/comparer.js?v=e9cbc222"></script>
 <script src="js/mecanisme.js?v=e7520fbf"></script>
-<script src="js/dossier.js?v=6b56287b"></script>
+<script src="js/dossier.js?v=0a908bf6"></script>
 <script src="js/assistant.js?v=f069f614"></script>
 <script src="js/exemples.js?v=3b653ed8"></script>
 <script src="js/ajustement.js?v=ec05ff5b"></script>

@@ -180,33 +180,68 @@ const App = (() => {
     pages.push(page);
   }
 
+  // Bandeau d'état en haut de page : texte vide → bandeau caché ; pas (1 à 4) → barre d'avancement du démarrage.
+  function etat(texte, pas) {
+    $("etat").className = "message info";
+    $("etat-texte").textContent = texte;
+    $("etat").hidden = !texte;
+    $("avance").hidden = !pas;
+    if (pas) $("avance").value = pas;
+  }
+
+  const UTILISENT_ETUDE = ["repartir", "comparer", "mecanisme", "dossier"]; // pages qui travaillent sur l'étude de la page Analyser
+
   function afficherPage(id) {
     for (const p of pages) $("page-" + p.id).hidden = p.id !== id;
-    for (const b of $("menu").children) b.setAttribute("aria-current", String(b.dataset.id === id));
+    for (const b of document.querySelectorAll("#menu button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     const page = pages.find((p) => p.id === id);
+    $("etude-cours").hidden = !(pont && UTILISENT_ETUDE.includes(id));
+    if (!$("etude-cours").hidden) {
+      const p = exposition.analyser.probleme();
+      $("etude-texte").textContent = `Étude en cours : « ${p.condition.nom || "sans nom"} », ${p.maillons.length} maillon(s).`;
+    }
     if (page && page.afficher) page.afficher(); // la page se remet à jour d'après l'étude en cours
   }
 
+  const AIDES = ["assistant", "exemples", "ajustement", "iso286", "materiaux"]; // deuxième rangée du menu
+
+  // Menu en deux rangées : l'étude (dans l'ordre du travail), puis les aides. Inactif tant que le calcul n'est pas chargé.
   function menu() {
-    $("menu").hidden = pages.length < 2; // une seule page : pas de menu
-    $("menu").replaceChildren(...pages.map((p) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.dataset.id = p.id;
-      b.textContent = p.titre;
-      b.addEventListener("click", () => afficherPage(p.id));
-      return b;
-    }));
+    const rangee = (titre, liste) => {
+      const d = document.createElement("div");
+      d.className = "rangee";
+      d.append(Object.assign(document.createElement("span"), { textContent: titre }), ...liste.map((p) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.dataset.id = p.id;
+        b.textContent = p.titre;
+        b.disabled = p.id !== "accueil";
+        b.addEventListener("click", () => { afficherPage(p.id); window.scrollTo(0, 0); });
+        return b;
+      }));
+      return d;
+    };
+    $("menu").hidden = false;
+    $("menu").replaceChildren(rangee("Étude", pages.filter((p) => !AIDES.includes(p.id))), rangee("Aides", pages.filter((p) => AIDES.includes(p.id))));
   }
 
   async function demarrer() {
+    menu();
+    afficherPage("accueil"); // l'accueil se lit pendant le chargement ; ses boutons s'activent à la fin
+    $("etude-modifier").addEventListener("click", () => afficherPage("analyser"));
+    if (!exposition.analyser) { // un bloqueur de publicité ou un cache périmé a retenu un script
+      $("etat").className = "message erreur";
+      $("etat-texte").textContent = "Un script de la page n'a pas été chargé. Rechargez avec Ctrl+F5 ; si un bloqueur de publicité est actif, désactivez-le pour cette page.";
+      $("avance").hidden = true;
+      return;
+    }
     try {
       pyodide = await loadPyodide();
-      $("etat").textContent = "Chargement de numpy et scipy…";
+      etat("Préparation 2/4 : bibliothèques de calcul (numpy, scipy)…", 2);
       await pyodide.loadPackage(["numpy", "scipy", "micropip"]);
-      $("etat").textContent = "Chargement de plotly…";
+      etat("Préparation 3/4 : graphiques (plotly)…", 3);
       await pyodide.pyimport("micropip").install("plotly>=5.20,<7");
-      $("etat").textContent = "Chargement du calcul…";
+      etat("Préparation 4/4 : tables ISO 286, matériaux et exemples…", 4);
       // « no-cache » : le navigateur revalide à chaque visite (réponse 304 si rien n'a changé). Sans cela, GitHub Pages
       // fait garder ces fichiers 10 minutes, et une page mise à jour recevrait l'ancien calcul.
       const archive = await (await fetch("chainecotes.zip", { cache: "no-cache" })).arrayBuffer();
@@ -214,17 +249,19 @@ const App = (() => {
       pyodide.FS.writeFile("/app/pont.py", await (await fetch("pont.py", { cache: "no-cache" })).text());
       pyodide.runPython("import sys; sys.path.insert(0, '/app')");
       pont = pyodide.pyimport("pont");
+      for (const p of pages) await p.apres(pont);
     } catch (e) {
+      pont = null;
       $("etat").className = "message erreur";
-      $("etat").textContent = "Le calcul n'a pas pu se charger (connexion Internet nécessaire la première fois) : " + e;
+      $("etat-texte").textContent = "Le calcul n'a pas pu se charger (connexion Internet nécessaire ; rechargez la page avec Ctrl+F5) : " + e;
+      $("avance").hidden = true;
       return;
     }
-    menu();
-    for (const p of pages) await p.apres(pont);
-    afficherPage(pages[0].id);
-    $("etat").textContent = "Prêt. Choisissez un exemple ou saisissez votre chaîne, puis cliquez sur Calculer.";
+    for (const b of document.querySelectorAll("#menu button, #page-accueil button")) b.disabled = false;
+    etat("");
+    $("pret").hidden = false;
   }
 
-  const exposition = { $, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, enregistrerPage, afficherPage, demarrer };
+  const exposition = { $, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, enregistrerPage, afficherPage, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();
