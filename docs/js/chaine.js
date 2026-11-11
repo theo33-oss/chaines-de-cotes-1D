@@ -24,22 +24,23 @@
   const sourceImage = (id) => "data:image/svg+xml," + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${STYLE_IMAGE}${$("img-" + id).innerHTML}</svg>`);
 
-  // Ajoute au schéma du pont la silhouette de chaque maillon qui en a une, à côté de son texte (décalé d'autant).
+  // Ajoute au schéma du pont la silhouette de chaque maillon qui en a une : sous sa flèche, au milieu, comme une pièce
+  // sous sa ligne de cote. Le nom reste au-dessus de la flèche ; les lignes sont plus hautes pour loger la silhouette.
   function vignettes(fig, maillons) {
-    const L = fig.layout, mg = L.margin || {};
+    const L = fig.layout, mg = L.margin || {}, notes = L.annotations || [];
     if (!maillons.some((m) => IMAGES[m.image])) return;
-    L.height = 150 + 44 * (maillons.length + 1); // lignes plus hautes : la silhouette reste lisible
-    // Plotly place une image dans une boîte en unités des axes : boîte de 26 px de côté, calculée d'après la taille du tracé
-    const COTE = 26;
+    const COTE = 44, LIGNE = 70; // px : côté de la silhouette, hauteur d'une ligne du schéma
+    const hautY = L.yaxis.range[1] - L.yaxis.range[0];
+    L.height = (mg.t ?? 100) + (mg.b ?? 80) + LIGNE * hautY;
+    // Plotly place une image dans une boîte en unités des axes : on convertit les pixels d'après la taille du tracé
     const pxX = Math.max($("apercu-fig").clientWidth - (mg.l ?? 80) - (mg.r ?? 80), 100) / (L.xaxis.range[1] - L.xaxis.range[0]);
-    const pxY = (L.height - (mg.t ?? 100) - (mg.b ?? 80)) / (L.yaxis.range[1] - L.yaxis.range[0]);
     L.images = [];
     maillons.forEach((m, i) => {
-      const note = (L.annotations || []).find((a) => a.name === "libelle:" + i);
-      if (!note || !IMAGES[m.image]) return;
-      note.xshift = note.xanchor === "left" ? 30 : -30;
-      L.images.push({ source: sourceImage(m.image), xref: "x", yref: "y", x: note.x, y: note.y + 3 / pxY, xanchor: note.xanchor, yanchor: "bottom",
-        sizex: COTE / pxX, sizey: COTE / pxY, sizing: "contain", layer: "above" });
+      const note = notes.find((n) => n.name === "libelle:" + i);
+      const fleche = note && notes.find((n) => String(n.name).startsWith("maillon:") && n.y === note.y);
+      if (!fleche || !IMAGES[m.image]) return;
+      L.images.push({ source: sourceImage(m.image), xref: "x", yref: "y", x: (fleche.x + fleche.ax) / 2, y: fleche.y - 4 / LIGNE,
+        xanchor: "center", yanchor: "top", sizex: COTE / pxX, sizey: COTE / LIGNE, sizing: "contain", layer: "above" });
     });
   }
 
