@@ -139,10 +139,14 @@
       liste();
     });
     $("mc-ajout-etude").addEventListener("click", () => {
-      const r = JSON.parse(pont.mecaChaine(JSON.stringify(App.analyser.probleme())));
-      if (r.erreur) return dire("erreur", "L'étude en cours n'est pas valide : " + r.erreur);
-      const erreur = ajouter([r.probleme]);
-      erreur ? dire("erreur", erreur) : dire("succes", "Étude en cours ajoutée.");
+      const valides = [];
+      for (const chaine of App.analyser.chaines()) { // une chaîne par cote condition de l'étude
+        const r = JSON.parse(pont.mecaChaine(JSON.stringify(chaine)));
+        if (r.erreur) return dire("erreur", "L'étude en cours n'est pas valide : " + r.erreur);
+        valides.push(r.probleme);
+      }
+      const erreur = ajouter(valides);
+      erreur ? dire("erreur", erreur) : dire("succes", valides.length > 1 ? "Étude en cours ajoutée (2 chaînes)." : "Étude en cours ajoutée.");
       liste();
     });
     $("mc-ajout-fichiers").addEventListener("click", () => $("mc-fichiers").click());

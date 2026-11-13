@@ -136,5 +136,17 @@ incomplet = [{"piece": "A", "de": "x", "vers": "y", "cote": ""}]
 assert "nombre" in json.loads(pont.assistant(json.dumps(incomplet), "[]", "A.x", "A.y"))["erreur"]
 sans_tol = [dict(c, es="", ei="", iso="") for c in ex["cotes"]]
 assert not json.loads(pont.assistant(json.dumps(sans_tol), json.dumps(ex["contacts"]), ex["depart"], ex["arrivee"]))["utilisable"]
+# ---- deux cotes condition : deux chaînes du même assemblage réunies sur un tableau de maillons commun
+ch1 = json.loads(pont.charger("reducteur_jeu_axial"))
+ch2 = json.loads(json.dumps(ch1))
+ch2["condition"]["nom"] = "Jeu 2"
+ch2["maillons"] = [dict(m, sens="-" if m["sens"] == "+" else "+") for m in ch1["maillons"][:2]] + [dict(ch1["maillons"][0], nom="Propre à CF2", sens="+")]
+fus = json.loads(pont.cfFusionner(json.dumps({"chaines": [ch1, ch2]})))
+assert "erreur" not in fus, fus
+cm = fus["commun"]
+assert cm["condition2"]["nom"] == "Jeu 2" and len(cm["maillons"]) == len(ch1["maillons"]) + 1
+assert [m["sens2"] for m in cm["maillons"][:2]] == [ch2["maillons"][0]["sens"], ch2["maillons"][1]["sens"]]
+assert cm["maillons"][-1]["sens"] == "" and cm["maillons"][-1]["sens2"] == "+" and cm["maillons"][-1]["nom"] == "Propre à CF2"
+assert "erreur" in json.loads(pont.cfFusionner(json.dumps({"chaines": [ch1]})))
 print("saisie invalide ->", vide["erreur"])
 print("fichier invalide ->", mauvais["erreur"])

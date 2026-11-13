@@ -9,8 +9,8 @@
   let materiaux = [];
   let ongletActif = "resultats";
 
-  const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice", "image", "imageAngle"];
-  const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "", image: "", imageAngle: "" };
+  const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice", "image", "imageAngle", "sens2"];
+  const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "", image: "", imageAngle: "", sens2: "" };
 
   // Silhouettes de pièces (symboles « img-… » de index.html) : image facultative de chaque maillon sur le schéma
   const IMAGES = { arbre: "Arbre", "arbre-epaule": "Arbre épaulé", carter: "Carter", roulement: "Roulement", entretoise: "Entretoise",
@@ -51,14 +51,14 @@
 
   // Ajoute au schéma du pont la silhouette de chaque maillon qui en a une : sous sa flèche, au milieu, comme une pièce
   // sous sa ligne de cote. Le nom reste au-dessus de la flèche ; les lignes sont plus hautes pour loger la silhouette.
-  function vignettes(fig, maillons) {
+  function vignettes(fig, maillons, div = $("apercu-fig")) {
     const L = fig.layout, mg = L.margin || {}, notes = L.annotations || [];
     if (!maillons.some((m) => imageConnue(m.image))) return;
     const COTE = 44, LIGNE = 70; // px : côté de la silhouette, hauteur d'une ligne du schéma
     const hautY = L.yaxis.range[1] - L.yaxis.range[0];
     L.height = (mg.t ?? 100) + (mg.b ?? 80) + LIGNE * hautY;
     // Plotly place une image dans une boîte en unités des axes : on convertit les pixels d'après la taille du tracé
-    const pxX = Math.max($("apercu-fig").clientWidth - (mg.l ?? 80) - (mg.r ?? 80), 100) / (L.xaxis.range[1] - L.xaxis.range[0]);
+    const pxX = Math.max(div.clientWidth - (mg.l ?? 80) - (mg.r ?? 80), 100) / (L.xaxis.range[1] - L.xaxis.range[0]);
     L.images = [];
     maillons.forEach((m, i) => {
       const note = notes.find((n) => n.name === "libelle:" + i);
@@ -114,12 +114,18 @@
     return options;
   }
 
+  // Sens d'une cote dans une chaîne : « + », « − » ; avec deux cotes condition, une cote peut aussi être hors de la chaîne.
+  const optionsSens = (deux) => [["+", "+ (agrandit)"], ["-", "− (réduit)"], ...(deux ? [["", "— (hors chaîne)"]] : [])];
+  const valeurSens = (v, deux) => (v === "-" ? "-" : v === "+" ? "+" : deux ? "" : "+");
+
   function ligneMaillon(m, numero) {
+    const deux = $("deux-cf").checked;
     const tr = document.createElement("tr");
     tr._extra = m.extra || {}; // champs que la page ne saisit pas (facteur, angle, mesures de l'atelier…) : gardés intacts
     const cellules = [
       ["Nom", champ(m.nom, "m-nom")],
-      ["Sens", liste("m-sens", [["+", "+ (agrandit)"], ["-", "− (réduit)"]], m.sens === "-" ? "-" : "+")],
+      ["Sens (CF1)", liste("m-sens", optionsSens(deux), valeurSens(m.sens, deux))],
+      ["Sens CF2", liste("m-sens2", optionsSens(true), valeurSens(m.sens2, true))],
       ["Cote nominale", champ(m.cote, "m-cote", true)],
       ["Désignation ISO 286", champ(m.iso, "m-iso")],
       ["Écart supérieur ES", champ(m.es, "m-es", true)],
@@ -132,7 +138,8 @@
     cellules.forEach(([nom, el], i) => {
       el.setAttribute("aria-label", `${nom}, maillon ${numero}`);
       const td = document.createElement("td");
-      if (i >= 7) td.className = "td-therm" + (i === 9 ? " td-tcote" : "");
+      if (i === 2) td.className = "td-cf2";
+      if (i >= 8) td.className = "td-therm" + (i === 10 ? " td-tcote" : "");
       td.append(el);
       tr.append(td);
     });
@@ -202,6 +209,7 @@
     return [...document.querySelectorAll("#maillons tbody tr")].map((tr) => ({
       nom: tr.querySelector(".m-nom").value,
       sens: tr.querySelector(".m-sens").value,
+      sens2: tr.querySelector(".m-sens2").value,
       cote: tr.querySelector(".m-cote").value,
       iso: tr.querySelector(".m-iso").value,
       es: tr.querySelector(".m-es").value,
@@ -218,11 +226,13 @@
 
   // ---------- problème ↔ saisie ----------
 
-  function lireProbleme() {
+  // État complet de la saisie : une chaîne, ou deux (condition2 et sens2 de chaque maillon) quand « Deux cotes condition » est cochée.
+  function lireCommun() {
+    const deux = $("deux-cf").checked;
     const therm = $("thermique").checked;
     const maillons = lireMaillons().map((m) => ({
       ...m.extra,
-      nom: m.nom, sens: m.sens, loi: m.loi, iso: m.iso.trim(),
+      nom: m.nom, sens: m.sens, ...(deux ? { sens2: m.sens2 } : {}), loi: m.loi, iso: m.iso.trim(),
       cote: nombre(m.cote), es: nombre(m.es), ei: nombre(m.ei),
       image: m.image, // gardée même si « Représentation » est décochée
       imageAngle: nombre(m.imageAngle),
@@ -236,8 +246,32 @@
       },
       maillons,
     };
+    if (deux) probleme.condition2 = { nom: $("c2-nom").value, jmin: nombre($("c2-jmin").value), jmax: nombre($("c2-jmax").value) };
     if (etude.cartouche) probleme.cartouche = etude.cartouche;
     return probleme;
+  }
+
+  // Une cote est dans la chaîne si son sens y est « + » ou « − » (toujours vrai avec une seule cote condition).
+  const dansChaine = (sens, deux) => !deux || sens === "+" || sens === "-";
+  const cfActive = () => ($("deux-cf").checked && document.querySelector('input[name="cf-actif"]:checked').value === "2" ? 2 : 1);
+
+  // Problème d'une seule chaîne (CF1 ou CF2) tiré de l'état complet : ce que le calcul de l'application reçoit.
+  function chaineCF(c, k) {
+    const deux = c.condition2 !== undefined;
+    const cle = k === 2 ? "sens2" : "sens";
+    const { condition2, ...base } = c;
+    return {
+      ...base,
+      condition: k === 2 ? condition2 : c.condition,
+      maillons: c.maillons.filter((m) => dansChaine(m[cle], deux)).map((m) => { const { sens2, ...reste } = m; return { ...reste, sens: m[cle] }; }),
+    };
+  }
+  const lignesCF = (k) => lireMaillons().filter((m) => dansChaine(k === 2 ? m.sens2 : m.sens, $("deux-cf").checked));
+  const indicesCF = (k) => lireMaillons().map((m, i) => (dansChaine(k === 2 ? m.sens2 : m.sens, $("deux-cf").checked) ? i : -1)).filter((i) => i >= 0);
+
+  // Problème de la cote condition active : celui des pages Optimiser, Comparer et Dossier.
+  function lireProbleme() {
+    return chaineCF(lireCommun(), cfActive());
   }
 
   // Maillon d'un problème (champs absents ou null possibles) → ligne du tableau ; les champs non saisis vont dans extra.
@@ -259,6 +293,12 @@
     $("r-mode").value = r.modeT ?? "uniforme";
     $("r-dec").value = r.decentrage ?? 0;
     $("r-tolgen").value = r.tolGenerale ?? "";
+    const c2 = p.condition2;
+    $("deux-cf").checked = Boolean(c2);
+    $("c2-nom").value = c2 ? c2.nom ?? "Jeu J2" : "Jeu J2";
+    $("c2-jmin").value = c2 ? c2.jmin ?? "" : "";
+    $("c2-jmax").value = c2 ? c2.jmax ?? "" : "";
+    document.querySelector('input[name="cf-actif"][value="1"]').checked = true;
     const maillons = (p.maillons || []).map(versLigne);
     afficherMaillons(maillons);
     // la température de chaque maillon (20 °C dans les fichiers du bureau) ne compte pas : seuls un matériau, un α,
@@ -275,8 +315,12 @@
     t.classList.toggle("therm", $("thermique").checked);
     t.classList.toggle("tcote", $("thermique").checked && $("r-mode").value === "par_cote");
     t.classList.toggle("images", $("representation").checked);
+    const deux = $("deux-cf").checked;
+    t.classList.toggle("cf2", deux);
+    $("cf2-champs").hidden = !deux;
+    $("cf-choix").hidden = !deux;
     $("perso-zone").hidden = !$("representation").checked;
-    $("zone-maillons").classList.toggle("large", $("representation").checked || $("thermique").checked); // colonnes en plus : tableau plus large
+    $("zone-maillons").classList.toggle("large", $("representation").checked || $("thermique").checked || deux); // colonnes en plus : tableau plus large
   }
 
   // ---------- aperçu en direct ----------
@@ -302,7 +346,7 @@
   // Appelé à chaque aperçu (donc après chaque pause de saisie ou changement de structure) : garde l'état s'il a changé.
   function memoriser() {
     if (restauration) return;
-    const instantane = JSON.stringify(lireProbleme());
+    const instantane = JSON.stringify(lireCommun());
     if (instantane === pile[position]) return;
     pile.splice(position + 1);
     pile.push(instantane);
@@ -335,28 +379,45 @@
   function majResumes() {
     const lim = (v) => (String(v).trim() === "" ? "…" : String(v).trim());
     $("resume-condition").textContent = `${$("c-nom").value || "sans nom"} : ${lim($("c-jmin").value)} à ${lim($("c-jmax").value)} mm`;
+    $("cf-nom1").textContent = "CF1 : " + ($("c-nom").value || "sans nom");
+    $("cf-nom2").textContent = "CF2 : " + ($("c2-nom").value || "sans nom");
+    if ($("deux-cf").checked) $("resume-condition").textContent += ` ; ${$("c2-nom").value || "sans nom"} : ${lim($("c2-jmin").value)} à ${lim($("c2-jmax").value)} mm`;
     $("resume-maillons").textContent = `${$("maillons").tBodies[0].rows.length} maillon(s)`;
+  }
+
+  // Aperçu d'une chaîne : verdict du pire des cas, schéma (avec silhouettes si demandé). Renvoie la réponse du pont, ou null.
+  function apercuUne(probleme, lignes, ids) {
+    let r;
+    try {
+      r = JSON.parse(pont.apercu(JSON.stringify(probleme)));
+    } catch (e) {
+      App.message($(ids.verdict), "erreur", "Aperçu impossible : " + e);
+      return null;
+    }
+    if (r.erreur) App.message($(ids.verdict), "avertissement", "Saisie à compléter : " + r.erreur);
+    else App.message($(ids.verdict), r.pireCas.niveau, r.pireCas.texte);
+    if ($("representation").checked) vignettes(r.fig, lignes, $(ids.fig));
+    App.tracer($(ids.fig), r.fig);
+    $(ids.legende).textContent = r.erreur ? "" : r.legende;
+    return r;
   }
 
   function apercu() {
     memoriser();
     majResumes();
-    let r;
-    try {
-      r = JSON.parse(pont.apercu(JSON.stringify(lireProbleme())));
-    } catch (e) {
-      App.message($("apercu-verdict"), "erreur", "Aperçu impossible : " + e);
-      return;
-    }
-    if (r.erreur) App.message($("apercu-verdict"), "avertissement", "Saisie à compléter : " + r.erreur);
-    else App.message($("apercu-verdict"), r.pireCas.niveau, r.pireCas.texte);
-    if ($("representation").checked) vignettes(r.fig, lireMaillons());
-    App.tracer($("apercu-fig"), r.fig);
-    $("apercu-legende").textContent = r.erreur ? "" : r.legende;
-    $("controles").replaceChildren(...r.controles.map((c) => {
+    const c = lireCommun(), deux = c.condition2 !== undefined;
+    $("apercu-cf2").hidden = !deux;
+    $("apercu-cf1-titre").hidden = !deux;
+    $("apercu-cf1-titre").textContent = "CF1 : " + (c.condition.nom || "sans nom");
+    if (deux) $("apercu-cf2-titre").textContent = "CF2 : " + (c.condition2.nom || "sans nom");
+    const r1 = apercuUne(chaineCF(c, 1), lignesCF(1), { verdict: "apercu-verdict", fig: "apercu-fig", legende: "apercu-legende" });
+    const r2 = deux ? apercuUne(chaineCF(c, 2), lignesCF(2), { verdict: "apercu-verdict2", fig: "apercu-fig2", legende: "apercu-legende2" }) : null;
+    if (!r1 || (deux && !r2)) return;
+    const avec = (r, prefixe) => r.controles.map((x) => ({ ...x, message: prefixe + x.message }));
+    $("controles").replaceChildren(...[...avec(r1, deux ? "CF1 : " : ""), ...(deux ? avec(r2, "CF2 : ") : [])].map((x) => {
       const li = document.createElement("li");
-      li.className = c.niveau;
-      li.textContent = ({ erreur: "Erreur : ", avertissement: "Attention : ", info: "À noter : " }[c.niveau] || "") + c.message;
+      li.className = x.niveau;
+      li.textContent = ({ erreur: "Erreur : ", avertissement: "Attention : ", info: "À noter : " }[x.niveau] || "") + x.message;
       return li;
     }));
   }
@@ -441,6 +502,7 @@
 
   function afficherResultats(r) {
     $("resultats").hidden = false;
+    $("t-resultats").textContent = $("deux-cf").checked ? `Résultats : CF${cfActive()} « ${lireProbleme().condition.nom || "sans nom"} »` : "Résultats";
     App.message($("verdict"), r.niveau, r.titre);
     $("conseil").textContent = r.conseil ? "À faire : " + r.conseil : "";
     $("opt-invite").hidden = r.niveau !== "erreur"; // jeu non tenu : on propose d'optimiser les tolérances
@@ -537,7 +599,23 @@
     if (!fichier) return;
     let o;
     try {
-      o = JSON.parse(pont.ouvrir(await fichier.text()));
+      const texte = await fichier.text();
+      o = JSON.parse(pont.ouvrir(texte));
+      if (o.erreur) { // pas une étude : peut-être un fichier de mécanisme (une ou deux chaînes)
+        const m = JSON.parse(pont.mecaImporter(texte));
+        if (!m.erreur && m.chaines && m.chaines.length === 1) o = { probleme: m.chaines[0], revisions: [] };
+        else if (!m.erreur && m.chaines && m.chaines.length === 2) {
+          const f = JSON.parse(pont.cfFusionner(JSON.stringify({ chaines: m.chaines })));
+          if (f.erreur) return messageFichier("erreur", f.erreur);
+          etude = { cartouche: f.commun.cartouche || null, revisions: [] };
+          poserProbleme(f.commun);
+          $("resultats").hidden = true;
+          App.message($("erreur"), "erreur", "");
+          messageFichier(f.avertissement ? "avertissement" : "succes", `Mécanisme « ${fichier.name} » ouvert comme étude à deux cotes condition. ${f.avertissement}`.trim());
+          apercu();
+          return;
+        } else if (!m.erreur && m.chaines) return messageFichier("erreur", `Ce mécanisme contient ${m.chaines.length} chaînes : ouvrez-le dans la page Mécanisme (l'étude en accepte 2 au plus).`);
+      }
     } catch (e) {
       messageFichier("erreur", "Lecture impossible : " + e);
       return;
@@ -555,6 +633,20 @@
   }
 
   function enregistrer() {
+    const c = lireCommun();
+    if (c.condition2 !== undefined) { // deux cotes condition : fichier de mécanisme à deux chaînes, lisible aussi par le bureau
+      const chaines = [];
+      for (const chaine of [chaineCF(c, 1), chaineCF(c, 2)]) { // chaque chaîne est d'abord nettoyée et validée, comme dans la page Mécanisme
+        const v = JSON.parse(pont.mecaChaine(JSON.stringify(chaine)));
+        if (v.erreur) return messageFichier("erreur", "Enregistrement impossible : " + v.erreur);
+        chaines.push(v.probleme);
+      }
+      const m = JSON.parse(pont.mecaExporter(JSON.stringify({ nom: "Étude à deux cotes condition", chaines })));
+      if (m.erreur) return messageFichier("erreur", "Enregistrement impossible : " + m.erreur);
+      App.telecharger("chaines_de_cotes_2_CF.json", m.contenu);
+      messageFichier("succes", "Étude à deux cotes condition enregistrée au format Mécanisme : chaines_de_cotes_2_CF.json. Les révisions du dossier ne sont gardées qu'avec une seule cote condition.");
+      return;
+    }
     const r = JSON.parse(pont.sauver(JSON.stringify(lireProbleme()), JSON.stringify(etude.revisions)));
     if (r.erreur) {
       messageFichier("erreur", "Enregistrement impossible : " + r.erreur);
@@ -667,6 +759,25 @@
       afficherMaillons(lireMaillons());
       apercu();
     });
+    $("deux-cf").addEventListener("change", () => {
+      let lignes = lireMaillons();
+      if ($("deux-cf").checked) {
+        if (!$("c2-nom").value.trim()) $("c2-nom").value = "Jeu J2";
+      } else {
+        const gardees = lignes.filter((m) => m.sens === "+" || m.sens === "-");
+        if (gardees.length < lignes.length) messageFichier("info", `${lignes.length - gardees.length} maillon(s) propre(s) à la CF2 retiré(s).`);
+        lignes = gardees;
+        document.querySelector('input[name="cf-actif"][value="1"]').checked = true;
+      }
+      afficherMaillons(lignes); // les listes « Sens » changent d'options
+      colonnesThermiques();
+      $("resultats").hidden = true;
+      App.majBlocs();
+      apercu();
+    });
+    for (const r of document.querySelectorAll('input[name="cf-actif"]')) {
+      r.addEventListener("change", () => { $("resultats").hidden = true; App.majBlocs(); });
+    }
     $("opt-aller").addEventListener("click", () => App.afficherPage("repartir"));
     $("guide-ouvrir").addEventListener("click", () => modeGuide(true, 0));
     $("guide-quitter").addEventListener("click", () => modeGuide(false));
@@ -705,23 +816,25 @@
       $("resultats").hidden = true;
       apercu();
     },
-    noms: () => lireMaillons().map((m) => m.nom),
+    noms: () => lignesCF(cfActive()).map((m) => m.nom),
     tref: () => nombre($("r-tref").value) || 20,
     probleme: lireProbleme,
     // cartouche et révisions de l'étude (reportés dans le fichier enregistré et dans le dossier de validation)
     cartouche: () => etude.cartouche,
     poserCartouche(c) { etude.cartouche = c && Object.keys(c).length ? c : null; },
     revisions: () => etude.revisions,
-    limites: () => [$("c-jmin").value, $("c-jmax").value],
+    limites: () => (cfActive() === 2 ? [$("c2-jmin").value, $("c2-jmax").value] : [$("c-jmin").value, $("c-jmax").value]),
+    chaines: () => { const c = lireCommun(); return c.condition2 !== undefined ? [chaineCF(c, 1), chaineCF(c, 2)] : [chaineCF(c, 1)]; },
     poserLimites(jmin, jmax) {
-      $("c-jmin").value = jmin;
-      $("c-jmax").value = jmax;
+      $(cfActive() === 2 ? "c2-jmin" : "c-jmin").value = jmin;
+      $(cfActive() === 2 ? "c2-jmax" : "c-jmax").value = jmax;
       $("resultats").hidden = true;
       apercu();
     },
     // « Appliquer à l'étude » : remplace les écarts de chaque maillon (la désignation ISO est vidée).
     appliquerEcarts(ecarts) {
-      document.querySelectorAll("#maillons tbody tr").forEach((tr, i) => {
+      const lignes = [...document.querySelectorAll("#maillons tbody tr")], indices = indicesCF(cfActive());
+      indices.map((k) => lignes[k]).forEach((tr, i) => { // les écarts sont ceux de la chaîne active : ses maillons, dans l'ordre
         if (!ecarts[i]) return;
         tr.querySelector(".m-iso").value = "";
         // valeurs exactes, sans arrondi : un jeu qui tombe pile sur une limite deviendrait « non conforme » d'un millionième

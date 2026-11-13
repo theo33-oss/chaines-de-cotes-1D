@@ -213,3 +213,12 @@ details.info > summary { display: inline-flex; align-items: center; justify-cont
 details.info > summary::-webkit-details-marker { display: none; }
 details.info[open] > summary { background: var(--discret); color: var(--carte); }
 details.info > p { margin: 6px 0; max-width: 90ch; }
+
+/* deuxième cote condition : colonne « Sens CF2 » */
+.th-cf2, .td-cf2 { display: none; }
+#maillons.cf2 .th-cf2, #maillons.cf2 .td-cf2 { display: table-cell; }
+span.th-cf2 { display: none; }
+#maillons.cf2 span.th-cf2 { display: inline; }
+#cf-choix strong { font-size: .95rem; }
+#apercu-cf2 { margin-top: 12px; border-top: 2px solid var(--bord); }
+#maillons td:nth-child(2), #maillons td:nth-child(3), #maillons td:nth-child(8) { min-width: 118px; }
