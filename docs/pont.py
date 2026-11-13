@@ -683,6 +683,35 @@ def mecaChaine(texte: str) -> str:
         return json.dumps({"erreur": e.message})
 
 
+def cfFusionner(texte: str) -> str:
+    """Deux chaînes d'un même assemblage (fichier de mécanisme) → une étude à deux cotes condition (JSON {"commun"} ou {"erreur"}).
+
+    Entrée : JSON {"chaines": [chaîne 1, chaîne 2]}. Les maillons identiques (tout sauf le sens) sont réunis sur une ligne :
+    « sens » est son sens dans la CF1, « sens2 » dans la CF2 (texte vide = hors de cette chaîne). Les réglages de la CF1 sont gardés.
+    """
+    try:
+        chaines = json.loads(texte).get("chaines", [])
+        if len(chaines) != 2:
+            return json.dumps({"erreur": f"Ce fichier contient {len(chaines)} chaînes : la page Étude en accepte 2 (utilisez la page Mécanisme)."})
+        p1, p2 = chaines
+        maillons = [{**m, "sens2": ""} for m in p1["maillons"]]
+        for m in p2["maillons"]:
+            cle = {k: v for k, v in m.items() if k != "sens"}
+            for x in maillons:
+                if x["sens2"] == "" and {k: v for k, v in x.items() if k not in ("sens", "sens2")} == cle:
+                    x["sens2"] = m["sens"]
+                    break
+            else:
+                maillons.append({**m, "sens": "", "sens2": m["sens"]})
+        commun = {"condition": p1["condition"], "condition2": p2["condition"], "reglages": p1["reglages"], "maillons": maillons}
+        if p1.get("cartouche"):
+            commun["cartouche"] = p1["cartouche"]
+        avert = "" if p1["reglages"] == p2["reglages"] else "Les deux chaînes avaient des réglages différents : ceux de la CF1 sont gardés."
+        return json.dumps({"commun": commun, "avertissement": avert}, allow_nan=False)
+    except (KeyError, TypeError, AttributeError, ValueError):
+        return json.dumps({"erreur": "Fichier de mécanisme non exploitable."})
+
+
 def mecaImporter(texte: str) -> str:
     """Relit un mécanisme, ou un fichier d'étude simple promu en mécanisme d'une chaîne (JSON nom + chaines, ou erreur)."""
     try:

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=1c21415a">
+<link rel="stylesheet" href="style.css?v=6d967d3b">
 </head>
 <body>
 <header>
@@ -60,6 +60,12 @@
         <label>Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
         <label>Jmax (mm)<input id="c-jmax" type="text" inputmode="decimal"></label>
       </div>
+      <label class="case expert-seul"><input id="deux-cf" type="checkbox"> Deux cotes condition (CF1 et CF2) sur les mêmes maillons</label>
+      <div class="grille" id="cf2-champs" hidden>
+        <label>Nom (CF2)<input id="c2-nom" type="text" value="Jeu J2"></label>
+        <label>Jmin CF2 (mm)<input id="c2-jmin" type="text" inputmode="decimal"></label>
+        <label>Jmax CF2 (mm)<input id="c2-jmax" type="text" inputmode="decimal"></label>
+      </div>
       <details>
         <summary>Réglages du calcul</summary>
         <div class="grille">
@@ -84,7 +90,7 @@
       <label class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
       <div class="defile">
         <table id="maillons">
-          <thead><tr><th>Nom</th><th>Sens</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th>
+          <thead><tr><th>Nom</th><th>Sens<span class="th-cf2"> CF1</span></th><th class="th-cf2">Sens CF2</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th>
             <th class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th class="th-therm th-tcote">T service (°C)</th><th class="th-image">Image</th><th><span class="cache">Supprimer</span></th></tr></thead>
           <tbody></tbody>
         </table>
@@ -107,18 +113,28 @@
     </details>
 
     <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
+      <h3 id="apercu-cf1-titre" hidden></h3>
       <p id="apercu-verdict" class="message" role="status" hidden></p>
       <div id="apercu-fig" class="figure"></div>
       <p id="apercu-legende" class="legende"></p>
+      <div id="apercu-cf2" hidden>
+        <h3 id="apercu-cf2-titre"></h3>
+        <p id="apercu-verdict2" class="message" role="status" hidden></p>
+        <div id="apercu-fig2" class="figure"></div>
+        <p id="apercu-legende2" class="legende"></p>
+      </div>
       <ul id="controles" class="controles" aria-label="Contrôles de cohérence"></ul>
     </details>
     </div>
 
+    <p id="cf-choix" class="ligne expert-seul" hidden><strong>Résultats, optimisation, comparaison et dossier pour :</strong>
+      <label class="case"><input type="radio" name="cf-actif" value="1" checked> <span id="cf-nom1">CF1</span></label>
+      <label class="case"><input type="radio" name="cf-actif" value="2"> <span id="cf-nom2">CF2</span></label></p>
     <p data-etape="4"><button id="calculer" type="button" class="primaire">Calculer</button> <span class="legende expert-seul">Le verdict s'affiche juste en dessous.</span></p>
     <p id="erreur" class="message erreur" role="alert" hidden data-etape="4"></p>
 
     <details class="bandeau" id="resultats" open aria-live="polite" hidden data-etape="4">
-      <summary><h2>Résultats</h2></summary>
+      <summary><h2 id="t-resultats">Résultats</h2></summary>
       <p id="verdict" class="message"></p>
       <p id="conseil" class="expert-seul"></p>
       <p id="opt-invite" class="message avertissement expert-seul" hidden>Le jeu n'est pas tenu. <button id="opt-aller" type="button" class="primaire">Optimiser les tolérances</button></p>
@@ -543,10 +559,10 @@
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js?v=ee22b3f1"></script>
 <script src="js/accueil.js?v=38c7bc39"></script>
-<script src="js/chaine.js?v=d5024acb"></script>
+<script src="js/chaine.js?v=8d9d966c"></script>
 <script src="js/repartir.js?v=026f047e"></script>
 <script src="js/comparer.js?v=a1af7964"></script>
-<script src="js/mecanisme.js?v=e7520fbf"></script>
+<script src="js/mecanisme.js?v=75555be4"></script>
 <script src="js/dossier.js?v=eb47df1c"></script>
 <script src="js/assistant.js?v=f069f614"></script>
 <script src="js/exemples.js?v=3b653ed8"></script>
