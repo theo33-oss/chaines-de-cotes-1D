@@ -170,3 +170,14 @@ def test_import_refuse_une_chaine_sans_maillon():
     p["maillons"] = []
     with pytest.raises(ErreurChaine, match="aucun maillon"):
         importerProbleme(exporterProbleme(p))
+
+
+def test_inclinaison_de_l_image_relue():
+    """imageAngle (page web : inclinaison de la silhouette d'une pièce) est enregistré et relu, sans effet sur le calcul."""
+    p = chargerExemple("ajustements_h7_h6_n7")
+    p["maillons"][0]["image"] = "arbre"
+    p["maillons"][0]["imageAngle"] = 30.0
+    assert importerProbleme(exporterProbleme(p))["maillons"][0]["imageAngle"] == 30.0
+    p["maillons"][0]["imageAngle"] = "oblique"
+    with pytest.raises(ErreurChaine):
+        importerProbleme(exporterProbleme(p))
