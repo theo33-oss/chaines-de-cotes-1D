@@ -9,8 +9,8 @@
   let materiaux = [];
   let ongletActif = "resultats";
 
-  const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice", "image"];
-  const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "", image: "" };
+  const CHAMPS_CONNUS = ["nom", "sens", "cote", "iso", "es", "ei", "loi", "materiau", "alpha", "tservice", "image", "imageAngle"];
+  const MAILLON_VIDE = { nom: "", sens: "+", cote: "", iso: "", es: "", ei: "", loi: "normale", materiau: "", alpha: "", tservice: "", image: "", imageAngle: "" };
 
   // Silhouettes de pièces (symboles « img-… » de index.html) : image facultative de chaque maillon sur le schéma
   const IMAGES = { arbre: "Arbre", "arbre-epaule": "Arbre épaulé", carter: "Carter", roulement: "Roulement", entretoise: "Entretoise",
@@ -21,14 +21,39 @@
   const STYLE_IMAGE = "<style>.pi-s{stroke:#3D246C;stroke-width:1.6;fill:#CFC6EC;stroke-linejoin:round}"
     + ".pi-n{stroke:#3D246C;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}"
     + ".pi-a{stroke:#3D246C;stroke-width:1;stroke-dasharray:7 2 1.5 2;fill:none;opacity:.7}</style>";
-  const sourceImage = (id) => "data:image/svg+xml," + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${STYLE_IMAGE}${$("img-" + id).innerHTML}</svg>`);
+  // Images personnelles : gardées dans ce navigateur seulement (jamais dans le fichier d'étude, jamais envoyées).
+  // Un maillon y fait référence par « perso:<nom> ». Réduites à 256 px à l'ajout.
+  const CLE_IMAGES = "chainecotes.images";
+  const PERSO = "perso:";
+  const MAX_IMAGES = 30;
+  const IMAGE_VALIDE = /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/;
+  let perso = {};
+  function lirePerso() {
+    try {
+      const brut = JSON.parse(localStorage.getItem(CLE_IMAGES) || "{}");
+      perso = Object.fromEntries(Object.entries(brut).filter(([, v]) => typeof v === "string" && IMAGE_VALIDE.test(v)));
+    } catch (e) { perso = {}; }
+  }
+  function garderPerso() {
+    try { localStorage.setItem(CLE_IMAGES, JSON.stringify(perso)); return true; } catch (e) { return false; }
+  }
+  const estPerso = (id) => typeof id === "string" && id.startsWith(PERSO);
+  const imageConnue = (id) => (estPerso(id) ? Object.hasOwn(perso, id.slice(PERSO.length)) : Object.hasOwn(IMAGES, id));
+  const angleDe = (v) => Number(App.nombre(v)) || 0;
+
+  // Contenu SVG (boîte 40 × 40) d'une image : silhouette du catalogue ou image personnelle.
+  function corpsImage(id) {
+    if (estPerso(id)) return `<image href="${perso[id.slice(PERSO.length)]}" x="0" y="0" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`;
+    return $("img-" + id).innerHTML;
+  }
+  const sourceImage = (id, angle) => "data:image/svg+xml," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${STYLE_IMAGE}<g transform="rotate(${angleDe(angle)} 20 20)">${corpsImage(id)}</g></svg>`);
 
   // Ajoute au schéma du pont la silhouette de chaque maillon qui en a une : sous sa flèche, au milieu, comme une pièce
   // sous sa ligne de cote. Le nom reste au-dessus de la flèche ; les lignes sont plus hautes pour loger la silhouette.
   function vignettes(fig, maillons) {
     const L = fig.layout, mg = L.margin || {}, notes = L.annotations || [];
-    if (!maillons.some((m) => IMAGES[m.image])) return;
+    if (!maillons.some((m) => imageConnue(m.image))) return;
     const COTE = 44, LIGNE = 70; // px : côté de la silhouette, hauteur d'une ligne du schéma
     const hautY = L.yaxis.range[1] - L.yaxis.range[0];
     L.height = (mg.t ?? 100) + (mg.b ?? 80) + LIGNE * hautY;
@@ -38,8 +63,8 @@
     maillons.forEach((m, i) => {
       const note = notes.find((n) => n.name === "libelle:" + i);
       const fleche = note && notes.find((n) => String(n.name).startsWith("maillon:") && n.y === note.y);
-      if (!fleche || !IMAGES[m.image]) return;
-      L.images.push({ source: sourceImage(m.image), xref: "x", yref: "y", x: (fleche.x + fleche.ax) / 2, y: fleche.y - 4 / LIGNE,
+      if (!fleche || !imageConnue(m.image)) return;
+      L.images.push({ source: sourceImage(m.image, m.imageAngle), xref: "x", yref: "y", x: (fleche.x + fleche.ax) / 2, y: fleche.y - 4 / LIGNE,
         xanchor: "center", yanchor: "top", sizex: COTE / pxX, sizey: COTE / LIGNE, sizing: "contain", layer: "above" });
     });
   }
@@ -82,6 +107,13 @@
     return el;
   }
 
+  // Options de la liste « Image » : catalogue, mes images, et l'image d'une étude ouverte si elle manque dans ce navigateur.
+  function optionsImages(courante) {
+    const options = [["", "(aucune)"], ...Object.entries(IMAGES), ...Object.keys(perso).map((n) => [PERSO + n, "Mes images : " + n])];
+    if (courante && !imageConnue(courante)) options.push([courante, `${estPerso(courante) ? courante.slice(PERSO.length) : courante} (absente de ce navigateur)`]);
+    return options;
+  }
+
   function ligneMaillon(m, numero) {
     const tr = document.createElement("tr");
     tr._extra = m.extra || {}; // champs que la page ne saisit pas (facteur, angle, mesures de l'atelier…) : gardés intacts
@@ -104,17 +136,47 @@
       td.append(el);
       tr.append(td);
     });
-    // image de la pièce : aperçu + liste ; colonne affichée seulement si « Représentation » est cochée
+    // image de la pièce : aperçu, liste (catalogue + mes images) et inclinaison ; colonne affichée si « Représentation » est cochée
     const tdImage = Object.assign(document.createElement("td"), { className: "td-image" });
-    const choix = liste("m-image", [["", "(aucune)"], ...Object.entries(IMAGES)], IMAGES[m.image] ? m.image : "");
+    const choix = liste("m-image", optionsImages(m.image), m.image || "");
     choix.setAttribute("aria-label", `Image de la pièce, maillon ${numero}`);
-    const vue = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const angle = champ(m.imageAngle, "m-angle", true);
+    angle.setAttribute("aria-label", `Inclinaison de l'image en degrés, maillon ${numero}`);
+    angle.placeholder = "0°";
+    const NS = "http://www.w3.org/2000/svg";
+    const vue = document.createElementNS(NS, "svg");
     vue.setAttribute("viewBox", "0 0 40 40");
     vue.setAttribute("aria-hidden", "true");
-    const montrer = () => { vue.innerHTML = choix.value ? `<use href="#img-${choix.value}"/>` : ""; }; // valeur prise dans IMAGES
+    const montrer = () => {
+      vue.replaceChildren();
+      if (!imageConnue(choix.value)) return;
+      const g = document.createElementNS(NS, "g");
+      g.setAttribute("transform", `rotate(${angleDe(angle.value)} 20 20)`);
+      const el = document.createElementNS(NS, estPerso(choix.value) ? "image" : "use");
+      if (estPerso(choix.value)) {
+        for (const [k, v] of [["href", perso[choix.value.slice(PERSO.length)]], ["x", 0], ["y", 0], ["width", 40], ["height", 40], ["preserveAspectRatio", "xMidYMid meet"]]) el.setAttribute(k, v);
+      } else el.setAttribute("href", "#img-" + choix.value);
+      g.append(el);
+      vue.append(g);
+    };
+    const tourner = (delta, nom) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit", textContent: delta < 0 ? "↺" : "↻", title: `Tourner de 90° ${delta < 0 ? "à gauche" : "à droite"}` });
+      b.setAttribute("aria-label", `${nom}, maillon ${numero}`);
+      b.addEventListener("click", () => {
+        angle.value = String((((angleDe(angle.value) + delta) % 360) + 360) % 360);
+        angle.dispatchEvent(new Event("input", { bubbles: true })); // l'aperçu suit
+      });
+      return b;
+    };
     choix.addEventListener("change", montrer);
+    angle.addEventListener("input", montrer);
     montrer();
-    tdImage.append(vue, choix);
+    const haut = Object.assign(document.createElement("div"), { className: "image-haut" });
+    haut.append(vue, choix);
+    const bas = Object.assign(document.createElement("div"), { className: "image-bas" });
+    bas.append(Object.assign(document.createElement("span"), { textContent: "Inclinaison" }), angle, Object.assign(document.createElement("span"), { textContent: "°" }),
+      tourner(-90, "Tourner à gauche"), tourner(90, "Tourner à droite"));
+    tdImage.append(haut, bas);
     tr.append(tdImage);
     const sup = document.createElement("button");
     sup.type = "button";
@@ -149,6 +211,7 @@
       alpha: tr.querySelector(".m-alpha").value,
       tservice: tr.querySelector(".m-tserv").value,
       image: tr.querySelector(".m-image").value,
+      imageAngle: tr.querySelector(".m-angle").value,
       extra: tr._extra,
     }));
   }
@@ -162,6 +225,7 @@
       nom: m.nom, sens: m.sens, loi: m.loi, iso: m.iso.trim(),
       cote: nombre(m.cote), es: nombre(m.es), ei: nombre(m.ei),
       image: m.image, // gardée même si « Représentation » est décochée
+      imageAngle: nombre(m.imageAngle),
       ...(therm ? { materiau: m.materiau, alpha: nombre(m.alpha), tservice: nombre(m.tservice) } : {}),
     }));
     const probleme = {
@@ -211,6 +275,8 @@
     t.classList.toggle("therm", $("thermique").checked);
     t.classList.toggle("tcote", $("thermique").checked && $("r-mode").value === "par_cote");
     t.classList.toggle("images", $("representation").checked);
+    $("perso-zone").hidden = !$("representation").checked;
+    $("zone-maillons").classList.toggle("large", $("representation").checked || $("thermique").checked); // colonnes en plus : tableau plus large
   }
 
   // ---------- aperçu en direct ----------
@@ -554,6 +620,51 @@
       dessous = !dessous;
       try { localStorage.setItem("chainecotes.schemaDessous", dessous ? "1" : "0"); } catch (e) { /* sans mémoire */ }
       dispo();
+      apercu();
+    });
+    // images personnelles (restent dans ce navigateur)
+    lirePerso();
+    const direImage = (niveau, texte) => App.message($("perso-message"), niveau, texte);
+    const reduire = async (fichier) => {
+      const bmp = await createImageBitmap(fichier);
+      const k = Math.min(1, 256 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(bmp.width * k));
+      c.height = Math.max(1, Math.round(bmp.height * k));
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      return c.toDataURL(fichier.type === "image/jpeg" ? "image/jpeg" : "image/png", 0.85);
+    };
+    $("perso-ajouter").addEventListener("click", () => $("perso-fichier").click());
+    $("perso-fichier").addEventListener("change", async (e) => {
+      const avant = { ...perso };
+      let ajoutees = 0;
+      for (const f of e.target.files) {
+        if (!["image/png", "image/jpeg", "image/webp"].includes(f.type)) { direImage("avertissement", `« ${f.name} » n'est pas une image PNG, JPG ou WebP : ignorée.`); continue; }
+        if (Object.keys(perso).length >= MAX_IMAGES) { direImage("avertissement", `Limite de ${MAX_IMAGES} images atteinte.`); break; }
+        try {
+          let nom = f.name.replace(/\.[^.]+$/, "").trim().slice(0, 40) || "image", i = 2;
+          const base = nom;
+          while (Object.hasOwn(perso, nom)) nom = `${base} (${i++})`;
+          perso[nom] = await reduire(f);
+          ajoutees++;
+        } catch (err) { direImage("erreur", `Lecture impossible de « ${f.name} ».`); }
+      }
+      e.target.value = "";
+      if (!ajoutees) return;
+      if (!garderPerso()) {
+        perso = avant;
+        direImage("erreur", "Le navigateur n'a pas de place pour garder ces images : effacez-en d'abord.");
+        return;
+      }
+      direImage("succes", `${ajoutees} image(s) ajoutée(s) : choisissez-les dans la liste « Image » de chaque maillon.`);
+      afficherMaillons(lireMaillons());
+      apercu();
+    });
+    $("perso-effacer").addEventListener("click", () => {
+      perso = {};
+      try { localStorage.removeItem(CLE_IMAGES); } catch (err) { /* rien à effacer */ }
+      direImage("info", "Mes images effacées de ce navigateur.");
+      afficherMaillons(lireMaillons());
       apercu();
     });
     $("opt-aller").addEventListener("click", () => App.afficherPage("repartir"));

@@ -49,6 +49,7 @@ _MAILLON = {
     "moyenne_reelle": ("nombre", True),
     "geometrie": (tuple(TYPES_GEOMETRIE), True),
     "image": ("texte", True),  # silhouette de la pièce sur le schéma de la page web ; sans effet sur le calcul
+    "imageAngle": ("nombre", True),  # inclinaison de cette silhouette (degrés) ; sans effet sur le calcul
 }
 _REQUIS_MAILLON = ("sens", "cote")
 _CARTOUCHE = {cle: ((*STATUTS, ""), True) if cle == "statut" else ("texte", True) for cle, _ in CHAMPS}
