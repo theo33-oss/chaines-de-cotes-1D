@@ -265,8 +265,16 @@
     majHistorique();
   }
 
+  // Résumé affiché dans le titre d'un bandeau, utile quand il est replié.
+  function majResumes() {
+    const lim = (v) => (String(v).trim() === "" ? "…" : String(v).trim());
+    $("resume-condition").textContent = `${$("c-nom").value || "sans nom"} : ${lim($("c-jmin").value)} à ${lim($("c-jmax").value)} mm`;
+    $("resume-maillons").textContent = `${$("maillons").tBodies[0].rows.length} maillon(s)`;
+  }
+
   function apercu() {
     memoriser();
+    majResumes();
     let r;
     try {
       r = JSON.parse(pont.apercu(JSON.stringify(lireProbleme())));
@@ -369,6 +377,7 @@
     $("resultats").hidden = false;
     App.message($("verdict"), r.niveau, r.titre);
     $("conseil").textContent = r.conseil ? "À faire : " + r.conseil : "";
+    $("opt-invite").hidden = r.niveau !== "erreur"; // jeu non tenu : on propose d'optimiser les tolérances
     // mode guidé : le verdict en langage courant (chiffres, puis conseils)
     const puces = (liste) => liste.map((t) => Object.assign(document.createElement("li"), { textContent: t }));
     $("plain-details").replaceChildren(...puces(r.details));
@@ -377,6 +386,7 @@
     $("plain-conseils").replaceChildren(...(r.conseils.length ? [App.titre("Que faire ?"), ul] : []));
     $("avertissements").replaceChildren(...r.avertissements.map((t) => Object.assign(document.createElement("li"), { textContent: t })));
     App.onglets($("onglets"), $("panneau"), onglets(r).map((o) => ({ ...o, rendu: (p) => { ongletActif = o.id; o.rendu(p); } })), ongletActif);
+    App.majBlocs();
   }
 
   function calculer() {
@@ -425,7 +435,11 @@
   function majGuide() {
     const page = $("page-analyser");
     page.classList.toggle("guidee", guide.actif);
-    for (const el of page.querySelectorAll("[data-etape]")) el.classList.toggle("etape-courante", Number(el.dataset.etape) === guide.etape + 1);
+    for (const el of page.querySelectorAll("[data-etape]")) {
+      const courante = Number(el.dataset.etape) === guide.etape + 1;
+      el.classList.toggle("etape-courante", courante);
+      if (courante && guide.actif && el.tagName === "DETAILS") el.open = true; // un bandeau replié reste lisible dans le parcours guidé
+    }
     $("guide-etapes").replaceChildren(...ETAPES.map(([titre], i) => {
       const li = document.createElement("li");
       const b = Object.assign(document.createElement("button"), { type: "button", textContent: `${i + 1}. ${titre}` });
@@ -505,6 +519,7 @@
       $("resultats").hidden = true;
       App.message($("erreur"), "erreur", "");
       messageFichier("info", "");
+      $("b-depart").open = false;
       calculer();
       apercu();
     });
@@ -527,6 +542,21 @@
     });
     $("ajouter").addEventListener("click", () => { afficherMaillons([...lireMaillons(), { ...MAILLON_VIDE }]); apercuDiffere(); });
     $("calculer").addEventListener("click", calculer);
+    // schéma à côté du tableau (écran large) ou dessous : choix gardé dans ce navigateur
+    let dessous = false;
+    try { dessous = localStorage.getItem("chainecotes.schemaDessous") === "1"; } catch (e) { /* sans mémoire */ }
+    const dispo = () => {
+      $("zone-maillons").classList.toggle("dessous", dessous);
+      $("disposition").textContent = dessous ? "Schéma : dessous" : "Schéma : à côté";
+    };
+    dispo();
+    $("disposition").addEventListener("click", () => {
+      dessous = !dessous;
+      try { localStorage.setItem("chainecotes.schemaDessous", dessous ? "1" : "0"); } catch (e) { /* sans mémoire */ }
+      dispo();
+      apercu();
+    });
+    $("opt-aller").addEventListener("click", () => App.afficherPage("repartir"));
     $("guide-ouvrir").addEventListener("click", () => modeGuide(true, 0));
     $("guide-quitter").addEventListener("click", () => modeGuide(false));
     for (const b of document.querySelectorAll("#page-analyser .js-precedent")) b.addEventListener("click", () => allerEtape(guide.etape - 1));

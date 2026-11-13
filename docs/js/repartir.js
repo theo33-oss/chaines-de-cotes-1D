@@ -224,5 +224,5 @@
   }
 
   App.repartition = { dernier: () => (dernier ? dernier.apres : null) };
-  App.enregistrerPage({ id: "repartir", titre: "Répartir", apres, afficher: () => { if (pont) afficher(); } });
+  App.enregistrerPage({ id: "repartir", dans: "analyser", titre: "Répartir", apres, afficher: () => { if (pont) afficher(); } });
 })();
