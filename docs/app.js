@@ -202,6 +202,11 @@ const App = (() => {
     return p && p.dans ? p.dans : AIDES.includes(id) ? "aides" : id;
   };
 
+  // Un graphique tracé pendant que sa page était cachée a une largeur par défaut : on l'ajuste quand il devient visible.
+  function ajusterGraphiques(racine) {
+    for (const g of racine.querySelectorAll(".js-plotly-plot")) Plotly.Plots.resize(g);
+  }
+
   function allerBandeau(el) {
     if (el.hidden) return;
     el.open = true;
@@ -220,6 +225,7 @@ const App = (() => {
       $("etude-texte").textContent = `Étude en cours : « ${p.condition.nom || "sans nom"} », ${p.maillons.length} maillon(s).`;
     }
     majMenu();
+    requestAnimationFrame(() => ajusterGraphiques($("page-" + ecran)));
     if (page && page.dans) {
       if (exposition.analyser) exposition.analyser.guide(false); // un bloc d'étude se lit en mode expert
       const el = $("page-" + id);
@@ -284,6 +290,7 @@ const App = (() => {
         memo[d.id] = d.open;
         try { localStorage.setItem("chainecotes.bandeaux", JSON.stringify(memo)); } catch (e) { /* stockage bloqué : sans mémoire */ }
         const page = pages.find((p) => p.dans && "page-" + p.id === d.id);
+        if (d.open) ajusterGraphiques(d);
         if (d.open && page && page.afficher && pont) page.afficher();
       });
     }

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=5c03f929">
+<link rel="stylesheet" href="style.css?v=61c7f764">
 </head>
 <body>
 <header>
@@ -49,12 +49,12 @@
         <button id="enregistrer" type="button" class="secondaire">Enregistrer l'étude</button>
         <input id="fichier" type="file" accept=".json,application/json" hidden>
       </div>
-      <p class="legende">Le fichier est celui de l'application de bureau : une étude enregistrée sur la page s'ouvre dans l'application, et inversement.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le fichier est celui de l'application de bureau : une étude enregistrée sur la page s'ouvre dans l'application, et inversement.</p></details>
       <p id="message-fichier" class="message" role="status" hidden></p>
     </details>
 
     <details class="bandeau" id="b-condition" open data-etape="2"><summary><h2 id="t-condition">2. Cote condition</h2><span class="resume" id="resume-condition"></span></summary>
-      <p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p></details>
       <div class="grille">
         <label>Nom<input id="c-nom" type="text" value="Jeu J"></label>
         <label>Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
@@ -74,13 +74,13 @@
             <select id="r-tolgen"><option value="">Aucune (écarts à saisir)</option><option value="f">f : fine</option><option value="m">m : moyenne</option><option value="c">c : grossière</option><option value="v">v : très grossière</option></select>
           </label>
         </div>
-        <p class="legende">La tolérance générale est donnée aux maillons dont ni la désignation ISO ni les écarts ne sont saisis.</p>
+        <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">La tolérance générale est donnée aux maillons dont ni la désignation ISO ni les écarts ne sont saisis.</p></details>
       </details>
     </details>
 
     <div id="zone-maillons">
     <details class="bandeau" id="b-maillons" open data-etape="3"><summary><h2 id="t-maillons">3. Maillons</h2><span class="resume" id="resume-maillons"></span></summary>
-      <p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p></details>
       <label class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
       <div class="defile">
         <table id="maillons">
@@ -96,7 +96,7 @@
         <button id="disposition" type="button" class="secondaire" title="Place le schéma à côté du tableau ou dessous">Schéma : à côté</button>
       </div>
       <label class="case"><input id="representation" type="checkbox"> Représentation : afficher une image de pièce sur chaque flèche</label>
-      <p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude.</p></details>
     </details>
 
     <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
@@ -135,7 +135,7 @@
   <!-- ===== Page « Optimiser les tolérances » (js/repartir.js) ===== -->
   <details class="bandeau expert-seul" id="page-repartir">
     <summary><h2>Optimiser les tolérances</h2></summary>
-      <p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p></details>
       <div class="grille">
         <label>Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
         <label>Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
@@ -152,14 +152,14 @@
       </div></fieldset>
       <fieldset class="familles"><legend>Maillons figés (écarts gardés)</legend><div id="rp-figes"></div></fieldset>
       <label class="large">Maillon de réglage<select id="rp-reglage"></select></label>
-      <p class="legende">Maillon non figé dont la cote moyenne est décalée pour amener le jeu au milieu de [Jmin ; Jmax].</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Maillon non figé dont la cote moyenne est décalée pour amener le jeu au milieu de [Jmin ; Jmax].</p></details>
       <div id="rp-cout" hidden>
         <label class="case"><input id="rp-arrondi" type="checkbox"> Arrondir chaque IT à une qualité ISO 286</label>
         <h3>Procédé de chaque maillon</h3>
         <div id="rp-procedes" class="grille"></div>
         <details>
           <summary>Mes valeurs d'atelier (remplacent les valeurs indicatives)</summary>
-          <p class="legende">Coût = c × (IT / 0,1 mm)^(−n). Entrez le coût relatif et l'exposant de votre atelier et les qualités IT que le procédé tient ; une valeur laissée telle quelle reste la valeur indicative.</p>
+          <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Coût = c × (IT / 0,1 mm)^(−n). Entrez le coût relatif et l'exposant de votre atelier et les qualités IT que le procédé tient ; une valeur laissée telle quelle reste la valeur indicative.</p></details>
           <div id="rp-atelier"></div>
           <div class="ligne">
             <button id="rp-at-garder" type="button" class="secondaire">Garder dans ce navigateur</button>
@@ -196,7 +196,7 @@
   <!-- ===== Page « Comparer » (js/comparer.js) ===== -->
   <details class="bandeau expert-seul" id="page-comparer">
     <summary><h2>Comparaison de scénarios</h2></summary>
-      <p class="legende">Le scénario A est l'étude en cours (bandeaux ci-dessus). Choisissez le scénario B : le résultat de la répartition (bandeau Optimiser), un exemple de la bibliothèque ou un fichier d'étude. Les écarts sont toujours B − A.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le scénario A est l'étude en cours (bandeaux ci-dessus). Choisissez le scénario B : le résultat de la répartition (bandeau Optimiser), un exemple de la bibliothèque ou un fichier d'étude. Les écarts sont toujours B − A.</p></details>
       <fieldset class="familles"><legend>Scénario B</legend><div>
         <label class="case"><input type="radio" name="cp-source" value="repartition" checked> Résultat de la répartition</label>
         <label class="case"><input type="radio" name="cp-source" value="exemple"> Exemple de la bibliothèque</label>
@@ -223,10 +223,10 @@
   <!-- ===== Page « Dossier de validation » (js/dossier.js) ===== -->
   <details class="bandeau expert-seul" id="page-dossier">
     <summary><h2>Dossier de validation</h2></summary>
-      <p class="legende">Le dossier refait chaque grandeur de l'étude en cours (bandeaux ci-dessus) à la main, sans le solveur, et la compare au résultat du solveur ; il relit aussi la table ISO 286 et confronte le Monte-Carlo à la formule. Le fichier HTML obtenu est à joindre à votre note de calcul.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le dossier refait chaque grandeur de l'étude en cours (bandeaux ci-dessus) à la main, sans le solveur, et la compare au résultat du solveur ; il relit aussi la table ISO 286 et confronte le Monte-Carlo à la formule. Le fichier HTML obtenu est à joindre à votre note de calcul.</p></details>
       <h3>Cartouche du dossier</h3>
       <div id="dos-champs" class="grille"></div>
-      <p class="legende">Le cartouche est enregistré avec l'étude (fichier .json) et repris par le dossier. Le statut « Validé » enregistre l'empreinte du problème : le bureau signale toute modification faite ensuite.</p>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le cartouche est enregistré avec l'étude (fichier .json) et repris par le dossier. Le statut « Validé » enregistre l'empreinte du problème : le bureau signale toute modification faite ensuite.</p></details>
       <p><button id="dos-generer" type="button" class="primaire">Générer le dossier de validation</button></p>
       <p id="dos-erreur" class="message erreur" role="alert" hidden></p>
       <section id="dos-resultat" hidden>
@@ -236,7 +236,7 @@
           <button id="dos-telecharger" type="button" class="primaire">Télécharger le dossier (.html)</button>
           <button id="dos-imprimer" type="button" class="secondaire">Ouvrir pour imprimer en PDF</button>
         </div>
-        <p class="legende">Les graphiques du dossier sont interactifs et chargent Plotly depuis Internet à l'ouverture du fichier. Les dossiers PDF et Word, avec images des graphiques, sont dans l'application de bureau. « Ouvrir pour imprimer » ouvre le dossier dans un nouvel onglet : utilisez Ctrl+P puis « Enregistrer au format PDF ».</p>
+        <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Les graphiques du dossier sont interactifs et chargent Plotly depuis Internet à l'ouverture du fichier. Les dossiers PDF et Word, avec images des graphiques, sont dans l'application de bureau. « Ouvrir pour imprimer » ouvre le dossier dans un nouvel onglet : utilisez Ctrl+P puis « Enregistrer au format PDF ».</p></details>
       </section>
   </details>
 
@@ -315,17 +315,17 @@
   <!-- ===== Page « Assistant de chaîne » (js/assistant.js) ===== -->
   <div id="page-assistant" hidden>
     <h2>Assistant de construction de chaîne</h2>
-    <p class="legende">Décrivez les pièces par leurs <strong>cotes</strong> (entre deux de leurs surfaces) et les <strong>contacts</strong> entre pièces, puis choisissez les deux surfaces dont vous voulez le jeu. L'assistant trouve la <strong>chaîne minimale</strong> (le moins de cotes possible, une seule par pièce), dessine le plan et prépare le calcul.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Décrivez les pièces par leurs <strong>cotes</strong> (entre deux de leurs surfaces) et les <strong>contacts</strong> entre pièces, puis choisissez les deux surfaces dont vous voulez le jeu. L'assistant trouve la <strong>chaîne minimale</strong> (le moins de cotes possible, une seule par pièce), dessine le plan et prépare le calcul.</p></details>
     <div class="ligne">
       <button id="as-exemple" type="button" class="secondaire">Charger l'exemple (arbre dans un carter)</button>
       <button id="as-vider" type="button" class="secondaire">Tout effacer</button>
     </div>
     <h3>1. Les cotes de chaque pièce</h3>
-    <p class="legende">Une ligne par cote : la surface « vers » est à « cote » de la surface « de », dans le sens de l'axe. Mettez des valeurs positives (inversez De et Vers sinon). Une pièce peut avoir plusieurs cotes.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Une ligne par cote : la surface « vers » est à « cote » de la surface « de », dans le sens de l'axe. Mettez des valeurs positives (inversez De et Vers sinon). Une pièce peut avoir plusieurs cotes.</p></details>
     <div class="defile"><table id="as-cotes"><thead></thead><tbody></tbody></table></div>
     <button id="as-ajout-cote" type="button" class="secondaire">Ajouter une cote</button>
     <h3>2. Les contacts entre pièces</h3>
-    <p class="legende">Deux surfaces de pièces différentes qui se touchent sont au même endroit.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Deux surfaces de pièces différentes qui se touchent sont au même endroit.</p></details>
     <div class="defile"><table id="as-contacts"><thead></thead><tbody></tbody></table></div>
     <button id="as-ajout-contact" type="button" class="secondaire">Ajouter un contact</button>
     <h3>3. Le jeu et la chaîne</h3>
@@ -336,7 +336,7 @@
       <label>Jmin (mm)<input id="as-jmin" type="text" inputmode="decimal" value="0"></label>
       <label>Jmax (mm)<input id="as-jmax" type="text" inputmode="decimal" value="1"></label>
     </div>
-    <p class="legende">Le jeu J est la position de la surface d'arrivée moins celle de la surface de départ (l'axe croît de « de » vers « vers »).</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le jeu J est la position de la surface d'arrivée moins celle de la surface de départ (l'axe croît de « de » vers « vers »).</p></details>
     <p id="as-info" class="message info" hidden></p>
     <p id="as-erreur" class="message erreur" role="alert" hidden></p>
     <div id="as-resultat" hidden>
@@ -352,7 +352,7 @@
   <!-- ===== Page « Mécanisme » (js/mecanisme.js) ===== -->
   <div id="page-mecanisme" hidden>
     <h2>Mécanisme (plusieurs chaînes)</h2>
-    <p class="legende">Un mécanisme réunit les chaînes de cotes (jeux fonctionnels) d'un même assemblage. Constituez-le à partir d'exemples, de fichiers ou de l'étude en cours, calculez toutes les chaînes d'un coup et repérez la plus fragile. Une chaîne en erreur n'empêche pas le calcul des autres.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Un mécanisme réunit les chaînes de cotes (jeux fonctionnels) d'un même assemblage. Constituez-le à partir d'exemples, de fichiers ou de l'étude en cours, calculez toutes les chaînes d'un coup et repérez la plus fragile. Une chaîne en erreur n'empêche pas le calcul des autres.</p></details>
     <h3>Constituer le mécanisme</h3>
     <div class="grille">
       <label>Nom du mécanisme<input id="mc-nom" type="text" value="Mécanisme"></label>
@@ -364,7 +364,7 @@
       <button id="mc-ajout-fichiers" type="button" class="secondaire">Ajouter des fichiers (.json)</button>
       <input id="mc-fichiers" type="file" accept=".json,application/json" multiple hidden>
     </div>
-    <p class="legende">Chaque fichier d'étude ajoute une chaîne ; un fichier de mécanisme ajoute toutes ses chaînes.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Chaque fichier d'étude ajoute une chaîne ; un fichier de mécanisme ajoute toutes ses chaînes.</p></details>
     <p id="mc-message" class="message" role="status" hidden></p>
     <h3 id="mc-titre-liste">Chaînes (0)</h3>
     <div id="mc-liste" class="cartes"></div>
@@ -373,7 +373,7 @@
       <button id="mc-ouvrir" type="button" class="secondaire">Ouvrir un mécanisme (.json)</button>
       <input id="mc-fichier" type="file" accept=".json,application/json" hidden>
     </div>
-    <p class="legende">« Ouvrir » remplace toutes les chaînes du mécanisme en cours.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">« Ouvrir » remplace toutes les chaînes du mécanisme en cours.</p></details>
     <details>
       <summary>Options du calcul</summary>
       <div class="grille">
@@ -400,14 +400,14 @@
   <!-- ===== Page « Bibliothèque d'exemples » (js/exemples.js) ===== -->
   <div id="page-exemples" hidden>
     <h2>Bibliothèque d'exemples</h2>
-    <p class="legende">Les six premiers exemples viennent de l'application MATLAB d'origine ou de son aide (leurs résultats sont vérifiés contre MATLAB). Les suivants sont des exemples pédagogiques, à plusieurs pièces. « Ouvrir dans Analyser » en fait l'étude en cours (il remplace la chaîne ouverte) et lance le calcul ; vous pourrez ensuite le modifier librement. L'aperçu donne le jeu au pire des cas, sans Monte-Carlo.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Les six premiers exemples viennent de l'application MATLAB d'origine ou de son aide (leurs résultats sont vérifiés contre MATLAB). Les suivants sont des exemples pédagogiques, à plusieurs pièces. « Ouvrir dans Analyser » en fait l'étude en cours (il remplace la chaîne ouverte) et lance le calcul ; vous pourrez ensuite le modifier librement. L'aperçu donne le jeu au pire des cas, sans Monte-Carlo.</p></details>
     <div id="exemples-liste" class="cartes"></div>
   </div>
 
   <!-- ===== Page « Assistant d'ajustement » (js/ajustement.js) ===== -->
   <div id="page-ajustement" hidden>
     <h2>Assistant d'ajustement</h2>
-    <p class="legende">Choisissez la cote, la fonction attendue et le système (alésage normal ou arbre normal) : les ajustements ISO 286 recommandés sont classés du mieux adapté au moins adapté, avec leurs jeux calculés à cette cote. « Utiliser dans la chaîne » ajoute l'alésage et l'arbre à l'étude de la page Analyser.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Choisissez la cote, la fonction attendue et le système (alésage normal ou arbre normal) : les ajustements ISO 286 recommandés sont classés du mieux adapté au moins adapté, avec leurs jeux calculés à cette cote. « Utiliser dans la chaîne » ajoute l'alésage et l'arbre à l'étude de la page Analyser.</p></details>
     <div class="grille">
       <label>Cote nominale (mm)<select id="aj-cote"></select></label>
       <label id="aj-autre-bloc" hidden>Cote (mm)<input id="aj-autre" type="text" inputmode="decimal" value="50"></label>
@@ -436,7 +436,7 @@
   <!-- ===== Page « Tables ISO 286 » (js/iso286.js) ===== -->
   <div id="page-iso286" hidden>
     <h2>Tables ISO 286</h2>
-    <p class="legende">Écarts et intervalles de tolérance de l'ISO 286 (qualités IT1 à IT18, positions a à zc pour les arbres et A à ZC pour les alésages). Les écarts sont donnés en mm dans la calculatrice et en µm dans les tables.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Écarts et intervalles de tolérance de l'ISO 286 (qualités IT1 à IT18, positions a à zc pour les arbres et A à ZC pour les alésages). Les écarts sont donnés en mm dans la calculatrice et en µm dans les tables.</p></details>
     <h3>Calculatrice</h3>
     <div class="ligne">
       <label class="case"><input type="radio" name="iso-mode" value="listes" checked> Cote, position et qualité</label>
@@ -452,15 +452,15 @@
     <div id="iso-texte" class="grille" hidden>
       <label>Désignation ISO 286<input id="iso-designation" type="text" value="50 H7"></label>
     </div>
-    <p class="legende">Désignation : cote en mm puis position et qualité, minuscule pour un arbre (h7), majuscule pour un alésage (H7).</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Désignation : cote en mm puis position et qualité, minuscule pour un arbre (h7), majuscule pour un alésage (H7).</p></details>
     <p id="iso-erreur" class="message erreur" role="alert" hidden></p>
     <p id="iso-avertissement" class="message avertissement" hidden></p>
     <div id="iso-resultat" class="cartes"></div>
     <h3>Intervalles de tolérance IT (µm)</h3>
-    <p class="legende">Une ligne par plage de cote nominale (mm), une colonne par qualité ; case vide : qualité non définie.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Une ligne par plage de cote nominale (mm), une colonne par qualité ; case vide : qualité non définie.</p></details>
     <div id="iso-it"></div>
     <h3>Écarts fondamentaux (µm)</h3>
-    <p class="legende">Écart le plus proche de la ligne zéro, tel que la table le donne : écart supérieur es (a à h) ou inférieur ei (j à zc) des arbres ; écart inférieur EI (A à H) ou supérieur ES avant correction Δ (J à ZC) des alésages.</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Écart le plus proche de la ligne zéro, tel que la table le donne : écart supérieur es (a à h) ou inférieur ei (j à zc) des arbres ; écart inférieur EI (A à H) ou supérieur ES avant correction Δ (J à ZC) des alésages.</p></details>
     <div class="grille">
       <label>Pièce<select id="iso-fpiece"><option>Arbre</option><option>Alésage</option></select></label>
       <label>Position (colonne de la table)<select id="iso-fposition"></select></label>
@@ -479,7 +479,7 @@
   <!-- ===== Page « Matériaux et dilatation » (js/materiaux.js) ===== -->
   <div id="page-materiaux" hidden>
     <h2>Matériaux et dilatation</h2>
-    <p class="legende">Les matériaux de l'application MATLAB, avec leur coefficient de dilatation α à température ambiante, leur courbe de dilatation en température et leurs limites d'emploi. Le calcul de la chaîne utilise α moyen entre la température de référence des cotes (Tref) et la température de service : ΔL = α · L · (T − Tref).</p>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Les matériaux de l'application MATLAB, avec leur coefficient de dilatation α à température ambiante, leur courbe de dilatation en température et leurs limites d'emploi. Le calcul de la chaîne utilise α moyen entre la température de référence des cotes (Tref) et la température de service : ΔL = α · L · (T − Tref).</p></details>
     <h3>Tableau des matériaux</h3>
     <div class="grille">
       <label>Rechercher un matériau<input id="mat-recherche" type="search" placeholder="inox, aluminium 6061, NIST…"></label>
@@ -534,7 +534,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=9cbfe231"></script>
+<script src="app.js?v=ee22b3f1"></script>
 <script src="js/accueil.js?v=38c7bc39"></script>
 <script src="js/chaine.js?v=4c7567b3"></script>
 <script src="js/repartir.js?v=026f047e"></script>
