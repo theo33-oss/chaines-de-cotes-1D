@@ -73,5 +73,5 @@
     majSource();
   }
 
-  App.enregistrerPage({ id: "comparer", titre: "Comparer", apres });
+  App.enregistrerPage({ id: "comparer", dans: "analyser", titre: "Comparer", apres });
 })();

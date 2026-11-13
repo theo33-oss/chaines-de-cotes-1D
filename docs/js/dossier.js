@@ -84,5 +84,5 @@
     $("dos-imprimer").addEventListener("click", () => window.open(URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" })), "_blank"));
   }
 
-  App.enregistrerPage({ id: "dossier", titre: "Dossier", apres, afficher: () => { if (pont) lireCartouche(); } });
+  App.enregistrerPage({ id: "dossier", dans: "analyser", titre: "Dossier", apres, afficher: () => { if (pont) lireCartouche(); } });
 })();

@@ -189,44 +189,109 @@ const App = (() => {
     if (pas) $("avance").value = pas;
   }
 
-  const UTILISENT_ETUDE = ["repartir", "comparer", "mecanisme", "dossier"]; // pages qui travaillent sur l'étude de la page Analyser
+  const UTILISENT_ETUDE = ["mecanisme"]; // pages qui travaillent sur l'étude de la page Étude
+  const AIDES = ["assistant", "exemples", "ajustement", "iso286", "materiaux"]; // regroupées sous « Aides »
+  // Sommaire de la page Étude : [élément, titre]. Un élément « page-… » déclaré avec dans: "analyser" est un bloc de la page.
+  const SOMMAIRE = [["b-depart", "Départ"], ["b-condition", "Condition"], ["b-maillons", "Maillons"], ["resultats", "Résultats"],
+    ["page-repartir", "Optimiser"], ["page-comparer", "Comparer"], ["page-dossier", "Dossier"]];
+  let derniereAide = "assistant";
+  let courante = "accueil";
+
+  const haut = (id) => {
+    const p = pages.find((x) => x.id === id);
+    return p && p.dans ? p.dans : AIDES.includes(id) ? "aides" : id;
+  };
+
+  function allerBandeau(el) {
+    if (el.hidden) return;
+    el.open = true;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   function afficherPage(id) {
-    for (const p of pages) $("page-" + p.id).hidden = p.id !== id;
-    for (const b of document.querySelectorAll("#menu button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     const page = pages.find((p) => p.id === id);
+    const ecran = page && page.dans ? page.dans : id; // les blocs de l'étude s'affichent dans la page Étude
+    for (const p of pages) if (!p.dans) $("page-" + p.id).hidden = p.id !== ecran;
+    if (AIDES.includes(id)) derniereAide = id;
+    courante = id;
     $("etude-cours").hidden = !(pont && UTILISENT_ETUDE.includes(id));
     if (!$("etude-cours").hidden) {
       const p = exposition.analyser.probleme();
       $("etude-texte").textContent = `Étude en cours : « ${p.condition.nom || "sans nom"} », ${p.maillons.length} maillon(s).`;
     }
-    if (page && page.afficher) page.afficher(); // la page se remet à jour d'après l'étude en cours
+    majMenu();
+    if (page && page.dans) {
+      if (exposition.analyser) exposition.analyser.guide(false); // un bloc d'étude se lit en mode expert
+      const el = $("page-" + id);
+      el.open = true;
+      if (page.afficher) page.afficher();
+      requestAnimationFrame(() => allerBandeau(el));
+    } else if (page && page.afficher) page.afficher(); // la page se remet à jour d'après l'étude en cours
   }
 
-  const AIDES = ["assistant", "exemples", "ajustement", "iso286", "materiaux"]; // deuxième rangée du menu
+  // Remet à jour les blocs ouverts de l'étude (Optimiser, Comparer, Dossier) d'après l'étude en cours.
+  function majBlocs() {
+    for (const p of pages) if (p.dans && p.afficher && $("page-" + p.id).open) p.afficher();
+  }
 
-  // Menu en deux rangées : l'étude (dans l'ordre du travail), puis les aides. Inactif tant que le calcul n'est pas chargé.
-  function menu() {
-    const rangee = (titre, liste) => {
-      const d = document.createElement("div");
-      d.className = "rangee";
-      d.append(Object.assign(document.createElement("span"), { textContent: titre }), ...liste.map((p) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.dataset.id = p.id;
-        b.textContent = p.titre;
-        b.disabled = p.id !== "accueil";
-        b.addEventListener("click", () => { afficherPage(p.id); window.scrollTo(0, 0); });
-        return b;
-      }));
-      return d;
+  // Barre fixe en haut : Accueil, Étude, Mécanisme, Aides ; dessous, le sommaire de l'étude ou la liste des aides.
+  function majMenu() {
+    const h = haut(courante);
+    for (const b of document.querySelectorAll("#menu .principal button")) b.setAttribute("aria-current", String(b.dataset.id === h));
+    const sous = document.querySelector("#menu .sous");
+    const bouton = (texte, clic, actif) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", textContent: texte, disabled: !pont });
+      b.setAttribute("aria-current", String(actif));
+      b.addEventListener("click", clic);
+      return b;
     };
+    sous.hidden = h !== "analyser" && h !== "aides";
+    if (h === "analyser") {
+      sous.replaceChildren(...SOMMAIRE.map(([cible, titre]) => bouton(titre, () => {
+        const page = pages.find((p) => "page-" + p.id === cible);
+        if (page) afficherPage(page.id);
+        else allerBandeau($(cible));
+      }, false)));
+    } else if (h === "aides") {
+      sous.replaceChildren(...AIDES.map((id) => bouton(pages.find((p) => p.id === id).titre, () => { afficherPage(id); window.scrollTo(0, 0); }, id === courante)));
+    }
+  }
+
+  function menu() {
+    const entrees = [["accueil", "Accueil"], ["analyser", "Étude"], ["mecanisme", "Mécanisme"], ["aides", "Aides"]];
+    const principal = document.createElement("div");
+    principal.className = "principal";
+    principal.append(...entrees.map(([id, titre]) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", textContent: titre, disabled: id !== "accueil" });
+      b.dataset.id = id;
+      b.addEventListener("click", () => { afficherPage(id === "aides" ? derniereAide : id); window.scrollTo(0, 0); });
+      return b;
+    }));
+    const sous = document.createElement("div");
+    sous.className = "sous";
+    sous.hidden = true;
     $("menu").hidden = false;
-    $("menu").replaceChildren(rangee("Étude", pages.filter((p) => !AIDES.includes(p.id))), rangee("Aides", pages.filter((p) => AIDES.includes(p.id))));
+    $("menu").replaceChildren(principal, sous);
+  }
+
+  // Bandeaux repliables : l'état ouvert / replié de chacun est gardé dans ce navigateur ; l'ouverture d'un bloc le met à jour.
+  function bandeaux() {
+    let memo = {};
+    try { memo = JSON.parse(localStorage.getItem("chainecotes.bandeaux") || "{}"); } catch (e) { memo = {}; }
+    for (const d of document.querySelectorAll("details.bandeau")) {
+      if (d.id in memo) d.open = memo[d.id];
+      d.addEventListener("toggle", () => {
+        memo[d.id] = d.open;
+        try { localStorage.setItem("chainecotes.bandeaux", JSON.stringify(memo)); } catch (e) { /* stockage bloqué : sans mémoire */ }
+        const page = pages.find((p) => p.dans && "page-" + p.id === d.id);
+        if (d.open && page && page.afficher && pont) page.afficher();
+      });
+    }
   }
 
   async function demarrer() {
     menu();
+    bandeaux();
     afficherPage("accueil"); // l'accueil se lit pendant le chargement ; ses boutons s'activent à la fin
     $("etude-modifier").addEventListener("click", () => afficherPage("analyser"));
     if (!exposition.analyser) { // un bloqueur de publicité ou un cache périmé a retenu un script
@@ -258,10 +323,12 @@ const App = (() => {
       return;
     }
     for (const b of document.querySelectorAll("#menu button, #page-accueil button")) b.disabled = false;
+    majMenu();
+    majBlocs();
     etat("");
     $("pret").hidden = false;
   }
 
-  const exposition = { $, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, enregistrerPage, afficherPage, demarrer };
+  const exposition = { $, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();

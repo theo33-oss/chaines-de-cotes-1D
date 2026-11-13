@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=cefe9524">
+<link rel="stylesheet" href="style.css?v=5c03f929">
 </head>
 <body>
 <header>
   <h1>Chaînes de cotes 1D</h1>
   <p class="intro legende">Calcul de tolérances d'un assemblage. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
-  <nav id="menu" aria-label="Pages" hidden></nav>
 </header>
+<div id="barre"><nav id="menu" aria-label="Pages" hidden></nav></div>
 
 <main>
   <div id="etat" class="message info" role="status">
@@ -37,8 +37,7 @@
     </div>
     <p id="guide-ouvrir-bloc"><button id="guide-ouvrir" type="button" class="secondaire">Passer en mode guidé (5 étapes)</button></p>
 
-    <section aria-labelledby="t-depart" data-etape="1">
-      <h2 id="t-depart">1. Partir d'un exemple ou d'une étude</h2>
+    <details class="bandeau" id="b-depart" open data-etape="1"><summary><h2 id="t-depart">1. Partir d'un exemple ou d'une étude</h2><span class="resume" id="resume-depart"></span></summary>
       <div class="ligne">
         <label for="exemple" class="cache">Exemple</label>
         <select id="exemple"></select>
@@ -52,10 +51,9 @@
       </div>
       <p class="legende">Le fichier est celui de l'application de bureau : une étude enregistrée sur la page s'ouvre dans l'application, et inversement.</p>
       <p id="message-fichier" class="message" role="status" hidden></p>
-    </section>
+    </details>
 
-    <section aria-labelledby="t-condition" data-etape="2">
-      <h2 id="t-condition">2. Cote condition</h2>
+    <details class="bandeau" id="b-condition" open data-etape="2"><summary><h2 id="t-condition">2. Cote condition</h2><span class="resume" id="resume-condition"></span></summary>
       <p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p>
       <div class="grille">
         <label>Nom<input id="c-nom" type="text" value="Jeu J"></label>
@@ -78,10 +76,10 @@
         </div>
         <p class="legende">La tolérance générale est donnée aux maillons dont ni la désignation ISO ni les écarts ne sont saisis.</p>
       </details>
-    </section>
+    </details>
 
-    <section aria-labelledby="t-maillons" data-etape="3">
-      <h2 id="t-maillons">3. Maillons</h2>
+    <div id="zone-maillons">
+    <details class="bandeau" id="b-maillons" open data-etape="3"><summary><h2 id="t-maillons">3. Maillons</h2><span class="resume" id="resume-maillons"></span></summary>
       <p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p>
       <label class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
       <div class="defile">
@@ -95,32 +93,34 @@
         <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
         <button id="annuler" type="button" class="secondaire" disabled title="Ctrl+Z">↶ Annuler</button>
         <button id="retablir" type="button" class="secondaire" disabled title="Ctrl+Y">↷ Rétablir</button>
+        <button id="disposition" type="button" class="secondaire" title="Place le schéma à côté du tableau ou dessous">Schéma : à côté</button>
       </div>
       <label class="case"><input id="representation" type="checkbox"> Représentation : afficher une image de pièce sur chaque flèche</label>
       <p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude.</p>
-    </section>
+    </details>
 
-    <section aria-labelledby="t-apercu" id="apercu-section" data-etape="3">
-      <h2 id="t-apercu">Schéma et contrôles</h2>
+    <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
       <p id="apercu-verdict" class="message" role="status" hidden></p>
       <div id="apercu-fig" class="figure"></div>
       <p id="apercu-legende" class="legende"></p>
       <ul id="controles" class="controles" aria-label="Contrôles de cohérence"></ul>
-    </section>
+    </details>
+    </div>
 
     <p data-etape="4"><button id="calculer" type="button" class="primaire">Calculer</button> <span class="legende expert-seul">Le verdict s'affiche juste en dessous.</span></p>
     <p id="erreur" class="message erreur" role="alert" hidden data-etape="4"></p>
 
-    <section id="resultats" aria-live="polite" hidden data-etape="4">
-      <h2>Résultats</h2>
+    <details class="bandeau" id="resultats" open aria-live="polite" hidden data-etape="4">
+      <summary><h2>Résultats</h2></summary>
       <p id="verdict" class="message"></p>
       <p id="conseil" class="expert-seul"></p>
+      <p id="opt-invite" class="message avertissement expert-seul" hidden>Le jeu n'est pas tenu. <button id="opt-aller" type="button" class="primaire">Optimiser les tolérances</button></p>
       <ul id="plain-details" class="details guide-seul"></ul>
       <div id="plain-conseils" class="guide-seul"></div>
       <ul id="avertissements" class="legende"></ul>
       <div id="onglets" role="tablist" aria-label="Résultats"></div>
       <div id="panneau" role="tabpanel"></div>
-    </section>
+    </details>
 
     <section id="guide-dossier" class="guide-seul" data-etape="5">
       <h2>Dossier</h2>
@@ -131,6 +131,114 @@
       </div>
       <p class="legende">Le calcul doit être fait à l'étape 4 : le dossier refait chaque grandeur de l'étude en cours.</p>
     </section>
+
+  <!-- ===== Page « Optimiser les tolérances » (js/repartir.js) ===== -->
+  <details class="bandeau expert-seul" id="page-repartir">
+    <summary><h2>Optimiser les tolérances</h2></summary>
+      <p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p>
+      <div class="grille">
+        <label>Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
+        <label>Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
+      </div>
+      <fieldset class="familles"><legend>Critère</legend><div>
+        <label class="case"><input type="radio" name="rp-critere" value="pire_cas" checked> Pire des cas (100 % garanti)</label>
+        <label class="case"><input type="radio" name="rp-critere" value="statistique"> Statistique (± k σ)</label>
+      </div></fieldset>
+      <fieldset class="familles"><legend>Méthode de répartition</legend><div id="rp-methodes">
+        <label class="case"><input type="radio" name="rp-methode" value="egale" checked> Égale</label>
+        <label class="case"><input type="radio" name="rp-methode" value="proportionnelle"> Proportionnelle à l'unité de tolérance ISO i = 0,45∛D + 0,001D</label>
+        <label class="case"><input type="radio" name="rp-methode" value="iso"> Qualité ISO la plus proche</label>
+        <label class="case"><input type="radio" name="rp-methode" value="cout_minimal"> Coût minimal (procédés de l'atelier)</label>
+      </div></fieldset>
+      <fieldset class="familles"><legend>Maillons figés (écarts gardés)</legend><div id="rp-figes"></div></fieldset>
+      <label class="large">Maillon de réglage<select id="rp-reglage"></select></label>
+      <p class="legende">Maillon non figé dont la cote moyenne est décalée pour amener le jeu au milieu de [Jmin ; Jmax].</p>
+      <div id="rp-cout" hidden>
+        <label class="case"><input id="rp-arrondi" type="checkbox"> Arrondir chaque IT à une qualité ISO 286</label>
+        <h3>Procédé de chaque maillon</h3>
+        <div id="rp-procedes" class="grille"></div>
+        <details>
+          <summary>Mes valeurs d'atelier (remplacent les valeurs indicatives)</summary>
+          <p class="legende">Coût = c × (IT / 0,1 mm)^(−n). Entrez le coût relatif et l'exposant de votre atelier et les qualités IT que le procédé tient ; une valeur laissée telle quelle reste la valeur indicative.</p>
+          <div id="rp-atelier"></div>
+          <div class="ligne">
+            <button id="rp-at-garder" type="button" class="secondaire">Garder dans ce navigateur</button>
+            <button id="rp-at-exporter" type="button" class="secondaire">Exporter (.json)</button>
+            <button id="rp-at-importer" type="button" class="secondaire">Importer (.json)</button>
+            <button id="rp-at-effacer" type="button" class="secondaire">Revenir aux valeurs indicatives</button>
+            <input id="rp-at-fichier" type="file" accept=".json,application/json" hidden>
+          </div>
+          <p id="rp-at-message" class="message" role="status" hidden></p>
+        </details>
+      </div>
+      <div class="ligne">
+        <button id="rp-calculer" type="button" class="primaire">Calculer</button>
+        <button id="rp-appliquer" type="button" class="secondaire" disabled>Appliquer à l'étude</button>
+      </div>
+      <p id="rp-erreur" class="message erreur" role="alert" hidden></p>
+      <p id="rp-appliquee" class="message succes" role="status" hidden></p>
+      <section id="rp-resultat" hidden>
+        <h3>Résultat</h3>
+        <p id="rp-message" class="message"></p>
+        <p class="legende">Schéma de la chaîne avec les tolérances réparties :</p>
+        <div id="rp-schema" class="figure"></div>
+        <p id="rp-schema-legende" class="legende"></p>
+        <div id="rp-valeurs"></div>
+        <div id="rp-valeurs-cout"></div>
+        <div id="rp-tableau"></div>
+        <div id="rp-figures"></div>
+        <h3>Méthode retenue</h3>
+        <div id="rp-explication"></div>
+        <div id="rp-procedes-utilises"></div>
+      </section>
+  </details>
+
+  <!-- ===== Page « Comparer » (js/comparer.js) ===== -->
+  <details class="bandeau expert-seul" id="page-comparer">
+    <summary><h2>Comparaison de scénarios</h2></summary>
+      <p class="legende">Le scénario A est l'étude en cours (bandeaux ci-dessus). Choisissez le scénario B : le résultat de la répartition (bandeau Optimiser), un exemple de la bibliothèque ou un fichier d'étude. Les écarts sont toujours B − A.</p>
+      <fieldset class="familles"><legend>Scénario B</legend><div>
+        <label class="case"><input type="radio" name="cp-source" value="repartition" checked> Résultat de la répartition</label>
+        <label class="case"><input type="radio" name="cp-source" value="exemple"> Exemple de la bibliothèque</label>
+        <label class="case"><input type="radio" name="cp-source" value="fichier"> Fichier JSON</label>
+      </div></fieldset>
+      <p id="cp-repartition" class="legende">Compare l'étude en cours à la chaîne obtenue par le dernier calcul de le bandeau « Optimiser les tolérances » (avant « Appliquer à l'étude »).</p>
+      <label id="cp-exemple-bloc" class="large" hidden>Exemple<select id="cp-exemple"></select></label>
+      <div id="cp-fichier-bloc" class="ligne" hidden>
+        <button id="cp-ouvrir" type="button" class="secondaire">Choisir un fichier d'étude (.json)</button>
+        <input id="cp-fichier" type="file" accept=".json,application/json" hidden>
+        <span id="cp-fichier-nom" class="legende"></span>
+      </div>
+      <p><button id="cp-calculer" type="button" class="primaire">Comparer</button></p>
+      <p id="cp-erreur" class="message erreur" role="alert" hidden></p>
+      <section id="cp-resultat" hidden>
+        <p id="cp-phrases" class="message info"></p>
+        <div id="cp-grandeurs"></div>
+        <div id="cp-maillons"></div>
+        <div id="cp-fig" class="figure"></div>
+        <p id="cp-legende" class="legende"></p>
+      </section>
+  </details>
+
+  <!-- ===== Page « Dossier de validation » (js/dossier.js) ===== -->
+  <details class="bandeau expert-seul" id="page-dossier">
+    <summary><h2>Dossier de validation</h2></summary>
+      <p class="legende">Le dossier refait chaque grandeur de l'étude en cours (bandeaux ci-dessus) à la main, sans le solveur, et la compare au résultat du solveur ; il relit aussi la table ISO 286 et confronte le Monte-Carlo à la formule. Le fichier HTML obtenu est à joindre à votre note de calcul.</p>
+      <h3>Cartouche du dossier</h3>
+      <div id="dos-champs" class="grille"></div>
+      <p class="legende">Le cartouche est enregistré avec l'étude (fichier .json) et repris par le dossier. Le statut « Validé » enregistre l'empreinte du problème : le bureau signale toute modification faite ensuite.</p>
+      <p><button id="dos-generer" type="button" class="primaire">Générer le dossier de validation</button></p>
+      <p id="dos-erreur" class="message erreur" role="alert" hidden></p>
+      <section id="dos-resultat" hidden>
+        <p id="dos-bilan" class="message"></p>
+        <div id="dos-ecarts"></div>
+        <div class="ligne">
+          <button id="dos-telecharger" type="button" class="primaire">Télécharger le dossier (.html)</button>
+          <button id="dos-imprimer" type="button" class="secondaire">Ouvrir pour imprimer en PDF</button>
+        </div>
+        <p class="legende">Les graphiques du dossier sont interactifs et chargent Plotly depuis Internet à l'ouverture du fichier. Les dossiers PDF et Word, avec images des graphiques, sont dans l'application de bureau. « Ouvrir pour imprimer » ouvre le dossier dans un nouvel onglet : utilisez Ctrl+P puis « Enregistrer au format PDF ».</p>
+      </section>
+  </details>
 
     <div class="ligne guide-seul" id="guide-bas">
       <button type="button" class="secondaire js-precedent">Précédent</button>
@@ -241,94 +349,6 @@
     </div>
   </div>
 
-  <!-- ===== Page « Répartir les tolérances » (js/repartir.js) ===== -->
-  <div id="page-repartir" hidden>
-    <h2>Répartition des tolérances</h2>
-    <p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p>
-    <div class="grille">
-      <label>Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
-      <label>Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
-    </div>
-    <fieldset class="familles"><legend>Critère</legend><div>
-      <label class="case"><input type="radio" name="rp-critere" value="pire_cas" checked> Pire des cas (100 % garanti)</label>
-      <label class="case"><input type="radio" name="rp-critere" value="statistique"> Statistique (± k σ)</label>
-    </div></fieldset>
-    <fieldset class="familles"><legend>Méthode de répartition</legend><div id="rp-methodes">
-      <label class="case"><input type="radio" name="rp-methode" value="egale" checked> Égale</label>
-      <label class="case"><input type="radio" name="rp-methode" value="proportionnelle"> Proportionnelle à l'unité de tolérance ISO i = 0,45∛D + 0,001D</label>
-      <label class="case"><input type="radio" name="rp-methode" value="iso"> Qualité ISO la plus proche</label>
-      <label class="case"><input type="radio" name="rp-methode" value="cout_minimal"> Coût minimal (procédés de l'atelier)</label>
-    </div></fieldset>
-    <fieldset class="familles"><legend>Maillons figés (écarts gardés)</legend><div id="rp-figes"></div></fieldset>
-    <label class="large">Maillon de réglage<select id="rp-reglage"></select></label>
-    <p class="legende">Maillon non figé dont la cote moyenne est décalée pour amener le jeu au milieu de [Jmin ; Jmax].</p>
-    <div id="rp-cout" hidden>
-      <label class="case"><input id="rp-arrondi" type="checkbox"> Arrondir chaque IT à une qualité ISO 286</label>
-      <h3>Procédé de chaque maillon</h3>
-      <div id="rp-procedes" class="grille"></div>
-      <details>
-        <summary>Mes valeurs d'atelier (remplacent les valeurs indicatives)</summary>
-        <p class="legende">Coût = c × (IT / 0,1 mm)^(−n). Entrez le coût relatif et l'exposant de votre atelier et les qualités IT que le procédé tient ; une valeur laissée telle quelle reste la valeur indicative.</p>
-        <div id="rp-atelier"></div>
-        <div class="ligne">
-          <button id="rp-at-garder" type="button" class="secondaire">Garder dans ce navigateur</button>
-          <button id="rp-at-exporter" type="button" class="secondaire">Exporter (.json)</button>
-          <button id="rp-at-importer" type="button" class="secondaire">Importer (.json)</button>
-          <button id="rp-at-effacer" type="button" class="secondaire">Revenir aux valeurs indicatives</button>
-          <input id="rp-at-fichier" type="file" accept=".json,application/json" hidden>
-        </div>
-        <p id="rp-at-message" class="message" role="status" hidden></p>
-      </details>
-    </div>
-    <div class="ligne">
-      <button id="rp-calculer" type="button" class="primaire">Calculer</button>
-      <button id="rp-appliquer" type="button" class="secondaire" disabled>Appliquer à l'étude</button>
-    </div>
-    <p id="rp-erreur" class="message erreur" role="alert" hidden></p>
-    <p id="rp-appliquee" class="message succes" role="status" hidden></p>
-    <section id="rp-resultat" hidden>
-      <h3>Résultat</h3>
-      <p id="rp-message" class="message"></p>
-      <p class="legende">Schéma de la chaîne avec les tolérances réparties :</p>
-      <div id="rp-schema" class="figure"></div>
-      <p id="rp-schema-legende" class="legende"></p>
-      <div id="rp-valeurs"></div>
-      <div id="rp-valeurs-cout"></div>
-      <div id="rp-tableau"></div>
-      <div id="rp-figures"></div>
-      <h3>Méthode retenue</h3>
-      <div id="rp-explication"></div>
-      <div id="rp-procedes-utilises"></div>
-    </section>
-  </div>
-
-  <!-- ===== Page « Comparer » (js/comparer.js) ===== -->
-  <div id="page-comparer" hidden>
-    <h2>Comparaison de scénarios</h2>
-    <p class="legende">Le scénario A est l'étude en cours (page Analyser). Choisissez le scénario B : le résultat de la répartition (page Répartir), un exemple de la bibliothèque ou un fichier d'étude. Les écarts sont toujours B − A.</p>
-    <fieldset class="familles"><legend>Scénario B</legend><div>
-      <label class="case"><input type="radio" name="cp-source" value="repartition" checked> Résultat de la répartition</label>
-      <label class="case"><input type="radio" name="cp-source" value="exemple"> Exemple de la bibliothèque</label>
-      <label class="case"><input type="radio" name="cp-source" value="fichier"> Fichier JSON</label>
-    </div></fieldset>
-    <p id="cp-repartition" class="legende">Compare l'étude en cours à la chaîne obtenue par le dernier calcul de la page « Répartir les tolérances » (avant « Appliquer à l'étude »).</p>
-    <label id="cp-exemple-bloc" class="large" hidden>Exemple<select id="cp-exemple"></select></label>
-    <div id="cp-fichier-bloc" class="ligne" hidden>
-      <button id="cp-ouvrir" type="button" class="secondaire">Choisir un fichier d'étude (.json)</button>
-      <input id="cp-fichier" type="file" accept=".json,application/json" hidden>
-      <span id="cp-fichier-nom" class="legende"></span>
-    </div>
-    <p><button id="cp-calculer" type="button" class="primaire">Comparer</button></p>
-    <p id="cp-erreur" class="message erreur" role="alert" hidden></p>
-    <section id="cp-resultat" hidden>
-      <p id="cp-phrases" class="message info"></p>
-      <div id="cp-grandeurs"></div>
-      <div id="cp-maillons"></div>
-      <div id="cp-fig" class="figure"></div>
-      <p id="cp-legende" class="legende"></p>
-    </section>
-  </div>
-
   <!-- ===== Page « Mécanisme » (js/mecanisme.js) ===== -->
   <div id="page-mecanisme" hidden>
     <h2>Mécanisme (plusieurs chaînes)</h2>
@@ -374,26 +394,6 @@
       <div id="mc-tableau"></div>
       <div id="mc-erreurs"></div>
       <p><button id="mc-csv" type="button" class="secondaire">Tableau de bord (.csv)</button></p>
-    </section>
-  </div>
-
-  <!-- ===== Page « Dossier de validation » (js/dossier.js) ===== -->
-  <div id="page-dossier" hidden>
-    <h2>Dossier de validation</h2>
-    <p class="legende">Le dossier refait chaque grandeur de l'étude en cours (page Analyser) à la main, sans le solveur, et la compare au résultat du solveur ; il relit aussi la table ISO 286 et confronte le Monte-Carlo à la formule. Le fichier HTML obtenu est à joindre à votre note de calcul.</p>
-    <h3>Cartouche du dossier</h3>
-    <div id="dos-champs" class="grille"></div>
-    <p class="legende">Le cartouche est enregistré avec l'étude (fichier .json) et repris par le dossier. Le statut « Validé » enregistre l'empreinte du problème : le bureau signale toute modification faite ensuite.</p>
-    <p><button id="dos-generer" type="button" class="primaire">Générer le dossier de validation</button></p>
-    <p id="dos-erreur" class="message erreur" role="alert" hidden></p>
-    <section id="dos-resultat" hidden>
-      <p id="dos-bilan" class="message"></p>
-      <div id="dos-ecarts"></div>
-      <div class="ligne">
-        <button id="dos-telecharger" type="button" class="primaire">Télécharger le dossier (.html)</button>
-        <button id="dos-imprimer" type="button" class="secondaire">Ouvrir pour imprimer en PDF</button>
-      </div>
-      <p class="legende">Les graphiques du dossier sont interactifs et chargent Plotly depuis Internet à l'ouverture du fichier. Les dossiers PDF et Word, avec images des graphiques, sont dans l'application de bureau. « Ouvrir pour imprimer » ouvre le dossier dans un nouvel onglet : utilisez Ctrl+P puis « Enregistrer au format PDF ».</p>
     </section>
   </div>
 
@@ -534,13 +534,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=173783d7"></script>
+<script src="app.js?v=9cbfe231"></script>
 <script src="js/accueil.js?v=38c7bc39"></script>
-<script src="js/chaine.js?v=da17fa39"></script>
-<script src="js/repartir.js?v=f9776382"></script>
-<script src="js/comparer.js?v=e9cbc222"></script>
+<script src="js/chaine.js?v=4c7567b3"></script>
+<script src="js/repartir.js?v=026f047e"></script>
+<script src="js/comparer.js?v=a1af7964"></script>
 <script src="js/mecanisme.js?v=e7520fbf"></script>
-<script src="js/dossier.js?v=0a908bf6"></script>
+<script src="js/dossier.js?v=eb47df1c"></script>
 <script src="js/assistant.js?v=f069f614"></script>
 <script src="js/exemples.js?v=3b653ed8"></script>
 <script src="js/ajustement.js?v=ec05ff5b"></script>
