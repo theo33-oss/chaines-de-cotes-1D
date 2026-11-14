@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=6d967d3b">
+<link rel="stylesheet" href="style.css?v=722e95da">
 </head>
 <body>
 <header>
@@ -33,20 +33,20 @@
         <button type="button" class="secondaire js-precedent">Précédent</button>
         <button type="button" class="primaire js-suivant">Suivant</button>
       </div>
-      <p><button id="guide-quitter" type="button" class="secondaire">Tout voir d'un coup (mode expert)</button></p>
+      <p><button data-aide="Affiche toutes les rubriques sur une seule page, avec l'optimisation, la comparaison et le dossier." id="guide-quitter" type="button" class="secondaire">Tout voir d'un coup (mode expert)</button></p>
     </div>
-    <p id="guide-ouvrir-bloc"><button id="guide-ouvrir" type="button" class="secondaire">Passer en mode guidé (5 étapes)</button></p>
+    <p id="guide-ouvrir-bloc"><button data-aide="Affiche une seule étape à la fois, avec des explications." id="guide-ouvrir" type="button" class="secondaire">Passer en mode guidé (5 étapes)</button></p>
 
     <details class="bandeau" id="b-depart" open data-etape="1"><summary><h2 id="t-depart">1. Partir d'un exemple ou d'une étude</h2><span class="resume" id="resume-depart"></span></summary>
       <div class="ligne">
         <label for="exemple" class="cache">Exemple</label>
         <select id="exemple"></select>
-        <button id="charger" type="button">Charger cet exemple</button>
+        <button data-aide="Remplace l'étude en cours par l'exemple choisi." id="charger" type="button">Charger cet exemple</button>
       </div>
       <p id="description" class="legende"></p>
       <div class="ligne">
-        <button id="ouvrir" type="button" class="secondaire">Ouvrir une étude (.json)</button>
-        <button id="enregistrer" type="button" class="secondaire">Enregistrer l'étude</button>
+        <button data-aide="Reprend une étude enregistrée sur votre PC (Ctrl+O)." id="ouvrir" type="button" class="secondaire">Ouvrir une étude (.json)</button>
+        <button data-aide="Télécharge l'étude dans un fichier .json, à rouvrir plus tard (Ctrl+S)." id="enregistrer" type="button" class="secondaire">Enregistrer l'étude</button>
         <input id="fichier" type="file" accept=".json,application/json" hidden>
       </div>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le fichier est celui de l'application de bureau : une étude enregistrée sur la page s'ouvre dans l'application, et inversement.</p></details>
@@ -56,11 +56,11 @@
     <details class="bandeau" id="b-condition" open data-etape="2"><summary><h2 id="t-condition">2. Cote condition</h2><span class="resume" id="resume-condition"></span></summary>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le jeu à garantir, entre un minimum Jmin et un maximum Jmax (en mm). Laissez vide un côté sans limite.</p></details>
       <div class="grille">
-        <label>Nom<input id="c-nom" type="text" value="Jeu J"></label>
-        <label>Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
-        <label>Jmax (mm)<input id="c-jmax" type="text" inputmode="decimal"></label>
+        <label data-aide="Le nom du jeu à garantir, repris dans les résultats et le dossier.">Nom<input id="c-nom" type="text" value="Jeu J"></label>
+        <label data-aide="Plus petit jeu acceptable, en mm. Vide : pas de limite basse. Négatif pour un serrage.">Jmin (mm)<input id="c-jmin" type="text" inputmode="decimal"></label>
+        <label data-aide="Plus grand jeu acceptable, en mm. Vide : pas de limite haute.">Jmax (mm)<input id="c-jmax" type="text" inputmode="decimal"></label>
       </div>
-      <label class="case expert-seul"><input id="deux-cf" type="checkbox"> Deux cotes condition (CF1 et CF2) sur les mêmes maillons</label>
+      <label data-aide="Une seconde cote condition calculée sur les mêmes maillons, avec ses propres sens « + » et « − »." class="case expert-seul"><input id="deux-cf" type="checkbox"> Deux cotes condition (CF1 et CF2) sur les mêmes maillons</label>
       <div class="grille" id="cf2-champs" hidden>
         <label>Nom (CF2)<input id="c2-nom" type="text" value="Jeu J2"></label>
         <label>Jmin CF2 (mm)<input id="c2-jmin" type="text" inputmode="decimal"></label>
@@ -69,14 +69,14 @@
       <details>
         <summary>Réglages du calcul</summary>
         <div class="grille">
-          <label>Procédé garanti k (± kσ)<input id="r-k" type="text" inputmode="decimal" value="3"></label>
-          <label>T référence (°C)<input id="r-tref" type="text" inputmode="decimal" value="20"></label>
-          <label>T service (°C)<input id="r-tserv" type="text" inputmode="decimal" value="20"></label>
-          <label>Température de service
+          <label data-aide="Nombre d'écarts-types σ couverts par chaque tolérance. 3 est l'usage : 99,73 % des pièces sont dans leur tolérance.">Procédé garanti k (± kσ)<input id="r-k" type="text" inputmode="decimal" value="3"></label>
+          <label data-aide="Température à laquelle les cotes sont mesurées : 20 °C par convention.">T référence (°C)<input id="r-tref" type="text" inputmode="decimal" value="20"></label>
+          <label data-aide="Température du mécanisme en fonctionnement. Si elle diffère de la référence, les pièces se dilatent et le jeu change.">T service (°C)<input id="r-tserv" type="text" inputmode="decimal" value="20"></label>
+          <label data-aide="Uniforme : toutes les pièces à la même température. Par cote : une température par maillon, dans le tableau.">Température de service
             <select id="r-mode"><option value="uniforme">Uniforme (la même pour toutes les cotes)</option><option value="par_cote">Par cote (colonne du tableau)</option></select>
           </label>
-          <label>Décentrage du procédé (σ)<input id="r-dec" type="text" inputmode="decimal" value="0"></label>
-          <label>Tolérance générale (ISO 2768)
+          <label data-aide="Écart entre la moyenne fabriquée et le milieu de la tolérance, en nombre de σ. 0 : procédé centré ; 1,5 est une valeur prudente courante.">Décentrage du procédé (σ)<input id="r-dec" type="text" inputmode="decimal" value="0"></label>
+          <label data-aide="Tolérance donnée d'office aux cotes sans tolérance indiquée, selon la classe ISO 2768 du plan.">Tolérance générale (ISO 2768)
             <select id="r-tolgen"><option value="">Aucune (écarts à saisir)</option><option value="f">f : fine</option><option value="m">m : moyenne</option><option value="c">c : grossière</option><option value="v">v : très grossière</option></select>
           </label>
         </div>
@@ -87,21 +87,21 @@
     <div id="zone-maillons">
     <details class="bandeau" id="b-maillons" open data-etape="3"><summary><h2 id="t-maillons">3. Maillons</h2><span class="resume" id="resume-maillons"></span></summary>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Une ligne par cote de la chaîne : « + » si elle agrandit le jeu, « − » si elle le réduit. Tolérance : désignation ISO 286 (ex. « h7 ») ou écarts ES / EI en mm.</p></details>
-      <label class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
+      <label data-aide="Ajoute au tableau le matériau et la dilatation de chaque cote, pour calculer le jeu à chaud ou à froid." class="case"><input id="thermique" type="checkbox"> Effet thermique : matériau, coefficient α et température par cote</label>
       <div class="defile">
         <table id="maillons">
-          <thead><tr><th>Nom</th><th>Sens<span class="th-cf2"> CF1</span></th><th class="th-cf2">Sens CF2</th><th>Cote (mm)</th><th>ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th>Loi</th>
-            <th class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th class="th-therm th-tcote">T service (°C)</th><th class="th-image">Image</th><th><span class="cache">Supprimer</span></th></tr></thead>
+          <thead><tr><th data-aide="Nom de la cote, repris sur le schéma et dans les résultats.">Nom</th><th data-aide="« + » si agrandir cette cote agrandit le jeu, « − » si cela le réduit.">Sens<span class="th-cf2"> CF1</span></th><th data-aide="Sens du maillon pour la seconde cote condition." class="th-cf2">Sens CF2</th><th data-aide="Valeur nominale de la cote, celle du plan.">Cote (mm)</th><th data-aide="Tolérance normalisée, par exemple h7 ou H8. Elle remplit ES et EI à votre place.">ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th data-aide="Comment les pièces fabriquées se répartissent dans la tolérance. Normale : surtout près du milieu (cas habituel). Uniforme : partout pareil. Triangulaire : entre les deux.">Loi</th>
+            <th data-aide="Le matériau donne le coefficient de dilatation α de la cote." class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th data-aide="Température de cette cote en fonctionnement." class="th-therm th-tcote">T service (°C)</th><th data-aide="Silhouette de pièce dessinée sur la flèche de ce maillon." class="th-image">Image</th><th><span class="cache">Supprimer</span></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="ligne">
-        <button id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
+        <button data-aide="Ajoute une ligne vide en bas du tableau." id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
         <button id="annuler" type="button" class="secondaire" disabled title="Ctrl+Z">↶ Annuler</button>
         <button id="retablir" type="button" class="secondaire" disabled title="Ctrl+Y">↷ Rétablir</button>
         <button id="disposition" type="button" class="secondaire" title="Place le schéma à côté du tableau ou dessous">Schéma : à côté</button>
       </div>
-      <label class="case"><input id="representation" type="checkbox"> Représentation : afficher une image de pièce sur chaque flèche</label>
+      <label data-aide="Dessine une silhouette de pièce (arbre, roulement, carter…) sur chaque flèche du schéma." class="case"><input id="representation" type="checkbox"> Représentation : afficher une image de pièce sur chaque flèche</label>
       <div id="perso-zone" class="ligne" hidden>
         <button id="perso-ajouter" type="button" class="secondaire">Ajouter mes images</button>
         <button id="perso-effacer" type="button" class="secondaire">Effacer mes images</button>
@@ -112,7 +112,7 @@
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude.</p></details>
     </details>
 
-    <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
+    <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 data-aide="Le dessin de la chaîne, mis à jour à chaque saisie, et la liste des incohérences trouvées." id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
       <h3 id="apercu-cf1-titre" hidden></h3>
       <p id="apercu-verdict" class="message" role="status" hidden></p>
       <div id="apercu-fig" class="figure"></div>
@@ -130,7 +130,7 @@
     <p id="cf-choix" class="ligne expert-seul" hidden><strong>Résultats, optimisation, comparaison et dossier pour :</strong>
       <label class="case"><input type="radio" name="cf-actif" value="1" checked> <span id="cf-nom1">CF1</span></label>
       <label class="case"><input type="radio" name="cf-actif" value="2"> <span id="cf-nom2">CF2</span></label></p>
-    <p data-etape="4"><button id="calculer" type="button" class="primaire">Calculer</button> <span class="legende expert-seul">Le verdict s'affiche juste en dessous.</span></p>
+    <p data-etape="4"><button data-aide="Lance les trois calculs : pire des cas, statistique et Monte-Carlo (touche Entrée)." id="calculer" type="button" class="primaire">Calculer</button> <span class="legende expert-seul">Le verdict s'affiche juste en dessous.</span></p>
     <p id="erreur" class="message erreur" role="alert" hidden data-etape="4"></p>
 
     <details class="bandeau" id="resultats" open aria-live="polite" hidden data-etape="4">
@@ -160,24 +160,24 @@
     <summary><h2>Optimiser les tolérances</h2></summary>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p></details>
       <div class="grille">
-        <label>Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
-        <label>Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
+        <label data-aide="Limite basse du jeu que les nouvelles tolérances doivent tenir.">Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
+        <label data-aide="Limite haute du jeu que les nouvelles tolérances doivent tenir.">Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
       </div>
       <fieldset class="familles"><legend>Critère</legend><div>
-        <label class="case"><input type="radio" name="rp-critere" value="pire_cas" checked> Pire des cas (100 % garanti)</label>
-        <label class="case"><input type="radio" name="rp-critere" value="statistique"> Statistique (± k σ)</label>
+        <label data-aide="Les tolérances tiennent le jeu même si toutes les cotes sont au plus défavorable : sûr, mais serré." class="case"><input type="radio" name="rp-critere" value="pire_cas" checked> Pire des cas (100 % garanti)</label>
+        <label data-aide="Les tolérances tiennent le jeu pour presque tous les assemblages : elles sont plus larges, donc moins chères." class="case"><input type="radio" name="rp-critere" value="statistique"> Statistique (± k σ)</label>
       </div></fieldset>
       <fieldset class="familles"><legend>Méthode de répartition</legend><div id="rp-methodes">
-        <label class="case"><input type="radio" name="rp-methode" value="egale" checked> Égale</label>
-        <label class="case"><input type="radio" name="rp-methode" value="proportionnelle"> Proportionnelle à l'unité de tolérance ISO i = 0,45∛D + 0,001D</label>
-        <label class="case"><input type="radio" name="rp-methode" value="iso"> Qualité ISO la plus proche</label>
-        <label class="case"><input type="radio" name="rp-methode" value="cout_minimal"> Coût minimal (procédés de l'atelier)</label>
+        <label data-aide="Le même IT pour tous les maillons." class="case"><input type="radio" name="rp-methode" value="egale" checked> Égale</label>
+        <label data-aide="Une grande cote reçoit un IT plus large qu'une petite, comme dans l'ISO 286." class="case"><input type="radio" name="rp-methode" value="proportionnelle"> Proportionnelle à l'unité de tolérance ISO i = 0,45∛D + 0,001D</label>
+        <label data-aide="Chaque IT est ramené à une qualité normalisée (IT6, IT7…)." class="case"><input type="radio" name="rp-methode" value="iso"> Qualité ISO la plus proche</label>
+        <label data-aide="Les IT sont choisis pour que la fabrication coûte le moins cher, d'après le procédé de chaque maillon." class="case"><input type="radio" name="rp-methode" value="cout_minimal"> Coût minimal (procédés de l'atelier)</label>
       </div></fieldset>
       <fieldset class="familles"><legend>Maillons figés (écarts gardés)</legend><div id="rp-figes"></div></fieldset>
-      <label class="large">Maillon de réglage<select id="rp-reglage"></select></label>
+      <label data-aide="Le maillon dont on décale la cote moyenne pour centrer le jeu entre Jmin et Jmax." class="large">Maillon de réglage<select id="rp-reglage"></select></label>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Maillon non figé dont la cote moyenne est décalée pour amener le jeu au milieu de [Jmin ; Jmax].</p></details>
       <div id="rp-cout" hidden>
-        <label class="case"><input id="rp-arrondi" type="checkbox"> Arrondir chaque IT à une qualité ISO 286</label>
+        <label data-aide="Remplace chaque IT calculé par une qualité ISO, lisible sur un plan." class="case"><input id="rp-arrondi" type="checkbox"> Arrondir chaque IT à une qualité ISO 286</label>
         <h3>Procédé de chaque maillon</h3>
         <div id="rp-procedes" class="grille"></div>
         <details>
@@ -195,8 +195,8 @@
         </details>
       </div>
       <div class="ligne">
-        <button id="rp-calculer" type="button" class="primaire">Calculer</button>
-        <button id="rp-appliquer" type="button" class="secondaire" disabled>Appliquer à l'étude</button>
+        <button data-aide="Calcule les tolérances de chaque maillon qui tiennent Jmin et Jmax." id="rp-calculer" type="button" class="primaire">Calculer</button>
+        <button data-aide="Remplace les tolérances de l'étude par celles calculées ici." id="rp-appliquer" type="button" class="secondaire" disabled>Appliquer à l'étude</button>
       </div>
       <p id="rp-erreur" class="message erreur" role="alert" hidden></p>
       <p id="rp-appliquee" class="message succes" role="status" hidden></p>
@@ -232,7 +232,7 @@
         <input id="cp-fichier" type="file" accept=".json,application/json" hidden>
         <span id="cp-fichier-nom" class="legende"></span>
       </div>
-      <p><button id="cp-calculer" type="button" class="primaire">Comparer</button></p>
+      <p><button data-aide="Calcule les deux scénarios et affiche leurs écarts." id="cp-calculer" type="button" class="primaire">Comparer</button></p>
       <p id="cp-erreur" class="message erreur" role="alert" hidden></p>
       <section id="cp-resultat" hidden>
         <p id="cp-phrases" class="message info"></p>
@@ -250,7 +250,7 @@
       <h3>Cartouche du dossier</h3>
       <div id="dos-champs" class="grille"></div>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le cartouche est enregistré avec l'étude (fichier .json) et repris par le dossier. Le statut « Validé » enregistre l'empreinte du problème : le bureau signale toute modification faite ensuite.</p></details>
-      <p><button id="dos-generer" type="button" class="primaire">Générer le dossier de validation</button></p>
+      <p><button data-aide="Refait tous les calculs à la main et les compare au solveur." id="dos-generer" type="button" class="primaire">Générer le dossier de validation</button></p>
       <p id="dos-erreur" class="message erreur" role="alert" hidden></p>
       <section id="dos-resultat" hidden>
         <p id="dos-bilan" class="message"></p>
@@ -368,7 +368,7 @@
       <div id="as-tableau"></div>
       <div id="as-fig" class="figure"></div>
       <p id="as-legende" class="legende"></p>
-      <p><button id="as-utiliser" type="button" class="primaire">Utiliser cette chaîne comme étude en cours</button></p>
+      <p><button data-aide="Envoie cette chaîne dans la page Étude pour la calculer." id="as-utiliser" type="button" class="primaire">Utiliser cette chaîne comme étude en cours</button></p>
     </div>
   </div>
 
@@ -383,7 +383,7 @@
     </div>
     <div class="ligne">
       <button id="mc-ajout-exemple" type="button" class="secondaire">Ajouter l'exemple</button>
-      <button id="mc-ajout-etude" type="button" class="secondaire">Ajouter l'étude en cours</button>
+      <button data-aide="Ajoute au mécanisme la chaîne de la page Étude." id="mc-ajout-etude" type="button" class="secondaire">Ajouter l'étude en cours</button>
       <button id="mc-ajout-fichiers" type="button" class="secondaire">Ajouter des fichiers (.json)</button>
       <input id="mc-fichiers" type="file" accept=".json,application/json" multiple hidden>
     </div>
@@ -400,12 +400,12 @@
     <details>
       <summary>Options du calcul</summary>
       <div class="grille">
-        <label>Tirages Monte-Carlo<select id="mc-n"></select></label>
-        <label>Graine<input id="mc-graine" type="text" inputmode="numeric" value="1"></label>
-        <label>Seuil de Cpk<input id="mc-seuil" type="text" inputmode="decimal" value="1,33"></label>
+        <label data-aide="Nombre d'assemblages simulés par chaîne. Plus il y en a, plus le résultat est précis et le calcul long.">Tirages Monte-Carlo<select id="mc-n"></select></label>
+        <label data-aide="Point de départ du tirage au hasard : la même graine redonne exactement les mêmes résultats.">Graine<input id="mc-graine" type="text" inputmode="numeric" value="1"></label>
+        <label data-aide="Cpk minimal demandé : une chaîne en dessous est signalée comme fragile. 1,33 est l'usage.">Seuil de Cpk<input id="mc-seuil" type="text" inputmode="decimal" value="1,33"></label>
       </div>
     </details>
-    <p><button id="mc-calculer" type="button" class="primaire">Calculer toutes les chaînes</button></p>
+    <p><button data-aide="Calcule chaque chaîne et repère la plus fragile." id="mc-calculer" type="button" class="primaire">Calculer toutes les chaînes</button></p>
     <p id="mc-erreur" class="message erreur" role="alert" hidden></p>
     <section id="mc-resultat" hidden>
       <h3>Tableau de bord</h3>
@@ -434,8 +434,8 @@
     <div class="grille">
       <label>Cote nominale (mm)<select id="aj-cote"></select></label>
       <label id="aj-autre-bloc" hidden>Cote (mm)<input id="aj-autre" type="text" inputmode="decimal" value="50"></label>
-      <label>Fonction souhaitée<select id="aj-fonction"></select></label>
-      <label>Système<select id="aj-systeme"><option value="alesage">Alésage normal (H)</option><option value="arbre">Arbre normal (h)</option></select></label>
+      <label data-aide="Ce que l'ajustement doit faire : glisser, tourner, centrer, serrer…">Fonction souhaitée<select id="aj-fonction"></select></label>
+      <label data-aide="Alésage normal (H) : l'alésage est fixé en H et l'on choisit l'arbre ; c'est le cas le plus courant. Arbre normal (h) : l'inverse.">Système<select id="aj-systeme"><option value="alesage">Alésage normal (H)</option><option value="arbre">Arbre normal (h)</option></select></label>
     </div>
     <p id="aj-erreur" class="message" role="alert" hidden></p>
     <div id="aj-resultat" hidden>
@@ -451,7 +451,7 @@
       <div id="aj-fig" class="figure"></div>
       <p id="aj-legende" class="legende"></p>
       <p id="aj-nature" class="legende"></p>
-      <p><button id="aj-utiliser" type="button" class="primaire">Utiliser dans la chaîne</button></p>
+      <p><button data-aide="Ajoute l'alésage et l'arbre comme deux maillons de l'étude." id="aj-utiliser" type="button" class="primaire">Utiliser dans la chaîne</button></p>
       <p id="aj-message" class="message" role="status" hidden></p>
     </div>
   </div>
@@ -469,8 +469,8 @@
       <label>Cote nominale (mm)<select id="iso-cote"></select></label>
       <label id="iso-autre-bloc" hidden>Cote (mm)<input id="iso-autre" type="text" inputmode="decimal" value="50"></label>
       <label>Pièce<select id="iso-piece"><option>Alésage</option><option>Arbre</option></select></label>
-      <label>Position<select id="iso-lettre"></select></label>
-      <label>Qualité IT<select id="iso-qualite"></select></label>
+      <label data-aide="La lettre place la tolérance par rapport à la cote nominale : h et H en partent, les lettres d'avant donnent du jeu, celles d'après du serrage.">Position<select id="iso-lettre"></select></label>
+      <label data-aide="Le chiffre donne la largeur de la tolérance : plus il est petit, plus la cote est précise et chère.">Qualité IT<select id="iso-qualite"></select></label>
     </div>
     <div id="iso-texte" class="grille" hidden>
       <label>Désignation ISO 286<input id="iso-designation" type="text" value="50 H7"></label>
@@ -513,8 +513,8 @@
     <h3>Courbe de dilatation et calculatrice</h3>
     <div class="grille">
       <label>Matériau<select id="mat-nom"></select></label>
-      <label>Tref (°C)<input id="mat-tref" type="text" inputmode="decimal" value="20"></label>
-      <label>T de service (°C)<input id="mat-t" type="text" inputmode="decimal" value="100"></label>
+      <label data-aide="Température à laquelle la longueur est connue.">Tref (°C)<input id="mat-tref" type="text" inputmode="decimal" value="20"></label>
+      <label data-aide="Température à laquelle on veut connaître l'allongement.">T de service (°C)<input id="mat-t" type="text" inputmode="decimal" value="100"></label>
     </div>
     <p id="mat-erreur" class="message erreur" role="alert" hidden></p>
     <div id="mat-metriques"></div>
@@ -557,13 +557,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=ee22b3f1"></script>
+<script src="app.js?v=34811bd0"></script>
 <script src="js/accueil.js?v=38c7bc39"></script>
-<script src="js/chaine.js?v=8d9d966c"></script>
-<script src="js/repartir.js?v=026f047e"></script>
-<script src="js/comparer.js?v=a1af7964"></script>
-<script src="js/mecanisme.js?v=75555be4"></script>
-<script src="js/dossier.js?v=eb47df1c"></script>
+<script src="js/chaine.js?v=ed71e0d4"></script>
+<script src="js/repartir.js?v=5808c72f"></script>
+<script src="js/comparer.js?v=00c67744"></script>
+<script src="js/mecanisme.js?v=2bb76ad8"></script>
+<script src="js/dossier.js?v=bea36620"></script>
 <script src="js/assistant.js?v=f069f614"></script>
 <script src="js/exemples.js?v=3b653ed8"></script>
 <script src="js/ajustement.js?v=ec05ff5b"></script>

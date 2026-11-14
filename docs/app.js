@@ -48,6 +48,72 @@ const App = (() => {
     return html;
   }
 
+  // ---------- bulles d'aide au survol ----------
+
+  // Lexique des termes affichés par le calcul (en-têtes, grandeurs, onglets) : le premier motif trouvé donne la bulle.
+  const LEXIQUE = [
+    [/^Pire des cas|pire cas\)/i, "Toutes les cotes à leur limite la plus défavorable en même temps : le jeu est garanti à 100 %, mais les tolérances demandées sont serrées."],
+    [/Bender/, "Statistique prudente : la dispersion est multipliée par 1,5 pour couvrir des procédés mal centrés."],
+    [/^RSS/, "Calcul statistique : les écarts des cotes se compensent en partie. Presque tous les assemblages ont leur jeu dans cet intervalle (moyenne ± k écarts-types σ)."],
+    [/^Monte-Carlo/, "Des assemblages tirés au hasard par l'ordinateur, pour vérifier le calcul statistique."],
+    [/Cpk/, "Capabilité réelle : marge entre le jeu moyen et la limite la plus proche, divisée par 3σ. Elle baisse si le jeu est décentré. On vise 1,33 ou plus."],
+    [/^Cpi/, "Capabilité inertielle (Pillet) : inertie maxi divisée par l'inertie du jeu. Il faut 1 ou plus."],
+    [/^Cp$/, "Capabilité potentielle : largeur de l'intervalle exigé (Jmax − Jmin) divisée par 6σ. Elle ne regarde pas le centrage."],
+    [/^ppm/, "Parties par million : nombre d'assemblages hors limites sur un million fabriqués."],
+    [/^IT inertiel/, "Intervalle de tolérance que le maillon pourrait avoir en tolérancement inertiel."],
+    [/^IT /, "Intervalle de tolérance : ES − EI, la largeur permise autour de la cote."],
+    [/^ES/, "Écart supérieur : cote maxi − cote nominale."],
+    [/^EI/, "Écart inférieur : cote mini − cote nominale."],
+    [/^C moy/, "Cote moyenne : le milieu de l'intervalle de tolérance."],
+    [/^Jeu nominal/, "Jeu obtenu avec toutes les cotes à leur valeur nominale."],
+    [/^Jeu moyen/, "Jeu obtenu avec toutes les cotes au milieu de leur tolérance."],
+    [/^Jeu mini$|^Jeu maxi$/, "Limite du jeu au pire des cas : toutes les cotes au plus défavorable."],
+    [/^Jeu mini|^Jeu maxi/, "Plus petit ou plus grand jeu possible, selon la méthode de la ligne."],
+    [/^Verdict/, "Vert : le jeu reste dans ses limites. Orange : en statistique seulement. Rouge : il en sort."],
+    [/^Écart-type|^σ \(/, "Écart-type σ : la dispersion habituelle autour de la moyenne. Environ 99,7 % des valeurs sont à moins de 3σ de la moyenne."],
+    [/^α/, "Coefficient de dilatation : allongement en µm, par mètre de longueur et par degré."],
+    [/^Part pire cas/, "Poids du maillon dans la dispersion du jeu au pire des cas."],
+    [/^Part statistique|Sobol/, "Part de la variance du jeu due à ce maillon : le plus gros est celui à resserrer en premier."],
+    [/^Inertie maxi/, "Inertie à ne pas dépasser : (Jmax − Jmin) / 6."],
+    [/^Inertie/, "Inertie (Pillet) : elle réunit la dispersion et le décentrage en un seul nombre, √(σ² + écart²)."],
+    [/^Décalage thermique/, "Variation du jeu moyen entre la température de référence et la température de service."],
+    [/^Quantile/, "Valeur du jeu sous laquelle se trouve ce pourcentage des assemblages simulés."],
+    [/si resserré/, "Valeur obtenue si l'on resserre ce seul maillon à la moitié de son IT."],
+    [/^Sensibilité$/, "Quels maillons pèsent le plus sur le jeu, et ce que l'on gagne à en resserrer un."],
+    [/^Statistiques$/, "Tirage Monte-Carlo et tolérancement inertiel."],
+    [/^Graphiques$/, "Schéma, histogramme du jeu et Pareto des maillons."],
+    [/^Explications du calcul$/, "Le calcul refait pas à pas, formule par formule."],
+  ];
+
+  // Pose la bulle du lexique sur un élément d'après son texte (rien si le terme n'y est pas).
+  function aide(el) {
+    const trouve = LEXIQUE.find(([motif]) => motif.test(el.textContent.trim()));
+    if (trouve) el.dataset.aide = trouve[1];
+    return el;
+  }
+
+  // Une seule bulle pour toute la page, montrée au survol ou au focus d'un élément [data-aide].
+  // En position fixe : elle n'est pas rognée par les tableaux qui défilent.
+  function bulles() {
+    const b = Object.assign(document.createElement("div"), { id: "bulle", hidden: true });
+    b.setAttribute("role", "tooltip");
+    document.body.append(b);
+    const cacher = () => { b.hidden = true; };
+    const montrer = (e) => {
+      const el = e.target.closest ? e.target.closest("[data-aide]") : null;
+      if (!el) return cacher();
+      b.textContent = el.dataset.aide;
+      b.hidden = false;
+      const r = el.getBoundingClientRect();
+      b.style.left = Math.max(8, Math.min(r.left, innerWidth - b.offsetWidth - 8)) + "px";
+      b.style.top = (r.bottom + 6 + b.offsetHeight > innerHeight ? Math.max(8, r.top - b.offsetHeight - 6) : r.bottom + 6) + "px";
+    };
+    document.addEventListener("mouseover", montrer);
+    document.addEventListener("focusin", montrer);
+    for (const ev of ["focusout", "keydown", "scroll", "mouseleave"]) document.addEventListener(ev, cacher, true); // Échap ou saisie : la bulle s'efface
+    for (const el of document.querySelectorAll("th")) if (!el.dataset.aide) aide(el);
+  }
+
   // ---------- éléments de page ----------
 
   function message(el, niveau, texte) {
@@ -65,7 +131,7 @@ const App = (() => {
     for (const e of t.entetes) {
       const th = document.createElement("th");
       th.textContent = e;
-      tete.append(th);
+      tete.append(aide(th));
     }
     const corps = tab.createTBody();
     t.lignes.forEach((ligne, i) => {
@@ -73,6 +139,7 @@ const App = (() => {
       ligne.forEach((c, j) => {
         const td = tr.insertCell();
         td.textContent = c;
+        if (j === 0) aide(td); // première colonne : nom de la méthode ou de la grandeur
         if (j > 0) td.className = "num";
         if (t.classes && j === (t.colonneClasse ?? ligne.length - 1)) td.className = "verdict " + t.classes[i];
       });
@@ -90,7 +157,7 @@ const App = (() => {
       const a = document.createElement("span"), b = document.createElement("strong");
       a.textContent = nom;
       b.textContent = valeur;
-      d.append(a, b);
+      d.append(aide(a), b);
       grille.append(d);
     }
     return grille;
@@ -138,7 +205,7 @@ const App = (() => {
       b.dataset.id = o.id;
       b.textContent = o.titre;
       b.addEventListener("click", () => ouvrir(o.id));
-      return b;
+      return aide(b);
     }));
     ouvrir(liste.some((o) => o.id === actif) ? actif : liste[0].id);
   }
@@ -264,12 +331,15 @@ const App = (() => {
   }
 
   function menu() {
-    const entrees = [["accueil", "Accueil"], ["analyser", "Étude"], ["mecanisme", "Mécanisme"], ["aides", "Aides"]];
+    const entrees = [["accueil", "Accueil", "Présentation et points de départ."], ["analyser", "Étude", "Saisir une chaîne de cotes et la calculer."],
+      ["mecanisme", "Mécanisme", "Calculer d'un coup plusieurs chaînes d'un même assemblage."],
+      ["aides", "Aides", "Assistant de chaîne, exemples, ajustements, tables ISO 286 et matériaux."]];
     const principal = document.createElement("div");
     principal.className = "principal";
-    principal.append(...entrees.map(([id, titre]) => {
+    principal.append(...entrees.map(([id, titre, bulle]) => {
       const b = Object.assign(document.createElement("button"), { type: "button", textContent: titre, disabled: id !== "accueil" });
       b.dataset.id = id;
+      b.dataset.aide = bulle;
       b.addEventListener("click", () => { afficherPage(id === "aides" ? derniereAide : id); window.scrollTo(0, 0); });
       return b;
     }));
@@ -299,6 +369,7 @@ const App = (() => {
   async function demarrer() {
     menu();
     bandeaux();
+    bulles();
     afficherPage("accueil"); // l'accueil se lit pendant le chargement ; ses boutons s'activent à la fin
     $("etude-modifier").addEventListener("click", () => afficherPage("analyser"));
     if (!exposition.analyser) { // un bloqueur de publicité ou un cache périmé a retenu un script

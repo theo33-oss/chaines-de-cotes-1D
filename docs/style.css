@@ -214,6 +214,11 @@ details.info > summary::-webkit-details-marker { display: none; }
 details.info[open] > summary { background: var(--discret); color: var(--carte); }
 details.info > p { margin: 6px 0; max-width: 90ch; }
 
+/* bulles d'aide au survol : un pointillé sous le texte signale qu'une explication existe */
+[data-aide]:not(button) { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; }
+#bulle { position: fixed; z-index: 50; max-width: min(340px, calc(100vw - 16px)); padding: 8px 12px; border-radius: 6px; pointer-events: none;
+  background: var(--encre); color: var(--fond); font-size: .85rem; font-weight: 400; line-height: 1.4; box-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+
 /* deuxième cote condition : colonne « Sens CF2 » */
 .th-cf2, .td-cf2 { display: none; }
 #maillons.cf2 .th-cf2, #maillons.cf2 .td-cf2 { display: table-cell; }
