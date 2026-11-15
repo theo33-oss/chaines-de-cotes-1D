@@ -5,7 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<link rel="stylesheet" href="style.css?v=722e95da">
+<meta name="theme-color" content="#5C4B99">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Chaînes de cotes 1D">
+<meta property="og:description" content="Le jeu entre deux pièces reste-t-il dans ses limites ? Pire des cas, statistique, Monte-Carlo, dossier de validation et export Excel, dans le navigateur.">
+<meta property="og:image" content="https://theo33-oss.github.io/chaines-de-cotes-1D/captures/accueil.jpg">
+<script>
+// thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
+try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
+</script>
+<link rel="stylesheet" href="style.css?v=4f0ce298">
 </head>
 <body>
 <header>
@@ -47,6 +57,7 @@
       <div class="ligne">
         <button data-aide="Reprend une étude enregistrée sur votre PC (Ctrl+O)." id="ouvrir" type="button" class="secondaire">Ouvrir une étude (.json)</button>
         <button data-aide="Télécharge l'étude dans un fichier .json, à rouvrir plus tard (Ctrl+S)." id="enregistrer" type="button" class="secondaire">Enregistrer l'étude</button>
+        <button id="copier-lien" type="button" class="secondaire" data-aide="Copie un lien qui contient l'étude : la personne qui l'ouvre retrouve vos cotes. Rien n'est envoyé sur Internet, tout est dans l'adresse.">Copier le lien de l'étude</button>
         <input id="fichier" type="file" accept=".json,application/json" hidden>
       </div>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le fichier est celui de l'application de bureau : une étude enregistrée sur la page s'ouvre dans l'application, et inversement.</p></details>
@@ -91,10 +102,11 @@
       <div class="defile">
         <table id="maillons">
           <thead><tr><th data-aide="Nom de la cote, repris sur le schéma et dans les résultats.">Nom</th><th data-aide="« + » si agrandir cette cote agrandit le jeu, « − » si cela le réduit.">Sens<span class="th-cf2"> CF1</span></th><th data-aide="Sens du maillon pour la seconde cote condition." class="th-cf2">Sens CF2</th><th data-aide="Valeur nominale de la cote, celle du plan.">Cote (mm)</th><th data-aide="Tolérance normalisée, par exemple h7 ou H8. Elle remplit ES et EI à votre place.">ISO 286</th><th>ES (mm)</th><th>EI (mm)</th><th data-aide="Comment les pièces fabriquées se répartissent dans la tolérance. Normale : surtout près du milieu (cas habituel). Uniforme : partout pareil. Triangulaire : entre les deux.">Loi</th>
-            <th data-aide="Le matériau donne le coefficient de dilatation α de la cote." class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th data-aide="Température de cette cote en fonctionnement." class="th-therm th-tcote">T service (°C)</th><th data-aide="Silhouette de pièce dessinée sur la flèche de ce maillon." class="th-image">Image</th><th><span class="cache">Supprimer</span></th></tr></thead>
+            <th data-aide="Le matériau donne le coefficient de dilatation α de la cote." class="th-therm">Matériau</th><th class="th-therm">α (1e-6/K)</th><th data-aide="Température de cette cote en fonctionnement." class="th-therm th-tcote">T service (°C)</th><th data-aide="Silhouette de pièce dessinée sur la flèche de ce maillon." class="th-image">Image</th><th><span class="cache">Actions</span></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
+      <p id="coller-message" class="message" role="status" hidden></p>
       <div class="ligne">
         <button data-aide="Ajoute une ligne vide en bas du tableau." id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
         <button id="annuler" type="button" class="secondaire" disabled title="Ctrl+Z">↶ Annuler</button>
@@ -109,7 +121,7 @@
         <span class="legende">Vos images restent sur ce PC : ni envoyées sur Internet, ni enregistrées dans l'étude.</span>
       </div>
       <p id="perso-message" class="message" role="status" hidden></p>
-      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude.</p></details>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude. Collage : copiez des cellules d'Excel (Nom, Cote, ES, EI) et collez-les dans le tableau ; une désignation (h7) ou un sens (+ ou −) dans la ligne est reconnu.</p></details>
     </details>
 
     <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 data-aide="Le dessin de la chaîne, mis à jour à chaque saisie, et la liste des incohérences trouvées." id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
@@ -138,6 +150,7 @@
       <p id="verdict" class="message"></p>
       <p id="conseil" class="expert-seul"></p>
       <p id="opt-invite" class="message avertissement expert-seul" hidden>Le jeu n'est pas tenu. <button id="opt-aller" type="button" class="primaire">Optimiser les tolérances</button></p>
+      <p class="ligne"><button id="export-excel" type="button" class="secondaire" data-aide="Un classeur Excel : une feuille de formules qui refait le calcul (pire des cas, statistique, Cp, Cpk, ppm) et compare avec le site, puis toutes les valeurs calculées par le site.">Exporter en Excel (pour vérifier le calcul)</button> <span id="export-excel-etat" class="legende" role="status"></span></p>
       <ul id="plain-details" class="details guide-seul"></ul>
       <div id="plain-conseils" class="guide-seul"></div>
       <ul id="avertissements" class="legende"></ul>
@@ -158,7 +171,7 @@
   <!-- ===== Page « Optimiser les tolérances » (js/repartir.js) ===== -->
   <details class="bandeau expert-seul" id="page-repartir">
     <summary><h2>Optimiser les tolérances</h2></summary>
-      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Analyser.</p></details>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Vous fixez les limites de la cote condition (<strong>Jmin</strong> et <strong>Jmax</strong>) ; l'outil calcule les intervalles de tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre le jeu avec un maillon de réglage. Les maillons de la chaîne sont ceux de la page Étude.</p></details>
       <div class="grille">
         <label data-aide="Limite basse du jeu que les nouvelles tolérances doivent tenir.">Jmin (mm)<input id="rp-jmin" type="text" inputmode="decimal"></label>
         <label data-aide="Limite haute du jeu que les nouvelles tolérances doivent tenir.">Jmax (mm)<input id="rp-jmax" type="text" inputmode="decimal"></label>
@@ -225,7 +238,7 @@
         <label class="case"><input type="radio" name="cp-source" value="exemple"> Exemple de la bibliothèque</label>
         <label class="case"><input type="radio" name="cp-source" value="fichier"> Fichier JSON</label>
       </div></fieldset>
-      <p id="cp-repartition" class="legende">Compare l'étude en cours à la chaîne obtenue par le dernier calcul de le bandeau « Optimiser les tolérances » (avant « Appliquer à l'étude »).</p>
+      <p id="cp-repartition" class="legende">Compare l'étude en cours à la chaîne obtenue par le dernier calcul du bandeau « Optimiser les tolérances » (avant « Appliquer à l'étude »).</p>
       <label id="cp-exemple-bloc" class="large" hidden>Exemple<select id="cp-exemple"></select></label>
       <div id="cp-fichier-bloc" class="ligne" hidden>
         <button id="cp-ouvrir" type="button" class="secondaire">Choisir un fichier d'étude (.json)</button>
@@ -423,14 +436,14 @@
   <!-- ===== Page « Bibliothèque d'exemples » (js/exemples.js) ===== -->
   <div id="page-exemples" hidden>
     <h2>Bibliothèque d'exemples</h2>
-    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Les six premiers exemples viennent de l'application MATLAB d'origine ou de son aide (leurs résultats sont vérifiés contre MATLAB). Les suivants sont des exemples pédagogiques, à plusieurs pièces. « Ouvrir dans Analyser » en fait l'étude en cours (il remplace la chaîne ouverte) et lance le calcul ; vous pourrez ensuite le modifier librement. L'aperçu donne le jeu au pire des cas, sans Monte-Carlo.</p></details>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Les six premiers exemples viennent de l'application MATLAB d'origine ou de son aide (leurs résultats sont vérifiés contre MATLAB). Les suivants sont des exemples pédagogiques, à plusieurs pièces. « Ouvrir dans Étude » en fait l'étude en cours (il remplace la chaîne ouverte) et lance le calcul ; vous pourrez ensuite le modifier librement. L'aperçu donne le jeu au pire des cas, sans Monte-Carlo.</p></details>
     <div id="exemples-liste" class="cartes"></div>
   </div>
 
   <!-- ===== Page « Assistant d'ajustement » (js/ajustement.js) ===== -->
   <div id="page-ajustement" hidden>
     <h2>Assistant d'ajustement</h2>
-    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Choisissez la cote, la fonction attendue et le système (alésage normal ou arbre normal) : les ajustements ISO 286 recommandés sont classés du mieux adapté au moins adapté, avec leurs jeux calculés à cette cote. « Utiliser dans la chaîne » ajoute l'alésage et l'arbre à l'étude de la page Analyser.</p></details>
+    <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Choisissez la cote, la fonction attendue et le système (alésage normal ou arbre normal) : les ajustements ISO 286 recommandés sont classés du mieux adapté au moins adapté, avec leurs jeux calculés à cette cote. « Utiliser dans la chaîne » ajoute l'alésage et l'arbre à l'étude de la page Étude.</p></details>
     <div class="grille">
       <label>Cote nominale (mm)<select id="aj-cote"></select></label>
       <label id="aj-autre-bloc" hidden>Cote (mm)<input id="aj-autre" type="text" inputmode="decimal" value="50"></label>
@@ -525,6 +538,8 @@
   </div>
 </main>
 
+<datalist id="liste-iso"></datalist>
+
 <!-- silhouettes des pièces (colonne « Image » des maillons et schéma) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="silhouettes">
     <symbol id="img-arbre" viewBox="0 0 40 40"><rect class="pi-s" x="4" y="13" width="32" height="14"/><path class="pi-a" d="M1 20H39"/></symbol>
@@ -557,16 +572,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=34811bd0"></script>
-<script src="js/accueil.js?v=38c7bc39"></script>
-<script src="js/chaine.js?v=ed71e0d4"></script>
-<script src="js/repartir.js?v=5808c72f"></script>
-<script src="js/comparer.js?v=00c67744"></script>
-<script src="js/mecanisme.js?v=2bb76ad8"></script>
+<script src="app.js?v=91da21e7"></script>
+<script src="js/accueil.js?v=48b9df2b"></script>
+<script src="js/chaine.js?v=f0016a85"></script>
+<script src="js/repartir.js?v=1b6ab5db"></script>
+<script src="js/comparer.js?v=b4b4c56c"></script>
+<script src="js/mecanisme.js?v=dc6158aa"></script>
 <script src="js/dossier.js?v=bea36620"></script>
 <script src="js/assistant.js?v=f069f614"></script>
-<script src="js/exemples.js?v=3b653ed8"></script>
-<script src="js/ajustement.js?v=ec05ff5b"></script>
+<script src="js/exemples.js?v=b8de49e5"></script>
+<script src="js/ajustement.js?v=27a8c5f2"></script>
 <script src="js/iso286.js?v=d369c407"></script>
 <script src="js/materiaux.js?v=e542faad"></script>
 <script>App.demarrer();</script>

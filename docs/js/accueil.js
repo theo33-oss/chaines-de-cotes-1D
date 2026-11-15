@@ -18,7 +18,7 @@
     });
     $("ac-assistant").addEventListener("click", () => App.afficherPage("assistant"));
     // liens vers tous les outils : construits ici, une fois toutes les pages enregistrées
-    const titres = { analyser: "Analyser une chaîne", repartir: "Répartir les tolérances", comparer: "Comparer deux scénarios", mecanisme: "Mécanisme (plusieurs chaînes)",
+    const titres = { analyser: "Étudier une chaîne", repartir: "Optimiser les tolérances", comparer: "Comparer deux scénarios", mecanisme: "Mécanisme (plusieurs chaînes)",
       dossier: "Dossier de validation", assistant: "Assistant de chaîne", exemples: "Bibliothèque d'exemples", ajustement: "Choisir un ajustement ISO 286",
       iso286: "Tables ISO 286", materiaux: "Matériaux et dilatation" };
     $("ac-outils").replaceChildren(...Object.entries(titres).map(([id, texte]) => {

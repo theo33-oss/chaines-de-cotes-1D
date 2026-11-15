@@ -18,7 +18,7 @@
   function scenarioB() {
     if (source() === "repartition") {
       const p = App.repartition.dernier();
-      if (!p) App.message($("cp-erreur"), "erreur", "Aucune répartition calculée : ouvrez la page « Répartir », cliquez sur « Calculer », puis revenez ici.");
+      if (!p) App.message($("cp-erreur"), "erreur", "Aucune répartition calculée : ouvrez la bloc « Optimiser », cliquez sur « Calculer », puis revenez ici.");
       return p && { probleme: p, nom: "B (répartition)" };
     }
     if (source() === "exemple") return { probleme: JSON.parse(pont.charger($("cp-exemple").value)), nom: "B (exemple)" };

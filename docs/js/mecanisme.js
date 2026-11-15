@@ -54,7 +54,7 @@
       l.append(nom);
       const retirer = Object.assign(document.createElement("button"), { type: "button", className: "secondaire", textContent: "Retirer" });
       retirer.addEventListener("click", () => { chaines = chaines.filter((x) => x.id !== c.id); liste(); });
-      const ouvrir = Object.assign(document.createElement("button"), { type: "button", className: "secondaire", textContent: "Ouvrir dans Analyser" });
+      const ouvrir = Object.assign(document.createElement("button"), { type: "button", className: "secondaire", textContent: "Ouvrir dans Étude" });
       ouvrir.addEventListener("click", () => { App.afficherPage("analyser"); App.analyser.charger(structuredClone(c.probleme)); window.scrollTo(0, 0); });
       const ligne = document.createElement("div");
       ligne.className = "ligne";

@@ -52,7 +52,7 @@
     }
     App.analyser.ajouterMaillons(r.maillons);
     App.message($("aj-message"), "succes", `${courant.choisi.designation} ajouté à la chaîne (alésage en sens +, arbre en sens −). `
-      + "Ouvrez la page Analyser : la chaîne doit se fermer, ajustez les autres maillons si besoin.");
+      + "Ouvrez la page Étude : la chaîne doit se fermer, ajustez les autres maillons si besoin.");
   }
 
   async function apres(p) {

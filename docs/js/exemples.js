@@ -50,7 +50,7 @@
     const b = document.createElement("button");
     b.type = "button";
     b.className = "primaire";
-    b.textContent = "Ouvrir dans Analyser";
+    b.textContent = "Ouvrir dans Étude";
     b.addEventListener("click", () => {
       App.afficherPage("analyser");
       App.analyser.charger(JSON.parse(pont.charger(c.id)));

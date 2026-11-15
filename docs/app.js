@@ -48,6 +48,45 @@ const App = (() => {
     return html;
   }
 
+  // ---------- thème clair / sombre, icônes ----------
+
+  const sombre = () => document.documentElement.dataset.theme === "dark";
+
+  // Couleurs des figures du pont (plots/_common.py) → version sombre. Le script du <head> pose data-theme avant l'affichage.
+  const COULEURS_SOMBRES = { "#FFF8F3": "#1A1626", "#3D246C": "#EDE6F7", "#E2DDF1": "#352E4D", "#5C4B99": "#9F91CC", "#17692F": "#4CC77A", "#B3141F": "#FF6B73" };
+  const enSombre = (x) => JSON.parse(JSON.stringify(x).replace(/#[0-9A-Fa-f]{6}|rgba\(255,255,255,0\.8\)/g,
+    (c) => COULEURS_SOMBRES[c.toUpperCase()] || (c[0] === "r" ? "rgba(26,22,38,0.8)" : c)));
+
+  function poserTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem("chainecotes.theme", theme); } catch (e) { /* sans mémoire */ }
+    for (const d of document.querySelectorAll(".js-plotly-plot")) if (d._figure) tracer(d, d._figure);
+    document.dispatchEvent(new Event("themechange")); // les pages qui dessinent seules (silhouettes du schéma) se redessinent
+  }
+
+  const ICONES = {
+    accueil: '<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',
+    analyser: '<path d="M3 7v10M21 7v10M3 12h18M7 9l-4 3 4 3M17 9l4 3-4 3"/>',
+    mecanisme: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+    aides: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>',
+    theme: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>',
+    dupliquer: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',
+    monter: '<path d="M6 15l6-6 6 6"/>',
+    descendre: '<path d="M6 9l6 6 6-6"/>',
+  };
+  const icone = (id) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONES[id]}</svg>`;
+
+  // Copie dans le presse-papiers ; vrai si c'est fait.
+  async function copier(texte) {
+    try { await navigator.clipboard.writeText(texte); return true; } catch (e) { /* page non sécurisée ou refus : copie de secours */ }
+    const z = Object.assign(document.createElement("textarea"), { value: texte });
+    document.body.append(z);
+    z.select();
+    const ok = document.execCommand("copy");
+    z.remove();
+    return ok;
+  }
+
   // ---------- bulles d'aide au survol ----------
 
   // Lexique des termes affichés par le calcul (en-têtes, grandeurs, onglets) : le premier motif trouvé donne la bulle.
@@ -145,7 +184,16 @@ const App = (() => {
       });
     });
     enveloppe.append(tab);
-    return enveloppe;
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit copier", textContent: "Copier le tableau" });
+    b.dataset.aide = "Copie le tableau avec des tabulations : à coller directement dans Excel.";
+    b.addEventListener("click", async () => {
+      b.textContent = (await copier([t.entetes, ...t.lignes].map((l) => l.join("\t")).join("\n"))) ? "Copié" : "Copie impossible";
+      setTimeout(() => { b.textContent = "Copier le tableau"; }, 1500);
+    });
+    const bloc = document.createElement("div");
+    bloc.className = "tableau";
+    bloc.append(enveloppe, b);
+    return bloc;
   }
 
   function metriques(liste) {
@@ -178,6 +226,8 @@ const App = (() => {
 
   // Figure Plotly du pont : titre sur plusieurs lignes et légende sous le graphique pour tenir sur un téléphone.
   function tracer(div, f) {
+    div._figure = f; // gardée pour redessiner au changement de thème
+    if (sombre()) f = { data: enSombre(f.data), layout: { ...enSombre(f.layout), hoverlabel: { bgcolor: "#241F36", font: { color: "#EDE6F7" } } } };
     const layout = { ...f.layout, autosize: true };
     delete layout.width;
     if (layout.title && layout.title.text) {
@@ -241,6 +291,14 @@ const App = (() => {
     await pyodide.loadPackage(noms);
   }
 
+  // Paquet Python pur absent de Pyodide, pris sur PyPI à la première utilisation (ex. openpyxl pour l'export Excel).
+  const installes = new Set();
+  async function pip(nom) {
+    if (installes.has(nom)) return;
+    await pyodide.pyimport("micropip").install(nom);
+    installes.add(nom);
+  }
+
   // ---------- pages et démarrage ----------
 
   function enregistrerPage(page) {
@@ -292,6 +350,7 @@ const App = (() => {
       $("etude-texte").textContent = `Étude en cours : « ${p.condition.nom || "sans nom"} », ${p.maillons.length} maillon(s).`;
     }
     majMenu();
+    document.title = (page && id !== "accueil" ? page.titre + " · " : "") + "Chaînes de cotes 1D";
     requestAnimationFrame(() => ajusterGraphiques($("page-" + ecran)));
     if (page && page.dans) {
       if (exposition.analyser) exposition.analyser.guide(false); // un bloc d'étude se lit en mode expert
@@ -337,12 +396,21 @@ const App = (() => {
     const principal = document.createElement("div");
     principal.className = "principal";
     principal.append(...entrees.map(([id, titre, bulle]) => {
-      const b = Object.assign(document.createElement("button"), { type: "button", textContent: titre, disabled: id !== "accueil" });
+      const b = Object.assign(document.createElement("button"), { type: "button", innerHTML: icone(id) + titre, disabled: id !== "accueil" }); // icône et titre : textes écrits ici
       b.dataset.id = id;
       b.dataset.aide = bulle;
       b.addEventListener("click", () => { afficherPage(id === "aides" ? derniereAide : id); window.scrollTo(0, 0); });
       return b;
     }));
+    const theme = Object.assign(document.createElement("button"), { type: "button", className: "theme" });
+    const majTheme = () => {
+      theme.innerHTML = icone("theme") + (sombre() ? "Thème clair" : "Thème sombre");
+      theme.setAttribute("aria-label", sombre() ? "Passer au thème clair" : "Passer au thème sombre");
+    };
+    theme.addEventListener("click", () => poserTheme(sombre() ? "light" : "dark"));
+    document.addEventListener("themechange", majTheme);
+    majTheme();
+    principal.append(theme);
     const sous = document.createElement("div");
     sous.className = "sous";
     sous.hidden = true;
@@ -405,8 +473,9 @@ const App = (() => {
     majBlocs();
     etat("");
     $("pret").hidden = false;
+    exposition.analyser.ouvrirLien();
   }
 
-  const exposition = { $, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, enregistrerPage, afficherPage, majBlocs, demarrer };
+  const exposition = { $, sombre, icone, copier, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();

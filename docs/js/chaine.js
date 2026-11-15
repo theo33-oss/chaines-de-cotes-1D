@@ -3,7 +3,7 @@
 // Aucun calcul ici : tout vient de pont.py (le Python de l'application de bureau).
 
 (() => {
-  const { $, nombre } = App;
+  const { $, nombre, icone } = App;
   let pont = null;
   let etude = { cartouche: null, revisions: [] }; // reportés tels quels dans le fichier enregistré (cartouche, révisions)
   let materiaux = [];
@@ -17,10 +17,13 @@
     rondelle: "Rondelle", circlips: "Circlips", ecrou: "Écrou", vis: "Vis", bague: "Bague à collerette", coussinet: "Coussinet", pignon: "Pignon",
     poulie: "Poulie", clavette: "Clavette", couvercle: "Couvercle", joint: "Joint torique", ressort: "Ressort", cale: "Cale de réglage",
     goupille: "Goupille", plaque: "Plaque" };
-  // Le schéma est une image Plotly : la silhouette y entre en SVG autonome, aux couleurs du fond clair de la figure.
-  const STYLE_IMAGE = "<style>.pi-s{stroke:#3D246C;stroke-width:1.6;fill:#CFC6EC;stroke-linejoin:round}"
-    + ".pi-n{stroke:#3D246C;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}"
-    + ".pi-a{stroke:#3D246C;stroke-width:1;stroke-dasharray:7 2 1.5 2;fill:none;opacity:.7}</style>";
+  // Le schéma est une image Plotly : la silhouette y entre en SVG autonome, aux couleurs de la figure (claire ou sombre).
+  const STYLE_IMAGE = () => {
+    const trait = App.sombre() ? "#EDE6F7" : "#3D246C", fond = App.sombre() ? "#4B3F7A" : "#CFC6EC";
+    return `<style>.pi-s{stroke:${trait};stroke-width:1.6;fill:${fond};stroke-linejoin:round}`
+      + `.pi-n{stroke:${trait};stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}`
+      + `.pi-a{stroke:${trait};stroke-width:1;stroke-dasharray:7 2 1.5 2;fill:none;opacity:.7}</style>`;
+  };
   // Images personnelles : gardées dans ce navigateur seulement (jamais dans le fichier d'étude, jamais envoyées).
   // Un maillon y fait référence par « perso:<nom> ». Réduites à 256 px à l'ajout.
   const CLE_IMAGES = "chainecotes.images";
@@ -47,7 +50,7 @@
     return $("img-" + id).innerHTML;
   }
   const sourceImage = (id, angle) => "data:image/svg+xml," + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${STYLE_IMAGE}<g transform="rotate(${angleDe(angle)} 20 20)">${corpsImage(id)}</g></svg>`);
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${STYLE_IMAGE()}<g transform="rotate(${angleDe(angle)} 20 20)">${corpsImage(id)}</g></svg>`);
 
   // Ajoute au schéma du pont la silhouette de chaque maillon qui en a une : sous sa flèche, au milieu, comme une pièce
   // sous sa ligne de cote. Le nom reste au-dessus de la flèche ; les lignes sont plus hautes pour loger la silhouette.
@@ -143,6 +146,17 @@
       td.append(el);
       tr.append(td);
     });
+    // désignation ISO 286 : liste déroulante des désignations courantes à cette cote ; le choix remplit ES et EI
+    const f = (c) => tr.querySelector("." + c);
+    f("m-iso").setAttribute("list", "liste-iso");
+    f("m-iso").placeholder = "ex. h7";
+    f("m-iso").addEventListener("focus", () => listeIso(f("m-cote").value));
+    for (const c of ["m-iso", "m-cote"]) f(c).addEventListener("change", () => appliquerIso(tr));
+    for (const c of ["m-es", "m-ei"]) f(c).addEventListener("input", () => { f("m-iso").value = ""; f("m-iso").classList.remove("invalide"); }); // écarts saisis : plus de désignation
+    f("m-es").addEventListener("change", () => { // « ±0,1 » dans ES : ES = 0,1 et EI = −0,1
+      const m = /^(?:±|\+\/-|\+-)\s*(\d*[.,]?\d+)$/.exec(f("m-es").value.trim());
+      if (m) { f("m-es").value = m[1]; f("m-ei").value = "-" + m[1]; }
+    });
     // image de la pièce : aperçu, liste (catalogue + mes images) et inclinaison ; colonne affichée si « Représentation » est cochée
     const tdImage = Object.assign(document.createElement("td"), { className: "td-image" });
     const choix = liste("m-image", optionsImages(m.image), m.image || "");
@@ -185,24 +199,32 @@
       tourner(-90, "Tourner à gauche"), tourner(90, "Tourner à droite"));
     tdImage.append(haut, bas);
     tr.append(tdImage);
-    const sup = document.createElement("button");
-    sup.type = "button";
-    sup.textContent = "✕";
-    sup.setAttribute("aria-label", `Supprimer le maillon ${numero}`);
-    sup.addEventListener("click", () => {
-      const lignes = lireMaillons();
-      lignes.splice(numero - 1, 1);
-      afficherMaillons(lignes);
-      apercuDiffere();
-    });
-    const td = document.createElement("td");
-    td.append(sup);
+    const td = Object.assign(document.createElement("td"), { className: "actions" });
+    const agir = (libelle, contenu, action) => { // dupliquer, monter, descendre, supprimer : un bouton par action sur la ligne
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "secondaire", title: libelle, innerHTML: contenu });
+      b.setAttribute("aria-label", `${libelle}, maillon ${numero}`);
+      b.addEventListener("click", () => {
+        const lignes = lireMaillons();
+        action(lignes);
+        afficherMaillons(lignes);
+        apercuDiffere();
+      });
+      return b;
+    };
+    td.append(
+      agir("Dupliquer", icone("dupliquer"), (l) => l.splice(numero, 0, { ...l[numero - 1], nom: l[numero - 1].nom + " (copie)", extra: { ...l[numero - 1].extra } })),
+      agir("Monter", icone("monter"), (l) => { if (numero > 1) l.splice(numero - 2, 0, ...l.splice(numero - 1, 1)); }),
+      agir("Descendre", icone("descendre"), (l) => { if (numero < l.length) l.splice(numero, 0, ...l.splice(numero - 1, 1)); }),
+      agir("Supprimer", "✕", (l) => l.splice(numero - 1, 1)),
+    );
     tr.append(td);
     return tr;
   }
 
   function afficherMaillons(maillons) {
-    document.querySelector("#maillons tbody").replaceChildren(...maillons.map((m, i) => ligneMaillon(m, i + 1)));
+    const lignes = maillons.map((m, i) => ligneMaillon(m, i + 1));
+    document.querySelector("#maillons tbody").replaceChildren(...lignes);
+    if (pont) for (const tr of lignes) if (tr.querySelector(".m-iso").value.trim()) appliquerIso(tr); // les écarts suivent la désignation
   }
 
   function lireMaillons() {
@@ -222,6 +244,108 @@
       imageAngle: tr.querySelector(".m-angle").value,
       extra: tr._extra,
     }));
+  }
+
+  // ---------- désignation ISO 286 : liste déroulante, écarts ES et EI remplis ----------
+
+  const cacheIso = new Map(); // cote → liste [désignation, texte] : un seul appel du pont par cote
+
+  function listeIso(coteTexte) {
+    const c = nombre(coteTexte), dl = $("liste-iso");
+    if (typeof c !== "number" || !(c > 0)) return dl.replaceChildren();
+    if (!cacheIso.has(c)) cacheIso.set(c, JSON.parse(pont.isoListe(c)));
+    dl.replaceChildren(...cacheIso.get(c).map(([d, texte]) => Object.assign(document.createElement("option"), { value: d, label: texte, textContent: texte })));
+  }
+
+  // Une désignation saisie ou choisie remplit ES et EI d'après la cote de la ligne ; une désignation fausse est signalée sur la case.
+  function appliquerIso(tr) {
+    const iso = tr.querySelector(".m-iso"), c = nombre(tr.querySelector(".m-cote").value), d = iso.value.trim();
+    iso.classList.remove("invalide");
+    iso.title = "";
+    if (!d) return;
+    const signaler = (texte) => { iso.classList.add("invalide"); iso.title = texte; };
+    if (typeof c !== "number") return signaler("Saisissez d'abord la cote nominale : les écarts en dépendent.");
+    const r = JSON.parse(pont.isoEcarts(d, c));
+    if (r.erreur) return signaler(r.erreur);
+    tr.querySelector(".m-es").value = String(r.es);
+    tr.querySelector(".m-ei").value = String(r.ei);
+  }
+
+  // ---------- collage depuis un tableur ----------
+
+  // Cellules copiées d'un tableur → lignes {nom, sens, iso, cote, es, ei} : un texte = nom, « + » ou « − » = sens, « h7 » après le nom = désignation
+  // ISO 286, puis les nombres dans l'ordre cote, ES, EI. Une ligne sans nombre (titres de colonnes) est ignorée.
+  function collage(texte) {
+    const lignes = [];
+    for (const l of texte.replace(/\r/g, "").split("\n")) {
+      const m = {}, nombres = [];
+      for (const c of l.split("\t").map((x) => x.trim()).filter(Boolean)) {
+        if (/^[-+−]$/.test(c) && m.sens === undefined) m.sens = c === "+" ? "+" : "-";
+        else if (/^[-+−]?\d+(?:[.,]\d+)?$/.test(c)) nombres.push(c.replace("−", "-"));
+        else if (m.nom !== undefined && /^[A-Za-z]{1,2}\d{1,2}$/.test(c)) m.iso = c;
+        else if (m.nom === undefined) m.nom = c;
+      }
+      if (!nombres.length) continue;
+      ["cote", "es", "ei"].forEach((k, i) => { if (nombres[i] !== undefined) m[k] = nombres[i]; });
+      lignes.push(m);
+    }
+    return lignes;
+  }
+
+  // ---------- sauvegarde automatique, nom de fichier, lien de partage ----------
+
+  const CLE_ETUDE = "chainecotes.etude"; // dernière étude, reprise à la prochaine visite
+
+  function etudeGardee() {
+    try {
+      const p = JSON.parse(localStorage.getItem(CLE_ETUDE) || "null");
+      return p && p.condition && Array.isArray(p.maillons) && p.maillons.length ? p : null;
+    } catch (e) { return null; }
+  }
+
+  // « chaine_jeu_axial » d'après le nom de la cote condition (sans accents ni espaces).
+  const nomFichier = () => "chaine_" + ($("c-nom").value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "").toLowerCase() || "de_cotes");
+
+  // Le lien contient l'étude compressée, après le « # » : elle ne passe par aucun serveur.
+  async function lireLimite(flux, max = 2e6) { // un lien piégé ne doit pas se décompresser en gigaoctets
+    const lecteur = flux.getReader(), morceaux = [];
+    let total = 0;
+    for (;;) {
+      const { done, value } = await lecteur.read();
+      if (done) break;
+      total += value.length;
+      if (total > max) { lecteur.cancel(); throw new Error("contenu trop volumineux"); }
+      morceaux.push(value);
+    }
+    return new TextDecoder().decode(await new Blob(morceaux).arrayBuffer());
+  }
+
+  async function copierLien() {
+    try {
+      const flux = new Blob([JSON.stringify(lireCommun())]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+      const octets = new Uint8Array(await new Response(flux).arrayBuffer());
+      const lien = location.href.split("#")[0] + "#etude=" + btoa(String.fromCharCode(...octets)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      if (lien.length > 8000) return messageFichier("avertissement", "Étude trop grande pour un lien : utilisez « Enregistrer l'étude » et envoyez le fichier.");
+      const copie = await App.copier(lien);
+      messageFichier(copie ? "succes" : "erreur", copie ? "Lien copié : collez-le dans un message. Il contient l'étude, rien n'est envoyé sur Internet." : "Copie impossible : le navigateur l'a refusée.");
+    } catch (e) { messageFichier("erreur", "Lien impossible : " + e.message); }
+  }
+
+  async function ouvrirLien() {
+    const m = /^#etude=([A-Za-z0-9_-]+)$/.exec(location.hash);
+    if (!m) return;
+    history.replaceState(null, "", location.href.split("#")[0]); // un F5 ne doit pas écraser les modifications faites ensuite
+    try {
+      const octets = Uint8Array.from(atob(m[1].replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+      const p = JSON.parse(await lireLimite(new Blob([octets]).stream().pipeThrough(new DecompressionStream("deflate-raw"))));
+      if (!p || !Array.isArray(p.maillons) || p.maillons.length > 200) throw new Error("contenu inattendu");
+      etude = { cartouche: p.cartouche || null, revisions: [] };
+      poserProbleme(p);
+      $("resultats").hidden = true;
+      apercu();
+      messageFichier("succes", "Étude ouverte depuis un lien. Cliquez sur Calculer.");
+    } catch (e) { messageFichier("erreur", "Lien illisible : " + e.message); }
+    App.afficherPage("analyser");
   }
 
   // ---------- problème ↔ saisie ----------
@@ -351,6 +475,7 @@
     pile.splice(position + 1);
     pile.push(instantane);
     if (pile.length > MAX_HISTORIQUE) pile.shift();
+    try { localStorage.setItem(CLE_ETUDE, instantane); } catch (e) { /* sans mémoire : l'étude n'est pas reprise à la prochaine visite */ }
     position = pile.length - 1;
     majHistorique();
   }
@@ -643,8 +768,8 @@
       }
       const m = JSON.parse(pont.mecaExporter(JSON.stringify({ nom: "Étude à deux cotes condition", chaines })));
       if (m.erreur) return messageFichier("erreur", "Enregistrement impossible : " + m.erreur);
-      App.telecharger("chaines_de_cotes_2_CF.json", m.contenu);
-      messageFichier("succes", "Étude à deux cotes condition enregistrée au format Mécanisme : chaines_de_cotes_2_CF.json. Les révisions du dossier ne sont gardées qu'avec une seule cote condition.");
+      App.telecharger(nomFichier() + "_2_CF.json", m.contenu);
+      messageFichier("succes", `Étude à deux cotes condition enregistrée au format Mécanisme : ${nomFichier()}_2_CF.json. Les révisions du dossier ne sont gardées qu'avec une seule cote condition.`);
       return;
     }
     const r = JSON.parse(pont.sauver(JSON.stringify(lireProbleme()), JSON.stringify(etude.revisions)));
@@ -652,8 +777,8 @@
       messageFichier("erreur", "Enregistrement impossible : " + r.erreur);
       return;
     }
-    App.telecharger("chaine_de_cotes.json", r.contenu);
-    messageFichier("succes", "Étude enregistrée : chaine_de_cotes.json (dossier des téléchargements).");
+    App.telecharger(nomFichier() + ".json", r.contenu);
+    messageFichier("succes", `Étude enregistrée : ${nomFichier()}.json (dossier des téléchargements).`);
   }
 
   async function apres(p) {
@@ -791,7 +916,50 @@
     $("representation").addEventListener("change", colonnesThermiques); // l'aperçu suit (écouteur « change » de la page)
     $("page-analyser").addEventListener("input", apercuDiffere);
     $("page-analyser").addEventListener("change", apercuDiffere);
-    poserProbleme(CAS_DE_BASE);
+    // collage de cellules d'un tableur dans le tableau des maillons
+    $("maillons").addEventListener("paste", (e) => {
+      const texte = e.clipboardData.getData("text");
+      if (!/[\t\n]/.test(texte.trim())) return; // une seule cellule : collage normal
+      const nouvelles = collage(texte);
+      if (!nouvelles.length) return;
+      e.preventDefault();
+      const tr = e.target.closest("tr"), debut = tr ? [...tr.parentNode.children].indexOf(tr) : 0;
+      const lignes = lireMaillons();
+      nouvelles.forEach((l, i) => { lignes[debut + i] = { ...(lignes[debut + i] || MAILLON_VIDE), iso: "", ...l }; });
+      afficherMaillons(lignes);
+      apercuDiffere();
+      App.message($("coller-message"), "succes", `${nouvelles.length} ligne(s) collée(s) depuis le tableur (à partir de la ligne ${debut + 1}). Ctrl+Z pour annuler.`);
+    });
+    $("copier-lien").addEventListener("click", copierLien);
+    window.addEventListener("hashchange", ouvrirLien); // lien collé dans la barre d'adresse de la page déjà ouverte
+    document.addEventListener("themechange", () => { if (pont) apercu(); }); // silhouettes du schéma aux couleurs du thème
+    $("export-excel").addEventListener("click", async () => {
+      const b = $("export-excel"), etat = $("export-excel-etat");
+      b.disabled = true;
+      etat.textContent = "Préparation du classeur (la première fois, le module Excel se charge : quelques secondes)…";
+      try {
+        await App.pip("openpyxl>=3.1,<4"); // absent de Pyodide : pris sur PyPI, comme plotly au démarrage
+        const r = JSON.parse(pont.exporterExcel(JSON.stringify(lireProbleme())));
+        if (r.erreur) { etat.textContent = r.erreur; return; }
+        App.telecharger(nomFichier() + ".xlsx", Uint8Array.from(atob(r.base64), (c) => c.charCodeAt(0)), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        etat.textContent = `Classeur enregistré : ${nomFichier()}.xlsx (dossier des téléchargements).`;
+      } catch (e) {
+        etat.textContent = "Export impossible : " + e;
+      } finally {
+        b.disabled = false;
+      }
+    });
+    let reprise = false;
+    try {
+      const gardee = etudeGardee();
+      if (gardee) {
+        etude = { cartouche: gardee.cartouche || null, revisions: [] };
+        poserProbleme(gardee);
+        messageFichier("info", "Dernière étude reprise (gardée dans ce navigateur). Pour repartir du cas de base : choisissez « Cas de base » dans la liste, puis « Charger cet exemple ».");
+        reprise = true;
+      }
+    } catch (e) { reprise = false; } // étude gardée illisible : on repart du cas de base
+    if (!reprise) poserProbleme(CAS_DE_BASE);
     colonnesThermiques();
     apercu();
   }
@@ -816,6 +984,7 @@
       $("resultats").hidden = true;
       apercu();
     },
+    ouvrirLien, // appelé une fois toutes les pages prêtes : un lien « #etude=… » ouvre l'étude partagée
     noms: () => lignesCF(cfActive()).map((m) => m.nom),
     tref: () => nombre($("r-tref").value) || 20,
     probleme: lireProbleme,
@@ -846,5 +1015,5 @@
     },
   };
 
-  App.enregistrerPage({ id: "analyser", titre: "Analyser", apres });
+  App.enregistrerPage({ id: "analyser", titre: "Étude", apres });
 })();

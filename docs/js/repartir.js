@@ -1,5 +1,5 @@
 "use strict";
-// Page « Répartir les tolérances » : à partir de [Jmin ; Jmax], calcule les IT des maillons de la page Analyser.
+// Page « Optimiser les tolérances » : à partir de [Jmin ; Jmax], calcule les IT des maillons de la page Étude.
 // Le calcul est celui du bureau (core/inverse.py, services/repartition.py) ; ici, seulement la saisie et l'affichage.
 
 (() => {
@@ -8,7 +8,7 @@
   const CHAMPS = [["c", "c (coût à IT = 0,1 mm)"], ["n", "n (exposant)"], ["itmin", "IT mini"], ["itmax", "IT maxi"]];
   let pont = null;
   let base = []; // procédés et valeurs indicatives
-  let noms = []; // noms des maillons de la page Analyser
+  let noms = []; // noms des maillons de la page Étude
   let signatureNoms = "";
   let figes = new Set();
   let procedesMaillons = [];
@@ -184,7 +184,7 @@
     App.analyser.appliquerEcarts(dernier.ecarts);
     dernier.signature = JSON.stringify(App.analyser.probleme());
     $("rp-appliquer").disabled = false;
-    App.message($("rp-appliquee"), "succes", "Tolérances appliquées à l'étude : la page Analyser utilise maintenant ces écarts (la désignation ISO est vidée).");
+    App.message($("rp-appliquee"), "succes", "Tolérances appliquées à l'étude : la page Étude utilise maintenant ces écarts (la désignation ISO est vidée).");
   }
 
   async function apres(p) {
@@ -224,5 +224,5 @@
   }
 
   App.repartition = { dernier: () => (dernier ? dernier.apres : null) };
-  App.enregistrerPage({ id: "repartir", dans: "analyser", titre: "Répartir", apres, afficher: () => { if (pont) afficher(); } });
+  App.enregistrerPage({ id: "repartir", dans: "analyser", titre: "Optimiser", apres, afficher: () => { if (pont) afficher(); } });
 })();

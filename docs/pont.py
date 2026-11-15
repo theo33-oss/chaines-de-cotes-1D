@@ -6,6 +6,7 @@ Rien n'est calculé en JavaScript : la page ne fait qu'afficher ce que ce module
 
 import json
 import math
+import re
 
 from chainecotes.core import ajustement as ajust
 from chainecotes.core import cout as cout_mod
@@ -107,6 +108,12 @@ def _table(entetes: list[str], lignes: list[list], classes: list[str] | None = N
     return {"entetes": entetes, "lignes": [[str(c) for c in ligne] for ligne in lignes], "classes": classes}
 
 
+def _ppm(x: float, unite: bool = True) -> str:
+    """ppm lisible : sous 0,001 on écrit « < 0,001 » plutôt qu'un exposant comme 2,887e-07."""
+    texte = "< 0,001" if x < 1e-3 else fr(x, ".4g")
+    return f"{texte} ppm" if unite else texte
+
+
 def apercu(texte: str) -> str:
     """Aperçu pendant la saisie : schéma de la chaîne, pire des cas et contrôles de cohérence (sans Monte-Carlo).
 
@@ -148,7 +155,7 @@ def _resultats(bundle: dict) -> dict:
     if mc is None:
         ppmMc = "—"
     else:
-        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else f"{fr(mc['ppm'], '.4g')} ppm"
+        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else _ppm(mc['ppm'])
     valeurs = [
         ["Jeu nominal", f"{fr(res['CF_nom'])} mm"],
         ["Jeu moyen", f"{fr(res['CF_moy'])} mm"],
@@ -157,8 +164,8 @@ def _resultats(bundle: dict) -> dict:
         ["Écart-type σ", f"{fr(res['CF_sigma'], '.5f')} mm"],
         ["Cp", fr(v["cp"], ".3g")],
         ["Cpk", fr(v["cpk"], ".3g")],
-        ["ppm (formule normale)" if exact is not None else "ppm (formule)", f"{fr(v['ppm'], '.4g')} ppm"],
-        *([["ppm (lois des maillons)", f"{fr(exact, '.4g')} ppm"]] if exact is not None else []),
+        ["ppm (formule normale)" if exact is not None else "ppm (formule)", _ppm(v['ppm'])],
+        *([["ppm (lois des maillons)", _ppm(exact)]] if exact is not None else []),
         ["ppm (Monte-Carlo)", ppmMc],
         *([["Décalage thermique", f"{fr(res['dJ_th'], '+.4f')} mm"]] if res["thermique_actif"] else []),
     ]
@@ -210,7 +217,7 @@ def _statistiques(bundle: dict) -> dict:
     sortie = {"monteCarlo": None, "inertiel": None}
     if mc is not None:
         q = mc["quantiles"]
-        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else f"{fr(mc['ppm'], '.4g')} ppm"
+        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else _ppm(mc['ppm'])
         sortie["monteCarlo"] = {
             "texte": f"{mc['n']:,} tirages (graine {mc['graine']}).".replace(",", " "),
             "table": _table(
@@ -222,7 +229,7 @@ def _statistiques(bundle: dict) -> dict:
                     ["Médiane (mm)", fr(q["mediane"], ".5f"), ""],
                     ["Quantile 99,865 % (mm)", fr(q["haut"], ".5f"), ""],
                     ["Tirages hors limites", f"{mc['nHors']} sur {mc['n']}", ""],
-                    ["ppm", ppmMc, f"{fr(v['ppm'], '.4g')} ppm"],
+                    ["ppm", ppmMc, _ppm(v['ppm'])],
                     ["Cp", fr(mc["cp"], ".3g"), fr(v["cp"], ".3g")],
                     ["Cpk", fr(mc["cpk"], ".3g"), fr(v["cpk"], ".3g")],
                 ],
@@ -264,7 +271,7 @@ def _sensibilite(bundle: dict) -> dict:
              "Gain sur σ (%)", "Cpk si resserré", "ppm si resserré"],
             [
                 [x["nom"], x["rang"], fr(100 * x["indice"], ".1f"), fr(100 * x["partPireCas"], ".1f"),
-                 fr(g["sigma"], ".5f"), fr(g["gainSigmaPct"], ".1f"), fr(g["cpk"], ".3f"), fr(g["ppm"], ".3g")]
+                 fr(g["sigma"], ".5f"), fr(g["gainSigmaPct"], ".1f"), fr(g["cpk"], ".3f"), _ppm(g["ppm"], False)]
                 for x, g in zip(indices, gains, strict=True)
             ],
         )
@@ -413,6 +420,38 @@ def iso286Lire(texte: str) -> str:
             ],
         }
     )
+
+
+# ---------- désignations ISO 286 du tableau des maillons ----------
+
+ALESAGES_COURANTS = ("H6", "H7", "H8", "H9", "H10", "H11", "H12", "G6", "G7", "F7", "F8", "E8", "E9", "D9", "D10", "C11",
+                     "JS6", "JS7", "JS9", "K6", "K7", "M7", "N7", "P7", "R7", "S7")
+ARBRES_COURANTS = ("h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12", "g5", "g6", "f6", "f7", "e7", "e8", "e9", "d8", "d9",
+                   "d10", "c11", "js5", "js6", "js7", "js9", "k5", "k6", "m5", "m6", "n5", "n6", "p5", "p6", "r6", "s6", "u6")
+
+
+def isoListe(cote: float) -> str:
+    """Désignations ISO 286 courantes avec leurs écarts à cette cote : liste déroulante du tableau (JSON [[désignation, texte], …])."""
+    sortie = []
+    for d in ALESAGES_COURANTS + ARBRES_COURANTS:
+        try:
+            r = lireDesignation(d, float(cote))
+        except ErreurChaine:
+            continue  # position ou qualité non définie à cette cote
+        sup, inf = ("ES", "EI") if r["type"] == "alésage" else ("es", "ei")
+        sortie.append([d, f"{r['type']} : {sup} {fr(r['es'], '+g')} / {inf} {fr(r['ei'], '+g')} mm"])
+    return json.dumps(sortie)
+
+
+def isoEcarts(designation: str, cote: float) -> str:
+    """Écarts ES et EI (mm) d'une désignation pour la cote de la ligne (JSON, ou {"erreur"}) : remplit les cases ES et EI."""
+    try:
+        r = lireDesignation(designation, float(cote))
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    if not math.isclose(r["cote"], float(cote), abs_tol=1e-9):  # même contrôle que le solveur
+        return json.dumps({"erreur": f"La désignation {designation!r} donne la cote {fr(r['cote'], 'g')} mm, différente de la cote saisie {fr(cote, 'g')} mm."})
+    return json.dumps({"es": round(r["es"], 9), "ei": round(r["ei"], 9)})
 
 
 # ---------- assistant d'ajustement ----------
@@ -871,3 +910,97 @@ def sauver(texteProbleme: str, texteRevisions: str = "[]") -> str:
         return json.dumps({"contenu": contenu})
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
+
+
+# ---------- export Excel ----------
+
+
+def _valeurUnite(texte):
+    """« 0,5000 mm » → (0.5, « mm ») pour qu'Excel puisse calculer dessus ; un texte qui n'est pas un nombre reste texte."""
+    m = re.match(r"^([+\-\u2212]?\d[\d.,]*(?:e[+\-]?\d+)?)\s*(.*)$", str(texte).strip())
+    if m:
+        try:
+            x = float(m.group(1).replace(",", ".").replace("\u2212", "-"))
+            if math.isfinite(x):
+                return x, m.group(2)
+        except ValueError:
+            pass
+    return projet_io._neutre(str(texte)), ""  # _neutre : un texte qui commence par « = » ne devient pas une formule
+
+
+def _feuille(ws, ligne: int, titre: str, entetes: list, lignes: list, unite: bool = False) -> int:
+    """Écrit un tableau du site dans une feuille (nombres convertis) ; avec unite, la dernière colonne est l'unité. Renvoie la ligne libre suivante."""
+    from openpyxl.styles import Font, PatternFill
+
+    ws.cell(ligne, 1, titre).font = Font(bold=True, size=12)
+    ligne += 1
+    for j, e in enumerate(entetes + (["Unité"] if unite else []), start=1):
+        c = ws.cell(ligne, j, projet_io._neutre(str(e)))
+        c.font, c.fill = Font(bold=True, color="FFFFFF"), PatternFill("solid", fgColor="305496")
+    for l in lignes:
+        ligne += 1
+        for j, v in enumerate(l, start=1):
+            if unite and j == len(l):
+                valeur, u = _valeurUnite(v)
+                ws.cell(ligne, j, valeur)
+                ws.cell(ligne, j + 1, u)
+            else:
+                ws.cell(ligne, j, _valeurUnite(v)[0] if j > 1 else projet_io._neutre(str(v)))
+    return ligne + 2
+
+
+def exporterExcel(texte: str) -> str:
+    """Classeur Excel de l'étude (JSON {"base64"} ou {"erreur"}) : la feuille « Chaîne » refait le calcul avec des formules
+    et le compare au site ; les autres feuilles gardent toutes les valeurs calculées par le site (verdicts, parts,
+    Monte-Carlo, inertiel, sensibilité). Demande openpyxl, chargé par la page au premier export."""
+    import base64
+    import io
+
+    try:
+        from openpyxl import load_workbook
+        from openpyxl.styles import Font
+
+        from chainecotes.services.feuille_chaine import exporterFeuilleChaine
+
+        probleme = _nettoyer(json.loads(texte), garderCartouche=True)
+        bundle = calculerChaine(probleme, n=N_TIRAGES)
+        wb = load_workbook(io.BytesIO(exporterFeuilleChaine(probleme, bundle)))
+        r, st, sens = _resultats(bundle), _statistiques(bundle), _sensibilite(bundle)
+
+        ws = wb.create_sheet("Résultats du site", 1)
+        ws["A1"] = "Valeurs calculées par le site (à comparer à la feuille « Chaîne »)"
+        ws["A1"].font = Font(bold=True, size=14)
+        ligne = _feuille(ws, 3, "Grandeurs", ["Grandeur", "Valeur"], r["metriques"], unite=True)
+        ligne = _feuille(ws, ligne, "Verdict selon la méthode", r["verdicts"]["entetes"], r["verdicts"]["lignes"])
+        ligne = _feuille(ws, ligne, "Maillons : écarts, tolérances et parts", r["maillons"]["entetes"], r["maillons"]["lignes"])
+        if r["capabilite"]:
+            ligne = _feuille(ws, ligne, "Capabilité des maillons", r["capabilite"]["entetes"], r["capabilite"]["lignes"])
+        ws.cell(ligne, 1, r["limites"])
+        ws.cell(ligne + 1, 1, r["legendeMaillons"])
+
+        ws2 = wb.create_sheet("Statistiques du site", 2)
+        ligne = 1
+        if st["monteCarlo"]:
+            mc = st["monteCarlo"]
+            ws2.cell(ligne, 1, mc["texte"])
+            ligne = _feuille(ws2, ligne + 1, "Monte-Carlo", mc["table"]["entetes"], mc["table"]["lignes"])
+        ine = st["inertiel"]
+        ligne = _feuille(ws2, ligne, "Tolérancement inertiel (Pillet)", ["Grandeur", "Valeur"], ine["metriques"], unite=True)
+        if ine["table"]:
+            ligne = _feuille(ws2, ligne, "Inertie par maillon", ine["table"]["entetes"], ine["table"]["lignes"])
+        elif ine["info"]:
+            ws2.cell(ligne, 1, ine["info"])
+        if sens["table"]:
+            _feuille(wb.create_sheet("Sensibilité du site", 3), 1, "Sensibilité : indices de Sobol et gain si un maillon est resserré",
+                     sens["table"]["entetes"], sens["table"]["lignes"])
+        for feuille in (ws, ws2):
+            feuille.column_dimensions["A"].width = 44
+            for col in "BCDEFGH":
+                feuille.column_dimensions[col].width = 20
+        tampon = io.BytesIO()
+        wb.save(tampon)
+        return json.dumps({"base64": base64.b64encode(tampon.getvalue()).decode("ascii")})
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    except (ValueError, TypeError, KeyError) as e:
+        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
