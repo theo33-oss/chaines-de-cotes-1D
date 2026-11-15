@@ -69,7 +69,9 @@ Les tolérances viennent de l'ISO 286 (IT1 à IT18, positions a à zc et A à ZC
 | **Où** | [Page GitHub Pages](https://theo33-oss.github.io/chaines-de-cotes-1D/) : Chrome, Firefox, Edge, Safari, téléphone | Dossier [`application/`](application) |
 | **Installation** | Aucune | Python 3.11 ou plus, installé au premier lancement (environ 1 Go) |
 | **Calcul** | Le même code Python, exécuté dans le navigateur | Le même code Python |
-| **Seulement sur le bureau** | | Dossiers PDF et Word avec images des graphiques, exports Excel (résultats, tableau de bord, feuille de chaîne, cotation), dérive et re-réglage, mesures de l'atelier (σ et moyenne), coefficients de projection (levier, angle), tolérances géométriques ISO 1101, import Excel des maillons, historique de révisions, enregistrement direct sur le disque |
+| **Dans les deux** | Thème clair ou sombre, bulles d'aide, liste ISO 286 qui remplit ES et EI, dupliquer / monter / descendre un maillon, saisie « ±0,1 », copie des tableaux vers Excel, collage depuis Excel, export Excel à formules pour vérifier le calcul, reprise de l'étude après une fermeture | idem |
+| **Seulement sur le site** | Lien de partage de l'étude (tout est dans l'adresse) | |
+| **Seulement sur le bureau** | | Dossiers PDF et Word avec images des graphiques, autres exports Excel (tableau de bord, cotation), dérive et re-réglage, mesures de l'atelier (σ et moyenne), coefficients de projection (levier, angle), tolérances géométriques ISO 1101, import d'un fichier Excel de maillons, historique de révisions, enregistrement direct sur le disque |
 
 Dans les deux cas, **tout est calculé sur votre ordinateur** : aucune cote n'est envoyée sur Internet. Un fichier
 d'étude enregistré dans l'une des versions s'ouvre dans l'autre ; les champs que la page web ne modifie pas (dérive,
