@@ -6,6 +6,7 @@ leur clé : une section reconstruite les retrouve, comme une page rouverte.
 
 import atexit
 import math
+import re
 import shutil
 import tempfile
 import uuid
@@ -15,7 +16,7 @@ from typing import Any
 
 import pandas as pd
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QAction, QColor, QGuiApplication, QKeySequence, QShortcut
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -52,29 +53,56 @@ from chainecotes.bureau import state
 from chainecotes.core.donnees import ecrireSansPerte
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.formules import texVersHtml
+from chainecotes.core.lexique import aideTerme
 from chainecotes.plots._common import FOND_FIGURE, TEXTE
 
 _DOSSIER_FIGURES = Path(tempfile.mkdtemp(prefix="chaines_cotes_"))
 atexit.register(shutil.rmtree, _DOSSIER_FIGURES, ignore_errors=True)  # sinon ~5 Mo restent dans %TEMP% à chaque lancement
 HAUTEUR_TABLEAU_MAX = 420
-COULEURS_MESSAGE = {
+# (fond, texte) des messages : thème clair, puis thème sombre ; les mêmes couleurs que le site (docs/style.css)
+MESSAGES_CLAIR = {
     "info": ("#E4E0F3", "#3D246C"),
     "succes": ("#C8F0D2", "#0B3D1A"),
     "avertissement": ("#FFE2A8", "#5A3A00"),
     "erreur": ("#FFC2C2", "#6B0A12"),
 }
-MODES_ETUDE = (("calcul", "Analyser"), ("inverse", "Répartir les tolérances"), ("optimisation", "Comparer"))
-_NEUTRE = ("#DDDDDD", "#222222")
-# vert, orange, rouge : réservés au statut ; le verdict reste écrit en toutes lettres (jamais la couleur seule)
-COULEURS_VERDICT = {
-    "Conforme": COULEURS_MESSAGE["succes"],
-    "conforme au pire des cas": COULEURS_MESSAGE["succes"],
-    "conforme en statistique seulement": COULEURS_MESSAGE["avertissement"],
-    "Non conforme": COULEURS_MESSAGE["erreur"],
-    "non conforme": COULEURS_MESSAGE["erreur"],
-    "Sans limite": _NEUTRE,
-    "erreur de calcul": _NEUTRE,
+MESSAGES_SOMBRE = {
+    "info": ("#2A2342", "#E4DDF7"),
+    "succes": ("#123522", "#BFEBCC"),
+    "avertissement": ("#3E2F0B", "#FFE0A3"),
+    "erreur": ("#431419", "#FFCBCF"),
 }
+COULEURS_MESSAGE = dict(MESSAGES_CLAIR)  # mis à jour sur place par appliquerTheme
+# couleurs des figures (plots/_common.py) → version sombre ; les mêmes que COULEURS_SOMBRES de docs/app.js
+FIGURE_SOMBRE = {"#FFF8F3": "#1A1626", "#3D246C": "#EDE6F7", "#E2DDF1": "#352E4D", "#5C4B99": "#9F91CC", "#17692F": "#4CC77A",
+                 "#B3141F": "#FF6B73"}  # fmt: skip
+MODES_ETUDE = (("calcul", "Étude"), ("inverse", "Optimiser les tolérances"), ("optimisation", "Comparer"))
+# vert, orange, rouge : réservés au statut ; le verdict reste écrit en toutes lettres (jamais la couleur seule)
+_NIVEAU_VERDICT = {
+    "Conforme": "succes",
+    "conforme au pire des cas": "succes",
+    "conforme en statistique seulement": "avertissement",
+    "Non conforme": "erreur",
+    "non conforme": "erreur",
+    "Sans limite": "info",
+    "erreur de calcul": "info",
+}
+COULEURS_VERDICT: dict[str, tuple[str, str]] = {}  # rempli par _poserCouleurs
+
+
+def _poserCouleurs(sombre: bool) -> None:
+    """Couleurs des messages et des verdicts du thème, changées sur place : les pages gardent les mêmes dictionnaires."""
+    COULEURS_MESSAGE.update(MESSAGES_SOMBRE if sombre else MESSAGES_CLAIR)
+    neutre = ("#3A3550", "#EDE6F7") if sombre else ("#DDDDDD", "#222222")
+    COULEURS_VERDICT.update({v: neutre if n == "info" else COULEURS_MESSAGE[n] for v, n in _NIVEAU_VERDICT.items()})
+
+
+_poserCouleurs(False)
+
+
+def fondFigure() -> str:
+    """Fond des figures et des formules : blanc chaud en clair, carte sombre en sombre."""
+    return FIGURE_SOMBRE[FOND_FIGURE] if state.v.get("sombre") else FOND_FIGURE
 
 
 def differer(fonction: Callable[[], None]) -> None:
@@ -92,6 +120,11 @@ def vider(disposition: Any) -> None:
             w.deleteLater()
         elif element.layout() is not None:
             vider(element.layout())
+
+
+def systemeSombre() -> bool:
+    """Vrai si Windows (ou le système) est réglé sur le thème sombre : réglage de départ de l'application."""
+    return QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
 
 
 def contrasteEleve() -> bool:
@@ -125,6 +158,9 @@ class VueFigure(QWebEngineView):
         fig.update_layout(paper_bgcolor=FOND_FIGURE, plot_bgcolor=FOND_FIGURE)
         if contrasteEleve():
             _renforce(fig)
+        sombre = bool(state.v.get("sombre"))
+        if sombre:
+            fig.update_layout(hoverlabel={"bgcolor": "#241F36", "font": {"color": "#EDE6F7"}})
         hauteur = int(fig.layout.height or 450)
         chemin = _DOSSIER_FIGURES / f"{uuid.uuid4().hex}.html"
         fig.write_html(
@@ -136,6 +172,9 @@ class VueFigure(QWebEngineView):
             config={"displaylogo": False, "scrollZoom": False, "modeBarButtonsToRemove": ["lasso2d", "select2d"]},
         )
         html = chemin.read_text(encoding="utf-8").replace("<body>", '<body style="margin:0;overflow:hidden">', 1)
+        if sombre:  # la page ne contient que la figure : ses couleurs passent à la palette sombre, comme sur le site
+            html = re.sub(r"#[0-9A-Fa-f]{6}", lambda m: FIGURE_SOMBRE.get(m[0].upper(), m[0]), html)
+            html = html.replace("rgba(255,255,255,0.8)", "rgba(26,22,38,0.8)").replace("<body style=\"", "<body style=\"background:#1A1626;", 1)
         chemin.write_text(html, encoding="utf-8")
         self.setFixedHeight(hauteur + 2)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -165,6 +204,32 @@ def ajusterHauteur(table: QTableWidget) -> None:
     table.setMinimumWidth(120)
 
 
+def texteTableau(table: QTableWidget, selection: bool = False) -> str:
+    """Contenu d'un tableau en texte à tabulations, à coller dans Excel (titres compris, sauf pour une sélection).
+
+    Entrées : table, selection (True : seules les cases sélectionnées, si la sélection n'est pas vide).
+    """
+    lignes, colonnes, avecTitres = range(table.rowCount()), range(table.columnCount()), True
+    if selection and table.selectedRanges():
+        zone = table.selectedRanges()[0]
+        lignes, colonnes, avecTitres = range(zone.topRow(), zone.bottomRow() + 1), range(zone.leftColumn(), zone.rightColumn() + 1), False
+    cases = [[(table.item(i, j).text() if table.item(i, j) else "") for j in colonnes] for i in lignes]
+    if avecTitres:
+        cases.insert(0, [(table.horizontalHeaderItem(j).text() if table.horizontalHeaderItem(j) else "") for j in colonnes])
+    return "\n".join("\t".join(ligne) for ligne in cases)
+
+
+def _installerCopie(table: QTableWidget) -> None:
+    """Ctrl+C copie la sélection, et le clic droit « Copier le tableau » copie tout, pour Excel."""
+    action = QAction("Copier le tableau", table)
+    action.triggered.connect(lambda: QApplication.clipboard().setText(texteTableau(table)))
+    table.addAction(action)
+    table.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
+    copie = QShortcut(QKeySequence.StandardKey.Copy, table)
+    copie.setContext(Qt.ShortcutContext.WidgetShortcut)
+    copie.activated.connect(lambda: QApplication.clipboard().setText(texteTableau(table, selection=True)))
+
+
 class TableauDonnees(QTableWidget):
     """DataFrame en lecture seule. formats : {colonne: « %.4f »} ; couleurs : {colonne: valeur → (fond, texte)}."""
 
@@ -173,6 +238,9 @@ class TableauDonnees(QTableWidget):
         super().__init__(len(df), len(df.columns))
         formats, couleurs = formats or {}, couleurs or {}
         self.setHorizontalHeaderLabels([str(c) for c in df.columns])
+        for j, col in enumerate(df.columns):  # bulles du lexique (Cp, Cpk, ppm, IT, ES, EI…), les mêmes que sur le site
+            if aide := aideTerme(str(col)):
+                self.horizontalHeaderItem(j).setToolTip(aide)
         if index:
             self.setVerticalHeaderLabels([str(i) for i in df.index])
         else:
@@ -181,6 +249,8 @@ class TableauDonnees(QTableWidget):
             for i, v in enumerate(df[col].tolist()):
                 item = QTableWidgetItem(_ecrit(v, formats.get(col)))
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+                if j == 0 and isinstance(v, str) and (aide := aideTerme(v)):
+                    item.setToolTip(aide)
                 if isinstance(v, int | float) and not isinstance(v, bool):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 if col in couleurs and (c := couleurs[col](v)):
@@ -193,6 +263,7 @@ class TableauDonnees(QTableWidget):
             self.setColumnWidth(j, min(self.columnWidth(j), 340))
         self.horizontalHeader().setStretchLastSection(True)
         ajusterHauteur(self)
+        _installerCopie(self)
 
 
 class Colonne:
@@ -234,6 +305,9 @@ class _DelegueListe(QStyledItemDelegate):
             super().setModelData(editeur, modele, index)
 
 
+_PLUS_MOINS = re.compile(r"^(?:±|\+/-|\+-)\s*(\d*[.,]?\d+)$")
+
+
 def lireNombre(texte: str) -> float | None:
     """Nombre tapé avec un point ou une virgule ; None si le texte est vide ; ValueError s'il est illisible."""
     t = texte.strip().replace(",", ".").replace(" ", "").replace("−", "-")
@@ -261,6 +335,7 @@ class TableauEditable(QTableWidget):
         )
         self.itemChanged.connect(self._change)
         self.currentCellChanged.connect(self._selection)
+        _installerCopie(self)
 
     def _texte(self, c: Colonne, v: Any) -> str:
         if v is None or v == "" or (isinstance(v, float) and math.isnan(v)):
@@ -286,6 +361,10 @@ class TableauEditable(QTableWidget):
     def _change(self, item: QTableWidgetItem) -> None:
         i, c = item.row(), self.colonnes[item.column()]
         texte = item.text().strip()
+        if c.cle == "es" and (pm := _PLUS_MOINS.match(texte)):  # « ±0,1 » : ES = 0,1 et EI = −0,1
+            x = float(pm[1].replace(",", "."))
+            differer(lambda: (self.surChange(i, "es", x), self.surChange(i, "ei", -x)))
+            return
         if c.genre == "nombre":
             try:
                 valeur = lireNombre(texte)
@@ -403,7 +482,7 @@ class Zone:
     def metrique(self, libelle: str, valeur: str, aide: str | None = None) -> None:
         cadre = QFrame()
         cadre.setObjectName("metrique")
-        cadre.setToolTip(aide or "")
+        cadre.setToolTip(aide or aideTerme(libelle))
         col = QVBoxLayout(cadre)
         col.setContentsMargins(8, 4, 8, 4)
         col.setSpacing(0)
@@ -442,7 +521,7 @@ class Zone:
         lab.setTextFormat(Qt.TextFormat.RichText)
         lab.setWordWrap(True)
         lab.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        lab.setStyleSheet(f"background:{FOND_FIGURE};padding:6px;")
+        lab.setStyleSheet(f"background:{fondFigure()};padding:6px;")
         self._ajouter(lab)
 
     def colonnes(self, poids: int | Sequence[int]) -> list["Zone"]:
@@ -834,6 +913,7 @@ def partage(gauche: QWidget, droite: QWidget) -> QSplitter:
 
 def appliquerTheme(app: QApplication) -> None:
     """Palette Vanilla Peach, Lilac Stone, Twilight Purple, Midnight Violet ; thème clair ou sombre."""
+    _poserCouleurs(bool(state.v.get("sombre")))
     if state.v.get("sombre"):
         fond, carte, encre, bord, accent, menu = "#0E0B16", "#1A1626", "#FFDBC3", "#9F91CC", "#7A68C0", "#1A1626"
     else:

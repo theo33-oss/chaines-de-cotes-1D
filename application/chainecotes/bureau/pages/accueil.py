@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QApplication
 
-from chainecotes.bureau import widgets
+from chainecotes.bureau import state, widgets
 from chainecotes.bureau.widgets import Page, Zone
 from chainecotes.core.materiaux import nomsMateriaux
 
@@ -20,6 +20,7 @@ class PageAccueil(Page):
 
         def theme() -> None:
             widgets.appliquerTheme(QApplication.instance())
+            self.fenetre.actionSombre.setChecked(bool(state.v.get("sombre")))  # menu Affichage > Thème sombre
 
         c1, c2 = z.colonnes(2)
         c1.case("Thème sombre", "sombre", apres=theme)
@@ -49,8 +50,8 @@ class PageAccueil(Page):
         plus.sousTitre("Tous les outils")
         for page, libelle in (
             ("parcours", "Démarrer une étude pas à pas (parcours guidé)"),
-            ("calcul", "Analyser une chaîne de cotes (pire cas, statistique, Monte-Carlo)"),
-            ("inverse", "Répartir les tolérances pour tenir un jeu (parts égales, ISO ou coût minimal)"),
+            ("calcul", "Étudier une chaîne de cotes (pire cas, statistique, Monte-Carlo)"),
+            ("inverse", "Optimiser les tolérances pour tenir un jeu (parts égales, ISO ou coût minimal)"),
             ("optimisation", "Comparer deux scénarios ou un lot de fichiers"),
             ("mecanisme", "Calculer plusieurs chaînes d'un même mécanisme"),
             ("ajustement", "Choisir un ajustement ISO 286 selon sa fonction"),
@@ -83,7 +84,7 @@ class PageAccueil(Page):
             "- Tolérances ISO 286 complètes (IT1 à IT18, positions a à zc et A à ZC).\n"
             f"- Effet thermique : {len(nomsMateriaux()) - 1} matériaux avec courbes de dilatation, mode uniforme ou "
             "température par cote.\n"
-            "- Étude en cours, trois modes : **Analyser** (calcul et résultats), **Répartir les tolérances** (égale, "
+            "- Étude en cours, trois modes : **Étude** (calcul et résultats), **Optimiser les tolérances** (égale, "
             "proportionnelle, qualité ISO ou coût minimal selon les procédés de fabrication) et **Comparer** (deux "
             "scénarios, ou un lot de fichiers).\n"
             "- Nouvelle étude : parcours guidé en cinq étapes, du jeu à garantir au dossier, avec un verdict en langage "

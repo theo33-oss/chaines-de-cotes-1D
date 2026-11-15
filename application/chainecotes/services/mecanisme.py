@@ -12,7 +12,7 @@ import math
 from typing import TYPE_CHECKING
 
 from chainecotes.core.errors import ErreurChaine
-from chainecotes.core.nombres import fr
+from chainecotes.core.nombres import fr, ppmLisible
 from chainecotes.core.montecarlo import GRAINE_DEFAUT, N_DEFAUT
 from chainecotes.services.calcul import calculerChaine
 from chainecotes.services.projet_io import APPLICATION, exporterProbleme, importerProbleme
@@ -237,8 +237,8 @@ def colonnesTableauDeBord(lignes: list[dict], seuilCpk: float | None = None) -> 
     }
     if seuilCpk is not None:
         t["Cpk ≥ seuil"] = ["—" if x["cpk"] is None else ("oui" if x["cpk"] >= seuilCpk else "NON") for x in lignes]
-    t["ppm (formule)"] = [fr(x["ppmFormule"], ".3g") for x in lignes]
-    t["ppm (Monte-Carlo)"] = [fr(x["ppmMonteCarlo"], ".3g") for x in lignes]
+    t["ppm (formule)"] = [ppmLisible(x["ppmFormule"], False) for x in lignes]
+    t["ppm (Monte-Carlo)"] = [ppmLisible(x["ppmMonteCarlo"], False) for x in lignes]
     t["Maillon dominant"] = [x["dominant"] or "—" for x in lignes]
     t["Erreur"] = [x["erreur"] or "" for x in lignes]
     return t

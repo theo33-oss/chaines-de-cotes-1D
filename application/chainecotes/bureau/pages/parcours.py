@@ -36,7 +36,7 @@ class PageParcours(Page):
             "Parcours guidé en cinq étapes pour mener une chaîne de cotes du jeu à garantir jusqu'au dossier à joindre "
             "à votre note de calcul. Vous préférez tout voir d'un coup ? Ouvrez « Étude en cours »."
         )
-        z.lien("calcul", "Tout voir d'un coup : Étude en cours, mode Analyser")
+        z.lien("calcul", "Tout voir d'un coup : Étude en cours, mode Étude")
         state.v.setdefault(CLE_ETAPE, ETAPES[0])
         self.corps = None
         z.radio("", ETAPES, CLE_ETAPE, apres=self.relance)
@@ -184,7 +184,7 @@ class PageParcours(Page):
             {"Jeu mini (mm)": "%.4f", "Jeu maxi (mm)": "%.4f"},
             couleurs={"Verdict": COULEURS_VERDICT.get},
         )
-        z.lien("calcul", "Aller plus loin : Étude en cours, mode Analyser")
+        z.lien("calcul", "Aller plus loin : Étude en cours, mode Étude")
 
     def _dossier(self, z: Zone) -> None:
         z.texte("Complétez le cartouche, gardez une révision, puis enregistrez le dossier et l'étude.")

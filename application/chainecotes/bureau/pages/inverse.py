@@ -104,7 +104,7 @@ class PageInverse(Page):
         z.texte(
             "Vous fixez les limites de la cote condition (**Jmin** et **Jmax**) ; l'outil calcule les intervalles de "
             "tolérance (IT) des maillons qui les tiennent, à parts égales, selon l'ISO ou au coût minimal, puis centre "
-            "le jeu avec un maillon de réglage. Les maillons se modifient dans le mode « Analyser »."
+            "le jeu avec un maillon de réglage. Les maillons se modifient dans le mode « Étude »."
         )
 
     def _saisie(self, z: Zone) -> None:
@@ -279,7 +279,7 @@ class PageInverse(Page):
         sortie = garde["sortie"]
         if state.v.pop(CLE_APPLIQUE, False):
             z.succes(
-                "Tolérances appliquées à l'étude : le mode « Analyser » utilise maintenant ces écarts. "
+                "Tolérances appliquées à l'étude : le mode « Étude » utilise maintenant ces écarts. "
                 "Édition > Annuler (Ctrl+Z) revient en arrière."
             )
         (z.succes if sortie["tenue"] else z.erreur)(sortie["message"])

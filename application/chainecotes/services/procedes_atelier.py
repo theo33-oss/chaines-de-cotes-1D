@@ -75,7 +75,7 @@ def importerProcedes(texte: str) -> dict[str, dict]:
     except (TypeError, ValueError) as err:
         raise _erreur(f"ce n'est pas un fichier JSON lisible ({err}).") from err
     if not isinstance(d, dict) or d.get("format") != FORMAT:
-        raise _erreur("ce fichier n'a pas été enregistré par la page Répartir les tolérances.")
+        raise _erreur("ce fichier n'a pas été enregistré par la page Optimiser les tolérances.")
     version = d.get("version")
     if isinstance(version, bool) or not isinstance(version, int) or not 1 <= version <= VERSION:
         raise _erreur("numéro de version absent, invalide ou trop récent.")

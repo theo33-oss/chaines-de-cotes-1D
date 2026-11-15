@@ -20,7 +20,7 @@ from chainecotes.services.comparaison import MAX_FICHIERS, comparerFichiers, com
 from chainecotes.services.exemples import chargerExemple, listeExemples
 from chainecotes.services.projet_io import importerProbleme
 
-SOURCE_REPARTITION = "Résultat de la répartition (mode Répartir)"
+SOURCE_REPARTITION = "Résultat de la répartition (mode Optimiser)"
 SOURCE_EXEMPLE, SOURCE_FICHIER = "Exemple de la bibliothèque", "Fichier JSON"
 CLE_SCENARIOS = "opt.scen.resultat"
 CLE_FICHIERS = "opt.fich.resultat"
@@ -33,7 +33,7 @@ class PageOptimisation(Page):
         z.titre("Comparaison de scénarios et de fichiers")
         z.texte(
             "Comparez l'étude en cours à un autre scénario, ou comparez un lot de fichiers d'études. La répartition "
-            "des tolérances, y compris au coût minimal, est dans le mode « Répartir les tolérances »."
+            "des tolérances, y compris au coût minimal, est dans le mode « Optimiser les tolérances »."
         )
         z.onglets(
             {
@@ -56,7 +56,7 @@ class PageOptimisation(Page):
         source = z.radio("Scénario B", [SOURCE_REPARTITION, SOURCE_EXEMPLE, SOURCE_FICHIER], "opt.scen.source",
                          apres=lambda: self.scenG.rafraichir())  # fmt: skip
         if source == SOURCE_REPARTITION:
-            z.legende("Compare l'étude en cours à la chaîne obtenue par le dernier calcul du mode « Répartir les "
+            z.legende("Compare l'étude en cours à la chaîne obtenue par le dernier calcul du mode « Optimiser les "
                       "tolérances » (avant « Appliquer à l'étude »).")  # fmt: skip
         elif source == SOURCE_EXEMPLE:
             exemples = {e["id"]: e["titre"] for e in listeExemples()}
@@ -80,7 +80,7 @@ class PageOptimisation(Page):
             garde = state.v.get("inv.resultat")
             if garde is None:
                 state.v["opt.scen.erreur"] = (
-                    "Aucune répartition calculée : ouvrez le mode « Répartir les tolérances », cliquez sur "
+                    "Aucune répartition calculée : ouvrez le mode « Optimiser les tolérances », cliquez sur "
                     "« Calculer », puis revenez ici."
                 )
                 return None

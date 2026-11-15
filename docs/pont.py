@@ -35,7 +35,7 @@ from chainecotes.core.materiaux import (
     nomsMateriaux,
     sourcesMateriaux,
 )
-from chainecotes.core.nombres import fr
+from chainecotes.core.nombres import fr, ppmLisible
 from chainecotes.core.sensibilite import gainSiResserre, indicesSensibilite
 from chainecotes.plots import graphiques
 from chainecotes.plots._common import intervalle
@@ -108,12 +108,6 @@ def _table(entetes: list[str], lignes: list[list], classes: list[str] | None = N
     return {"entetes": entetes, "lignes": [[str(c) for c in ligne] for ligne in lignes], "classes": classes}
 
 
-def _ppm(x: float, unite: bool = True) -> str:
-    """ppm lisible : sous 0,001 on écrit « < 0,001 » plutôt qu'un exposant comme 2,887e-07."""
-    texte = "< 0,001" if x < 1e-3 else fr(x, ".4g")
-    return f"{texte} ppm" if unite else texte
-
-
 def apercu(texte: str) -> str:
     """Aperçu pendant la saisie : schéma de la chaîne, pire des cas et contrôles de cohérence (sans Monte-Carlo).
 
@@ -155,7 +149,7 @@ def _resultats(bundle: dict) -> dict:
     if mc is None:
         ppmMc = "—"
     else:
-        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else _ppm(mc['ppm'])
+        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else ppmLisible(mc['ppm'])
     valeurs = [
         ["Jeu nominal", f"{fr(res['CF_nom'])} mm"],
         ["Jeu moyen", f"{fr(res['CF_moy'])} mm"],
@@ -164,8 +158,8 @@ def _resultats(bundle: dict) -> dict:
         ["Écart-type σ", f"{fr(res['CF_sigma'], '.5f')} mm"],
         ["Cp", fr(v["cp"], ".3g")],
         ["Cpk", fr(v["cpk"], ".3g")],
-        ["ppm (formule normale)" if exact is not None else "ppm (formule)", _ppm(v['ppm'])],
-        *([["ppm (lois des maillons)", _ppm(exact)]] if exact is not None else []),
+        ["ppm (formule normale)" if exact is not None else "ppm (formule)", ppmLisible(v['ppm'])],
+        *([["ppm (lois des maillons)", ppmLisible(exact)]] if exact is not None else []),
         ["ppm (Monte-Carlo)", ppmMc],
         *([["Décalage thermique", f"{fr(res['dJ_th'], '+.4f')} mm"]] if res["thermique_actif"] else []),
     ]
@@ -217,7 +211,7 @@ def _statistiques(bundle: dict) -> dict:
     sortie = {"monteCarlo": None, "inertiel": None}
     if mc is not None:
         q = mc["quantiles"]
-        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else _ppm(mc['ppm'])
+        ppmMc = f"< {fr(mc['resolutionPpm'], '.3g')} ppm" if mc["nHors"] == 0 else ppmLisible(mc['ppm'])
         sortie["monteCarlo"] = {
             "texte": f"{mc['n']:,} tirages (graine {mc['graine']}).".replace(",", " "),
             "table": _table(
@@ -229,7 +223,7 @@ def _statistiques(bundle: dict) -> dict:
                     ["Médiane (mm)", fr(q["mediane"], ".5f"), ""],
                     ["Quantile 99,865 % (mm)", fr(q["haut"], ".5f"), ""],
                     ["Tirages hors limites", f"{mc['nHors']} sur {mc['n']}", ""],
-                    ["ppm", ppmMc, _ppm(v['ppm'])],
+                    ["ppm", ppmMc, ppmLisible(v['ppm'])],
                     ["Cp", fr(mc["cp"], ".3g"), fr(v["cp"], ".3g")],
                     ["Cpk", fr(mc["cpk"], ".3g"), fr(v["cpk"], ".3g")],
                 ],
@@ -271,7 +265,7 @@ def _sensibilite(bundle: dict) -> dict:
              "Gain sur σ (%)", "Cpk si resserré", "ppm si resserré"],
             [
                 [x["nom"], x["rang"], fr(100 * x["indice"], ".1f"), fr(100 * x["partPireCas"], ".1f"),
-                 fr(g["sigma"], ".5f"), fr(g["gainSigmaPct"], ".1f"), fr(g["cpk"], ".3f"), _ppm(g["ppm"], False)]
+                 fr(g["sigma"], ".5f"), fr(g["gainSigmaPct"], ".1f"), fr(g["cpk"], ".3f"), ppmLisible(g["ppm"], False)]
                 for x, g in zip(indices, gains, strict=True)
             ],
         )

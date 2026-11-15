@@ -7,6 +7,7 @@ streamlit ni plotly.
 import math
 
 from chainecotes.core.donnees import chargerJson
+from chainecotes.core.nombres import ppmLisible
 from chainecotes.plots._common import fr
 
 CPK_CIBLE = chargerJson("controles.json")["cpk_cible"]
@@ -54,7 +55,7 @@ def conclusionEtude(bundle: dict) -> dict:
             "Resserrez les tolérances des cotes qui pèsent le plus, "
             "ou élargissez les limites si le mécanisme le permet."
         )
-        conseils.append("Le mode « Répartir les tolérances » les répartit, au besoin au moindre coût, pour tenir le jeu.")
+        conseils.append("L'outil « Optimiser les tolérances » les répartit, au besoin au moindre coût, pour tenir le jeu.")
     if principaux and principaux[0]["part"] > 0:
         haut = principaux[0]
         details.append(f"La cote « {haut['nom']} » pèse {fr(haut['part'], '.0f')} % de la variance du jeu.")
@@ -64,11 +65,11 @@ def conclusionEtude(bundle: dict) -> dict:
     exact = bundle.get("ppmExact")
     if exact is not None:
         details.append(
-            f"Taux hors tolérance selon la loi de chaque maillon : {fr(exact, '.3g')} ppm "
-            f"(la formule normale, approchée, donne {fr(ppm, '.3g')} ppm)."
+            f"Taux hors tolérance selon la loi de chaque maillon : {ppmLisible(exact)} "
+            f"(la formule normale, approchée, donne {ppmLisible(ppm)})."
         )
     elif math.isfinite(ppm):
-        details.append(f"Taux hors tolérance estimé (loi normale) : {fr(ppm, '.3g')} ppm.")
+        details.append(f"Taux hors tolérance estimé (loi normale) : {ppmLisible(ppm)}.")
     if math.isfinite(cpk):
         details.append(f"Cpk du jeu : {fr(cpk, '.2f')}.")
         if cpk < CPK_CIBLE and niveau == "succes":

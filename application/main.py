@@ -8,7 +8,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, Qt, QTimer
+from PySide6.QtCore import QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QGuiApplication, QKeySequence
 from PySide6.QtWebEngineWidgets import QWebEngineView  # noqa: F401 : à importer avant QApplication
 from PySide6.QtWidgets import (
@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from chainecotes.bureau import state, widgets
+from chainecotes.bureau import icones, state, widgets
 from chainecotes.core.donnees import ecrireSansPerte
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.services import procedes_atelier, projet_io
@@ -101,6 +101,7 @@ class Fenetre(QMainWindow):
         ecran = QGuiApplication.primaryScreen().availableGeometry()
         self.resize(min(1400, ecran.width() - 40), min(860, ecran.height() - 60))  # au-dessus de la barre des tâches
         self.reglages: QSettings | None = None  # posé par main() : les tests ne touchent pas aux préférences du poste
+        self.fichierReprise: Path | None = None  # idem : copie de secours de l'étude modifiée (reprise après un plantage)
         centre = QWidget()
         h = QHBoxLayout(centre)
         h.setContentsMargins(0, 0, 0, 0)
@@ -108,6 +109,7 @@ class Fenetre(QMainWindow):
         self.menu = QListWidget()
         self.menu.setObjectName("menu")
         self.menu.setFixedWidth(235)
+        self.menu.setIconSize(QSize(18, 18))
         self.pile = QStackedWidget()
         self.pages: dict[str, tuple[int, widgets.Page]] = {}
         self._mode = "calcul"  # dernier mode ouvert de l'étude en cours
@@ -123,7 +125,7 @@ class Fenetre(QMainWindow):
                 self.pages[ident] = (self.pages["calcul"][0], page)
                 continue
             self.pages[ident] = (self.menu.count(), page)
-            self.menu.addItem(QListWidgetItem("   " + libelle))
+            self.menu.addItem(QListWidgetItem(icones.iconeMenu(ident), libelle))
         h.addWidget(self.menu)
         h.addWidget(self.pile, 1)
         self.setCentralWidget(centre)
@@ -154,6 +156,17 @@ class Fenetre(QMainWindow):
         self.actionAnnuler = action(edition, "&Annuler", "Ctrl+Z", self.annuler)
         self.actionRetablir = action(edition, "&Rétablir", "Ctrl+Y", self.retablir)
         action(self.menuBar().addMenu("&Calcul"), "&Calculer", "F5", self.calculer)
+        affichage = self.menuBar().addMenu("&Affichage")
+        self.actionSombre = action(affichage, "Thème &sombre", "Ctrl+T", self.basculerTheme)
+        self.actionSombre.setCheckable(True)
+        self.actionSombre.setChecked(bool(state.v.get("sombre")))
+
+    def basculerTheme(self, *_: object) -> None:
+        """Thème clair ↔ sombre (Ctrl+T) : même choix que la case de l'accueil et que le bouton du site."""
+        state.v["sombre"] = not state.v.get("sombre")
+        self.actionSombre.setChecked(bool(state.v["sombre"]))
+        widgets.appliquerTheme(QApplication.instance())
+        self.pile.currentWidget().afficher()
 
     def _surveiller(self) -> None:
         """Suit le problème courant : pile d'annulation, titre (fichier, astérisque « modifié »)."""
@@ -175,12 +188,43 @@ class Fenetre(QMainWindow):
             del self._annulables[:-ANNULATIONS_MAX]
             self._retablissables.clear()
             self._vu = copy.deepcopy(p)
+            self._garderReprise()
         self.actionAnnuler.setEnabled(bool(self._annulables))
         self.actionRetablir.setEnabled(bool(self._retablissables))
         nom = Path(state.chemin()).name if state.chemin() else "Étude non enregistrée"
         validee = " [validée]" if etatValidation(p) == "valide" else ""
         self.setWindowTitle(f"{nom}[*]{validee} — {TITRE}")
         self.setWindowModified(state.modifiee())
+
+    def _garderReprise(self) -> None:
+        """Copie de secours de l'étude modifiée : si l'application s'arrête brutalement, elle est reprise au lancement."""
+        if self.fichierReprise is None or not state.modifiee():
+            return
+        try:
+            self.fichierReprise.parent.mkdir(parents=True, exist_ok=True)
+            ecrireSansPerte(self.fichierReprise, projet_io.exporterProjet(state.probleme(), state.revisions()))
+        except (OSError, ErreurChaine):
+            pass  # simple confort : sans copie de secours, l'enregistrement normal reste possible
+
+    def _effacerReprise(self) -> None:
+        if self.fichierReprise is not None:
+            self.fichierReprise.unlink(missing_ok=True)
+
+    def reprendre(self) -> None:
+        """Au lancement : reprend l'étude laissée par un arrêt imprévu (elle reste « à enregistrer »)."""
+        try:
+            ouvert = projet_io.importerProjet(self.fichierReprise.read_text(encoding="utf-8-sig"))
+        except (OSError, UnicodeDecodeError, ErreurChaine):
+            self._effacerReprise()  # copie illisible : inutile de la proposer à chaque lancement
+            return
+        state.definirProbleme(ouvert["probleme"])
+        state.definirRevisions(ouvert["revisions"])
+        state.nouvelleEtude(None, propre=False)
+        state.effacerResultat()
+        calcul.oublierDossiers()
+        self._surveiller()
+        self.aller("calcul")
+        self.statusBar().showMessage("Étude reprise après une fermeture imprévue : pensez à l'enregistrer.", 15000)
 
     def _revenir(self, source: list[dict], destination: list[dict]) -> None:
         self._surveiller()  # prend en compte une modification toute récente
@@ -254,6 +298,7 @@ class Fenetre(QMainWindow):
             QMessageBox.warning(self, "Enregistrement impossible", str(e))
             return False
         state.etudeEnregistree(chemin)
+        self._effacerReprise()
         self.statusBar().showMessage(f"Étude enregistrée : {Path(chemin).name}", 6000)
         self._surveiller()
         return True
@@ -266,6 +311,7 @@ class Fenetre(QMainWindow):
             self.reglages.setValue("geometrie", self.saveGeometry())
             for cle in PREFERENCES:
                 self.reglages.setValue(cle, bool(state.v.get(cle)))
+        self._effacerReprise()  # fermeture voulue (enregistrée ou abandonnée) : rien à reprendre
         evenement.accept()
 
     def _ouvrir(self, ligne: int) -> None:
@@ -304,6 +350,9 @@ def main() -> int:
     reglages = QSettings("ChainesDeCotes1D", "bureau")
     for cle in PREFERENCES:
         state.v[cle] = reglages.value(cle, False, type=bool)
+    if not reglages.contains("sombre"):  # première ouverture : le thème de Windows
+        state.v["sombre"] = widgets.systemeSombre()
+    app.setWindowIcon(icones.iconeApplication())
     valeurs, erreur = procedes_atelier.lireFichier()  # procédés de l'atelier : ceux du dernier enregistrement
     inverse.poserValeursAtelier(valeurs)
     if erreur:
@@ -311,9 +360,12 @@ def main() -> int:
     widgets.appliquerTheme(app)
     fenetre = Fenetre()
     fenetre.reglages = reglages
+    fenetre.fichierReprise = procedes_atelier.cheminParDefaut().with_name("derniere_etude.json")
     if reglages.value("geometrie") is not None:
         fenetre.restoreGeometry(reglages.value("geometrie"))
     fenetre.show()
+    if fenetre.fichierReprise.exists():
+        fenetre.reprendre()
     return app.exec()
 
 

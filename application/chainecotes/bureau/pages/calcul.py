@@ -18,6 +18,7 @@ from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.inertiel import analyseInertielle, verdictBender
 from chainecotes.core.sensibilite import gainSiResserre, indicesSensibilite
 from chainecotes.plots import graphiques
+from chainecotes.core.nombres import ppmLisible
 from chainecotes.plots._common import fr, intervalle
 from chainecotes.plots.schema import figureSchema
 from chainecotes.services import import_maillons, projet_io
@@ -29,6 +30,7 @@ from chainecotes.services.cotation import exporterCotation
 from chainecotes.services.dossier_fichier import AVERTISSEMENT_IMAGES, FORMATS_DOSSIER, fichierDossier
 from chainecotes.services.exemples import chargerExemple, listeExemples
 from chainecotes.services.explications import explicationsCalcul
+from chainecotes.services.classeur_complet import exporterClasseurComplet
 from chainecotes.services.feuille_chaine import exporterFeuilleChaine
 from chainecotes.services.validation import dossierValidation
 
@@ -56,17 +58,17 @@ def _ppmMonteCarlo(mc: dict | None) -> str:
         return "—"
     if mc["nHors"] == 0:
         return f"< {fr(mc['resolutionPpm'], '.3g')} ppm"
-    return f"{fr(mc['ppm'], '.4g')} ppm"
+    return ppmLisible(mc["ppm"])
 
 
 def _metriquePpm(bundle: dict) -> tuple:
     """Métrique « Hors tolérance » : le taux exact (lois des maillons) s'il existe, sinon la formule normale."""
     exact = bundle.get("ppmExact")
     if exact is None:
-        return ("Hors tolérance", f"{fr(bundle['verdicts']['ppm'], '.3g')} ppm", "Formule, jeu de loi normale.")
-    return ("Hors tolérance", f"{fr(exact, '.3g')} ppm",
+        return ("Hors tolérance", ppmLisible(bundle['verdicts']['ppm']), "Formule, jeu de loi normale.")
+    return ("Hors tolérance", ppmLisible(exact),
             f"Calcul exact selon la loi de chaque maillon. Formule normale (approchée) : "
-            f"{fr(bundle['verdicts']['ppm'], '.3g')} ppm.")  # fmt: skip
+            f"{ppmLisible(bundle['verdicts']['ppm'])}.")  # fmt: skip
 
 
 def oublierDossiers() -> None:
@@ -200,7 +202,7 @@ class PageCalcul(Page):
                     "Jeu mini (mm)": [fr(e["jeuMin"]) for e in h],
                     "Jeu maxi (mm)": [fr(e["jeuMax"]) for e in h],
                     "Pire cas": [e["verdict"] for e in h],
-                    "ppm": [fr(e["ppm"], ".3g") for e in h],
+                    "ppm": [ppmLisible(e["ppm"], False) for e in h],
                     "Cpk": [fr(e["cpk"], ".3g") for e in h],
                     "Tirages": [e["tirages"] for e in h],
                 }
@@ -250,7 +252,7 @@ class PageCalcul(Page):
                  aide="Place ce module dans la zone de droite, plus large, ou le ramène dans la colonne de saisie.")  # fmt: skip
         r.legende(
             "Si la chaîne ne passe pas, faites varier ici la cote voulue. Pour une répartition au coût minimal, "
-            "passez au mode « Répartir les tolérances »."
+            "passez au mode « Optimiser les tolérances »."
         )
         editeur.curseursSensibilite(r, state.probleme(), 4 if droite else 2, self.tout)
 
@@ -435,8 +437,8 @@ class PageCalcul(Page):
             ("Cp", fr(v["cp"], ".3g"), "(Jmax − Jmin) / 6σ."),
             ("Cpk", fr(v["cpk"], ".3g"), "Distance de la moyenne à la limite la plus proche, divisée par 3σ."),
             ("ppm (formule normale)" if bundle.get("ppmExact") is not None else "ppm (formule)",
-             f"{fr(v['ppm'], '.4g')} ppm", "Parties par million hors limites, jeu supposé de loi normale."),
-            *([("ppm (lois des maillons)", f"{fr(bundle['ppmExact'], '.4g')} ppm",
+             ppmLisible(v["ppm"]), "Parties par million hors limites, jeu supposé de loi normale."),
+            *([("ppm (lois des maillons)", ppmLisible(bundle["ppmExact"]),
                 "Calcul exact en tenant compte de la loi de chaque maillon (convolution).")]
               if bundle.get("ppmExact") is not None else []),
             ("ppm (Monte-Carlo)", _ppmMonteCarlo(mc), "Parties par million hors limites parmi les tirages."),
@@ -542,7 +544,7 @@ class PageCalcul(Page):
                                         fr(q["mediane"], ".5f"), fr(q["haut"], ".5f"), f"{mc['nHors']} sur {mc['n']}",
                                         _ppmMonteCarlo(mc), "", fr(mc["cp"], ".3g"), fr(mc["cpk"], ".3g")],
                         "Formule": [fr(bundle["res"]["CF_moy"], ".5f"), fr(bundle["res"]["CF_sigma"], ".5f"), "", "",
-                                    "", "", "", f"{fr(v['ppm'], '.4g')} ppm", fr(v["cp"], ".3g"), fr(v["cpk"], ".3g")],
+                                    "", "", "", ppmLisible(v["ppm"]), fr(v["cp"], ".3g"), fr(v["cpk"], ".3g")],
                     }
                 )
             )  # fmt: skip
@@ -727,6 +729,16 @@ class PageCalcul(Page):
     def _ongletFichiers(self, z: Zone, bundle: dict) -> None:
         """Enregistrement et ouverture du problème, export des résultats en tableur."""
         self._enregistrerOuvrir(z, "onglet")
+        z.sousTitre("Exporter en Excel pour valider le calcul")
+        z.legende(
+            "Un seul classeur : la feuille de formules (le calcul refait dans Excel et comparé à l'application) et "
+            "toutes les valeurs calculées (synthèse, maillons, contributions, Monte-Carlo)."
+        )
+        z.telecharger(
+            "Exporter en Excel (formules + résultats)",
+            lambda: exporterClasseurComplet(problemeAvecCartouche(bundle), bundle),
+            "etude_excel.xlsx",
+        )
         z.sousTitre("Résultats du dernier calcul")
         a = bundle["affichage"]
         z.telecharger("Résultats Excel (.xlsx)", a["xlsx"], "resultats_chaine.xlsx")

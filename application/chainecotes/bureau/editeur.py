@@ -217,6 +217,21 @@ def ajouterToleranceGeometrique(z: Zone, relance: Rappel) -> None:
     section = z.section(rendu)
 
 
+def _dupliquer() -> None:
+    """Insère une copie du maillon sélectionné (nom « … (copie) » unique) juste après lui."""
+    maillons = state.probleme()["maillons"]
+    i = _selection(len(maillons))
+    copie = copy.deepcopy(maillons[i])
+    noms = {m.get("nom") for m in maillons}
+    base = f"{copie.get('nom', '')} (copie)".strip()
+    nom, n = base, 2
+    while nom in noms:
+        nom, n = f"{base} {n}", n + 1
+    copie["nom"] = nom
+    maillons.insert(i + 1, copie)
+    _apresModification(i + 1)
+
+
 def _supprimer() -> None:
     """Supprime le maillon sélectionné, sauf s'il est le dernier."""
     maillons = state.probleme()["maillons"]
@@ -577,7 +592,7 @@ def editeurMaillons(z: Zone, apres: Rappel) -> None:
             n = len(maillons)
             i = _selection(n)
             b.legende(f"Maillon sélectionné (cliquez une ligne du tableau) : {i + 1}. {maillons[i].get('nom', '')}")
-            c = b.colonnes(4)
+            c = b.colonnes(5)
 
             def geste(action: Callable[[], None]) -> Callable[[], None]:
                 def faire() -> None:
@@ -587,9 +602,10 @@ def editeurMaillons(z: Zone, apres: Rappel) -> None:
                 return faire
 
             c[0].bouton("Ajouter", geste(_ajouter))
-            c[1].bouton("Supprimer", geste(_supprimer))
-            c[2].bouton("Monter", geste(lambda: _deplacer(-1)), actif=i > 0)
-            c[3].bouton("Descendre", geste(lambda: _deplacer(1)), actif=i < n - 1)
+            c[1].bouton("Dupliquer", geste(_dupliquer), aide="Copie le maillon sélectionné juste en dessous.")
+            c[2].bouton("Supprimer", geste(_supprimer))
+            c[3].bouton("Monter", geste(lambda: _deplacer(-1)), actif=i > 0)
+            c[4].bouton("Descendre", geste(lambda: _deplacer(1)), actif=i < n - 1)
             _panneauTolerance(b, i, maillons[i], tout)
             if CLE_MESSAGE in state.v:
                 b.avertissement(state.v.pop(CLE_MESSAGE))

@@ -9,6 +9,7 @@ Usage : python construire_web.py
 
 import hashlib
 import re
+import shutil
 import zipfile
 from pathlib import Path
 
@@ -37,6 +38,7 @@ print(f"{sortie.relative_to(racine)} : {sortie.stat().st_size / 1024:.0f} Ko")
 
 # versions des scripts et de la feuille de style : une empreinte de leur contenu, qui change avec lui
 docs = racine / "docs"
+shutil.copyfile(appli / "data" / "icone.svg", docs / "icone.svg")  # l'icône vient de l'application de bureau : une seule source
 index = docs / "index.html"
 page = index.read_text(encoding="utf-8")
 

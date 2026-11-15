@@ -18,3 +18,13 @@ def fr(v: float, fmt: str = ".4f") -> str:
     if abs(v) < 1e-12:
         v = 0.0
     return format(v, fmt).replace(".", ",")
+
+
+def ppmLisible(x: float | None, unite: bool = True) -> str:
+    """Taux hors tolérance lisible : « < 0,001 ppm » sous 0,001 plutôt qu'un exposant comme 2,887e-07.
+
+    Entrées : x (ppm, None ou nan acceptés), unite (False : sans « ppm », pour une colonne). Sortie : texte.
+    """
+    petit = x is not None and not math.isnan(x) and x < 1e-3
+    texte = "< 0,001" if petit else fr(x, ".4g")
+    return f"{texte} ppm" if unite and texte != "—" else texte
