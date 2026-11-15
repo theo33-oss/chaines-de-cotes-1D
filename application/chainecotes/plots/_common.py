@@ -17,7 +17,7 @@ ROUGE = "#B3141F"
 GRIS = "#8E86AA"
 TEXTE = "#3D246C"  # Midnight Violet
 GRILLE = "#E2DDF1"
-FOND_FIGURE = "#FFF8F3"  # blanc chaud : les figures restent des cartes claires sur la page Vanilla Peach
+FOND_FIGURE = "#FFFFFF"  # blanc net : cartes et figures claires sur le fond pêche
 
 
 def teinte(hexa: str, alpha: float) -> str:

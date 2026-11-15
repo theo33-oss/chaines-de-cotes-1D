@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
   --fond: #FFDBC3;
-  --carte: #FFF8F3;
+  --carte: #FFFFFF;
   --encre: #3D246C;
   --bord: #5C4B99;
   --accent: #5C4B99;
@@ -12,7 +12,7 @@
   --alt: #F3E6DB;
   --lien: #5C4B99;
   --pi-fond: #CFC6EC;
-  --figure-fond: #FFFAF5;
+  --figure-fond: #FFFFFF;
   --info-fond: #E4E0F3; --info-texte: #3D246C;
   --ok-fond: #C8F0D2; --ok-texte: #0B3D1A;
   --warn-fond: #FFE2A8; --warn-texte: #5A3A00;

@@ -74,7 +74,7 @@ MESSAGES_SOMBRE = {
 }
 COULEURS_MESSAGE = dict(MESSAGES_CLAIR)  # mis à jour sur place par appliquerTheme
 # couleurs des figures (plots/_common.py) → version sombre ; les mêmes que COULEURS_SOMBRES de docs/app.js
-FIGURE_SOMBRE = {"#FFF8F3": "#1A1626", "#3D246C": "#EDE6F7", "#E2DDF1": "#352E4D", "#5C4B99": "#9F91CC", "#17692F": "#4CC77A",
+FIGURE_SOMBRE = {"#FFFFFF": "#1A1626", "#3D246C": "#EDE6F7", "#E2DDF1": "#352E4D", "#5C4B99": "#9F91CC", "#17692F": "#4CC77A",
                  "#B3141F": "#FF6B73"}  # fmt: skip
 MODES_ETUDE = (("calcul", "Étude"), ("inverse", "Optimiser les tolérances"), ("optimisation", "Comparer"))
 # vert, orange, rouge : réservés au statut ; le verdict reste écrit en toutes lettres (jamais la couleur seule)

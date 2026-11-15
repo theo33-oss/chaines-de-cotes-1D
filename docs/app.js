@@ -53,7 +53,7 @@ const App = (() => {
   const sombre = () => document.documentElement.dataset.theme === "dark";
 
   // Couleurs des figures du pont (plots/_common.py) → version sombre. Le script du <head> pose data-theme avant l'affichage.
-  const COULEURS_SOMBRES = { "#FFF8F3": "#1A1626", "#3D246C": "#EDE6F7", "#E2DDF1": "#352E4D", "#5C4B99": "#9F91CC", "#17692F": "#4CC77A", "#B3141F": "#FF6B73" };
+  const COULEURS_SOMBRES = { "#FFFFFF": "#1A1626", "#3D246C": "#EDE6F7", "#E2DDF1": "#352E4D", "#5C4B99": "#9F91CC", "#17692F": "#4CC77A", "#B3141F": "#FF6B73" };
   const enSombre = (x) => JSON.parse(JSON.stringify(x).replace(/#[0-9A-Fa-f]{6}|rgba\(255,255,255,0\.8\)/g,
     (c) => COULEURS_SOMBRES[c.toUpperCase()] || (c[0] === "r" ? "rgba(26,22,38,0.8)" : c)));
 
