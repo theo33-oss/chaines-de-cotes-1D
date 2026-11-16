@@ -1,24 +1,31 @@
 CHAINES DE COTES 1D - MODE D'EMPLOI
 
-1. Installer Python 3.12 (une seule fois)
-   https://www.python.org/downloads/
-   Dans l'installateur, laisser "py launcher" coché.
+Deux façons de l'utiliser :
 
-2. Décompresser le dossier reçu
-   Clic droit sur le .zip > Extraire tout.
-   Ne pas lancer l'application depuis l'intérieur du .zip.
+A. Dans le navigateur, sans rien installer
+   https://theo33-oss.github.io/chaines-de-cotes-1D/
 
-3. Double-cliquer sur 1_Ouvrir_application.bat
-   Si Windows affiche "Windows a protégé votre ordinateur" :
-   Informations complémentaires > Exécuter quand même.
-   Le premier lancement installe les bibliothèques : 5 à 10 minutes,
-   environ 1 Go, Internet nécessaire. Une fenêtre noire reste ouverte
-   pendant l'installation, ne la fermez pas.
-   Les fois suivantes, l'application s'ouvre en quelques secondes,
-   même sans Internet.
-
-4. Utiliser l'application
-   Elle s'ouvre dans sa propre fenêtre, sans navigateur.
-   Pour l'arrêter, fermez cette fenêtre.
+B. Sur le bureau Windows (dossiers PDF et Word, enregistrement sur le disque)
+   1. Installer Python 3.12 (une seule fois)
+      https://www.python.org/downloads/
+      Dans l'installateur, laisser "py launcher" coché.
+   2. Récupérer le dossier de l'application
+      Sur https://github.com/theo33-oss/chaines-de-cotes-1D : bouton vert
+      "Code" > "Download ZIP", puis clic droit sur le .zip > Extraire tout.
+      Ne pas lancer l'application depuis l'intérieur du .zip.
+   3. Double-cliquer sur 1_Ouvrir_application.bat
+      Si Windows affiche "Windows a protégé votre ordinateur" :
+      Informations complémentaires > Exécuter quand même.
+      Le premier lancement installe les bibliothèques : 5 à 10 minutes,
+      environ 1 Go, Internet nécessaire. Une fenêtre noire reste ouverte
+      pendant l'installation, ne la fermez pas.
+      Les fois suivantes, l'application s'ouvre en quelques secondes,
+      même sans Internet.
+   4. Utiliser l'application
+      Elle s'ouvre dans sa propre fenêtre, sans navigateur.
+      Pour l'arrêter, fermez cette fenêtre.
 
 Vos données restent sur votre ordinateur : rien n'est envoyé sur Internet.
+
+Outil pédagogique et d'aide à la cotation : les résultats doivent
+être vérifiés avant tout usage réel. Limites connues : LIMITES.md.
