@@ -15,12 +15,15 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=05da0ba7">
+<link rel="stylesheet" href="style.css?v=86718539">
 </head>
 <body>
 <header>
-  <h1>Chaînes de cotes 1D</h1>
-  <p class="intro legende">Calcul de tolérances d'un assemblage. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
+  <div>
+    <h1>Chaînes de cotes 1D</h1>
+    <p class="intro legende">Calcul de tolérances d'un assemblage. Tout est calculé dans votre navigateur : aucune cote n'est envoyée sur Internet.</p>
+  </div>
+  <a class="telecharger" href="https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest" data-aide="Application de bureau pour Windows : démarrage immédiat, hors ligne, dossiers PDF et Word.">Télécharger pour Windows</a>
 </header>
 <div id="barre"><nav id="menu" aria-label="Pages" hidden></nav></div>
 
