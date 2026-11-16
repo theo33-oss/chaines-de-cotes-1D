@@ -46,10 +46,30 @@ def test_theme_sombre_par_le_menu(fenetre):
     avant = QApplication.instance().styleSheet()
     fenetre.basculerTheme()
     assert state.v["sombre"] is True and fenetre.actionSombre.isChecked()
-    assert "#0E0B16" in QApplication.instance().styleSheet()
+    assert "#0F0C18" in QApplication.instance().styleSheet()
     fenetre.basculerTheme()
     assert state.v["sombre"] is False and not fenetre.actionSombre.isChecked()
-    assert QApplication.instance().styleSheet() == avant or "#FFDBC3" in QApplication.instance().styleSheet()
+    assert QApplication.instance().styleSheet() == avant or "#F6F4FA" in QApplication.instance().styleSheet()
+
+
+def test_couleurs_du_bureau_identiques_au_site(fenetre):
+    """Fond, texte, bordures et accent du bureau sont ceux de docs/style.css (palette de MecaStruct), en clair et en sombre."""
+    import re
+    from pathlib import Path
+
+    css = (Path(application.__file__).resolve().parent.parent / "docs" / "style.css").read_text(encoding="utf-8")
+    clair, sombre = css.split(':root[data-theme="dark"]')[0], css.split(':root[data-theme="dark"]')[1].split("}")[0]
+    noms = ("fond", "carte", "encre", "discret", "bord", "bord-fort", "accent", "bandeau", "lien")
+    for bloc, sombre_voulu in ((clair, False), (sombre, True)):
+        if bool(state.v.get("sombre")) != sombre_voulu:
+            fenetre.basculerTheme()
+        feuille = QApplication.instance().styleSheet()
+        for nom in noms:
+            couleur = re.search(rf"--{nom}: (#[0-9A-Fa-f]{{6}});", bloc)[1]
+            assert couleur in feuille, f"--{nom} {couleur} absent du thème {'sombre' if sombre_voulu else 'clair'} du bureau"
+        assert "#FFDBC3" not in feuille  # plus de fond pêche
+    if state.v.get("sombre"):
+        fenetre.basculerTheme()
 
 
 def test_dupliquer_un_maillon(fenetre, qtbot):

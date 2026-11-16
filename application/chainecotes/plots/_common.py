@@ -17,7 +17,7 @@ ROUGE = "#B3141F"
 GRIS = "#8E86AA"
 TEXTE = "#3D246C"  # Midnight Violet
 GRILLE = "#E2DDF1"
-FOND_FIGURE = "#FFFFFF"  # blanc net : cartes et figures claires sur le fond pêche
+FOND_FIGURE = "#FFFFFF"  # blanc net : cartes et figures claires sur le fond lavande
 
 
 def teinte(hexa: str, alpha: float) -> str:

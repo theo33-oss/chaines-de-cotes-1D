@@ -1,35 +1,40 @@
+/* Couleurs : les mêmes que MecaStruct RdM Pro (docs/style.css de son dépôt), en clair et en sombre.
+   --bord : contour discret des cartes ; --bord-fort : champs, boutons et barre de menu. */
 :root {
   color-scheme: light;
-  --fond: #FFDBC3;
+  --fond: #F6F4FA;
   --carte: #FFFFFF;
-  --encre: #3D246C;
-  --bord: #5C4B99;
+  --encre: #2A1B4A;
+  --bord: #C9C1E0;
+  --bord-fort: #5C4B99;
   --accent: #5C4B99;
   --sur-accent: #FFFFFF;
-  --discret: #6B5F8A;
-  --bandeau: #5C4B99;
+  --discret: #5E5577;
+  --bandeau: #3D246C;
   --trait: #000000;
-  --alt: #F3E6DB;
-  --lien: #5C4B99;
+  --alt: #F1EEF8;
+  --lien: #4A3A8C;
   --pi-fond: #CFC6EC;
   --figure-fond: #FFFFFF;
-  --info-fond: #E4E0F3; --info-texte: #3D246C;
-  --ok-fond: #C8F0D2; --ok-texte: #0B3D1A;
-  --warn-fond: #FFE2A8; --warn-texte: #5A3A00;
-  --err-fond: #FFC2C2; --err-texte: #6B0A12;
+  --info-fond: #E7E3F4; --info-texte: #2A1B4A;
+  --ok-fond: #D3F2DC; --ok-texte: #0B3D1A;
+  --warn-fond: #FFE8B8; --warn-texte: #5A3A00;
+  --err-fond: #FFD3D3; --err-texte: #6B0A12;
+  --ombre: 0 1px 3px rgba(42, 27, 74, .12);
 }
 /* thème sombre : posé sur <html data-theme="dark"> par le script du <head> (réglage de Windows) ou par le bouton du menu */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --fond: #0E0B16;
+  --fond: #0F0C18;
   --carte: #1A1626;
-  --encre: #FFDBC3;
-  --bord: #9F91CC;
+  --encre: #EDE6F7;
+  --bord: #3A3254;
+  --bord-fort: #9F91CC;
   --accent: #7A68C0;
   --discret: #B7ABD8;
-  --bandeau: #4B3F7A;
+  --bandeau: #2C2348;
   --trait: #EDE6F7;
-  --alt: #231E33;
+  --alt: #211C30;
   --lien: #C8BDF0;
   --pi-fond: #4B3F7A;
   --figure-fond: #1A1626;
@@ -37,6 +42,7 @@
   --ok-fond: #123522; --ok-texte: #BFEBCC;
   --warn-fond: #3E2F0B; --warn-texte: #FFE0A3;
   --err-fond: #431419; --err-texte: #FFCBCF;
+  --ombre: none;
 }
 * { box-sizing: border-box; }
 body {
@@ -63,7 +69,7 @@ input, select, button {
   font: inherit;
   color: var(--encre);
   background: var(--carte);
-  border: 1px solid var(--bord);
+  border: 1px solid var(--bord-fort);
   border-radius: 4px;
   padding: 6px 8px;
   min-height: 40px;
@@ -98,7 +104,7 @@ td:nth-child(2), td:nth-child(7) { min-width: 110px; }
 #onglets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
 #onglets button[aria-selected="true"] { background: var(--accent); color: var(--sur-accent); }
 .figure { background: var(--figure-fond); border: 1px solid var(--bord); border-radius: 4px; min-height: 120px; overflow: hidden; margin-top: 8px; }
-#panneau { border: 1px solid var(--bord); border-radius: 4px; padding: 4px 12px 12px; background: var(--carte); }
+#panneau { border: 1px solid var(--bord-fort); border-radius: 4px; padding: 4px 12px 12px; background: var(--carte); }
 #panneau h3 { font-size: 1.05rem; margin: 20px 0 6px; }
 #panneau table { min-width: 0; }
 #panneau .legende { margin-top: 8px; }
@@ -126,7 +132,7 @@ td.verdict.info { background: var(--info-fond); color: var(--info-texte); }
 h3 { font-size: 1.1rem; margin: 22px 0 6px; }
 h4 { margin: 4px 0 8px; font-size: 1rem; }
 .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; align-items: start; }
-.carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 6px; padding: 4px 16px 16px; min-width: 0; }
+.carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 6px; padding: 4px 16px 16px; min-width: 0; box-shadow: var(--ombre); }
 .carte h3 { margin-top: 12px; }
 .carte table, #iso-it table, #iso-fond table, #iso-delta table, #mat-tableau table, #mat-sources table, #aj-candidats table { min-width: 0; }
 .carte ol { padding-left: 22px; }
@@ -184,7 +190,7 @@ button.petit { min-height: 0; padding: 2px 10px; font-size: inherit; }
 kbd { font: inherit; font-size: .85em; padding: 0 5px; border: 1px solid var(--bord); border-bottom-width: 2px; border-radius: 4px; background: var(--carte); }
 
 /* barre de menu fixe en haut : Accueil, Étude, Mécanisme, Aides, puis le sommaire de la page */
-#barre { position: sticky; top: 0; z-index: 30; background: var(--fond); margin: 0 -16px; padding: 0 16px; border-bottom: 2px solid var(--bord); }
+#barre { position: sticky; top: 0; z-index: 30; background: var(--fond); margin: 0 -16px; padding: 0 16px; border-bottom: 2px solid var(--bord-fort); }
 #menu { max-width: 1500px; margin: 0 auto; }
 #menu .principal, #menu .sous { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
 #menu .sous { padding-top: 0; }
@@ -194,7 +200,7 @@ kbd { font: inherit; font-size: .85em; padding: 0 5px; border: 1px solid var(--b
 #menu button[aria-current="true"] { background: var(--accent); color: var(--sur-accent); }
 
 /* bandeaux repliables de la page Étude */
-details.bandeau { border: 1px solid var(--bord); border-radius: 6px; margin: 14px 0; background: var(--carte); scroll-margin-top: 110px; }
+details.bandeau { border: 1px solid var(--bord); border-radius: 6px; margin: 14px 0; background: var(--carte); scroll-margin-top: 110px; box-shadow: var(--ombre); }
 details.bandeau > summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 8px 14px; list-style: none; background: var(--bandeau); color: var(--sur-accent); border-radius: 5px; }
 details.bandeau[open] > summary { border-radius: 5px 5px 0 0; }
 details.bandeau > summary::-webkit-details-marker { display: none; }

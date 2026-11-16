@@ -35,7 +35,7 @@ def _icone(svg: str, taille: int) -> QIcon:
     return QIcon(QPixmap.fromImage(image))
 
 
-def iconeMenu(page: str, couleur: str = "#FFDBC3", taille: int = 36) -> QIcon:
+def iconeMenu(page: str, couleur: str = "#FFFFFF", taille: int = 36) -> QIcon:
     """Icône d'une ligne du menu (identifiant de page), tracée à la couleur du texte du menu."""
     trace = TRACES[PAGE_VERS_TRACE.get(page, page)]
     return _icone(

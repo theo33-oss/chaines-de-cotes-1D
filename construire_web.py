@@ -52,6 +52,10 @@ def versionner(m: re.Match) -> str:
 
 
 nouvelle = re.sub(r'(src|href)="((?:app\.js|style\.css|js/[a-z0-9]+\.js))(?:\?v=[0-9a-f]+)?"', versionner, page)
+# numéro de version : une seule source, chainecotes/__init__.py, recopiée dans le pied de page
+version = re.search(r'__version__ = "([^"]+)"', (appli / "chainecotes" / "__init__.py").read_text(encoding="utf-8")).group(1)
+nouvelle = re.sub(r'(<span id="version">)[^<]*(</span>)', rf"\g<1>{version}\g<2>", nouvelle)
+print(f"version {version}")
 if nouvelle != page:
     index.write_text(nouvelle, encoding="utf-8")
 print(f"index.html : {len(re.findall(r'[?]v=[0-9a-f]+', nouvelle))} adresses versionnées")

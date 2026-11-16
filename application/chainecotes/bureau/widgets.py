@@ -61,10 +61,10 @@ atexit.register(shutil.rmtree, _DOSSIER_FIGURES, ignore_errors=True)  # sinon ~5
 HAUTEUR_TABLEAU_MAX = 420
 # (fond, texte) des messages : thème clair, puis thème sombre ; les mêmes couleurs que le site (docs/style.css)
 MESSAGES_CLAIR = {
-    "info": ("#E4E0F3", "#3D246C"),
-    "succes": ("#C8F0D2", "#0B3D1A"),
-    "avertissement": ("#FFE2A8", "#5A3A00"),
-    "erreur": ("#FFC2C2", "#6B0A12"),
+    "info": ("#E7E3F4", "#2A1B4A"),
+    "succes": ("#D3F2DC", "#0B3D1A"),
+    "avertissement": ("#FFE8B8", "#5A3A00"),
+    "erreur": ("#FFD3D3", "#6B0A12"),
 }
 MESSAGES_SOMBRE = {
     "info": ("#2A2342", "#E4DDF7"),
@@ -912,53 +912,57 @@ def partage(gauche: QWidget, droite: QWidget) -> QSplitter:
 
 
 def appliquerTheme(app: QApplication) -> None:
-    """Palette Vanilla Peach, Lilac Stone, Twilight Purple, Midnight Violet ; thème clair ou sombre."""
+    """Thème clair ou sombre, aux couleurs du site (docs/style.css), qui sont celles de MecaStruct RdM Pro.
+
+    `bord` : contour discret des cartes ; `fort` : champs, boutons et onglets ; `bandeau` : en-têtes de tableau et menu.
+    """
     _poserCouleurs(bool(state.v.get("sombre")))
     if state.v.get("sombre"):
-        fond, carte, encre, bord, accent, menu = "#0E0B16", "#1A1626", "#FFDBC3", "#9F91CC", "#7A68C0", "#1A1626"
+        fond, carte, encre, discret, bord, fort = "#0F0C18", "#1A1626", "#EDE6F7", "#B7ABD8", "#3A3254", "#9F91CC"
+        accent, bandeau, lien, menu, texteMenu = "#7A68C0", "#2C2348", "#C8BDF0", "#1A1626", "#EDE6F7"
     else:
-        # cartes et champs en blanc chaud (celui des figures) : ils se détachent du fond pêche
-        fond, carte, encre, bord, accent, menu = "#FFDBC3", FOND_FIGURE, "#3D246C", "#5C4B99", "#5C4B99", "#3D246C"
+        fond, carte, encre, discret, bord, fort = "#F6F4FA", FOND_FIGURE, "#2A1B4A", "#5E5577", "#C9C1E0", "#5C4B99"
+        accent, bandeau, lien, menu, texteMenu = "#5C4B99", "#3D246C", "#4A3A8C", "#3D246C", "#FFFFFF"
     app.setStyleSheet(f"""
     QWidget {{ background:{fond}; color:{encre}; font-size:10pt; }}
     QLabel {{ background:transparent; }}
-    QToolTip {{ background:{carte}; color:{encre}; border:1px solid {bord}; }}
+    QToolTip {{ background:{carte}; color:{encre}; border:1px solid {fort}; }}
     #titre {{ font-size:19pt; font-weight:bold; }}
-    #sousTitre {{ font-size:13pt; font-weight:bold; margin-top:8px; }}
-    #legende {{ font-size:9pt; }}
+    #sousTitre {{ font-size:13pt; font-weight:bold; margin-top:8px; border-bottom:2px solid {bord}; padding-bottom:2px; }}
+    #legende {{ font-size:9pt; color:{discret}; }}
     #etiquette {{ font-size:9pt; margin-top:3px; }}
     #metrique, #cadre {{ background:{carte}; border:1px solid {bord}; border-radius:5px; }}
     #metrique QLabel, #cadre QLabel, #cadre QWidget {{ background:transparent; }}
     #metriqueLibelle {{ font-size:8pt; }}
     #metriqueValeur {{ font-size:13pt; font-weight:bold; }}
     QRadioButton::indicator, QCheckBox::indicator, QListWidget::indicator {{ width:13px; height:13px; background:{carte};
-        border:1px solid {bord}; }}
+        border:1px solid {fort}; }}
     QRadioButton::indicator {{ border-radius:7px; }}
     QRadioButton::indicator:checked, QCheckBox::indicator:checked, QListWidget::indicator:checked {{ background:{accent}; }}
     QLineEdit, QPlainTextEdit, QComboBox, QListWidget, QTableWidget {{
-        background:{carte}; border:1px solid {bord}; border-radius:3px; padding:2px; }}
+        background:{carte}; border:1px solid {fort}; border-radius:3px; padding:2px; }}
     QTableWidget {{ gridline-color:{bord}; }}
-    QLineEdit:disabled, QComboBox:disabled {{ color:#8E86AA; }}
-    QHeaderView::section {{ background:{bord}; color:#FFFFFF; padding:3px; border:none; }}
-    #bouton {{ background:{carte}; border:1px solid {bord}; border-radius:4px; padding:5px 10px; }}
+    QLineEdit:disabled, QComboBox:disabled {{ color:{discret}; }}
+    QHeaderView::section {{ background:{bandeau}; color:#FFFFFF; padding:3px; border:none; }}
+    #bouton {{ background:{carte}; border:1px solid {fort}; border-radius:4px; padding:5px 10px; }}
     #bouton:hover {{ border-color:{encre}; }}
-    #bouton:disabled, #primaire:disabled {{ color:#8E86AA; }}
+    #bouton:disabled, #primaire:disabled {{ color:{discret}; }}
     #primaire {{ background:{accent}; color:#FFFFFF; border:none; border-radius:4px; padding:7px 12px;
                  font-weight:bold; }}
-    #lien {{ background:transparent; border:none; color:{encre}; text-decoration:underline; text-align:left;
+    #lien {{ background:transparent; border:none; color:{lien}; text-decoration:underline; text-align:left;
              padding:2px; }}
     #cadre #primaire {{ background:{accent}; }}
     #cadre #bouton {{ background:{carte}; }}
     #repli {{ background:{carte}; border:1px solid {bord}; border-radius:4px; padding:4px; font-weight:bold; }}
-    #menu {{ background:{menu}; color:#FFDBC3; border:none; font-size:10pt; }}
+    #menu {{ background:{menu}; color:{texteMenu}; border:none; font-size:10pt; }}
     #menu::item {{ padding:6px 8px; }}
-    #menu::item:selected {{ background:#5C4B99; color:#FFFFFF; }}
+    #menu::item:selected {{ background:{accent}; color:#FFFFFF; }}
     QMenuBar::item {{ padding:4px 10px; }}
-    QMenu {{ border:1px solid {bord}; }}
+    QMenu {{ border:1px solid {fort}; }}
     QMenu::item {{ padding:5px 24px; }}
     QMenuBar::item:selected, QMenu::item:selected {{ background:{accent}; color:#FFFFFF; }}
-    QMenu::item:disabled {{ color:#8E86AA; }}
-    QTabWidget::pane {{ border:1px solid {bord}; }}
-    QTabBar::tab {{ background:{carte}; border:1px solid {bord}; padding:5px 9px; }}
+    QMenu::item:disabled {{ color:{discret}; }}
+    QTabWidget::pane {{ border:1px solid {fort}; }}
+    QTabBar::tab {{ background:{carte}; border:1px solid {fort}; padding:5px 9px; }}
     QTabBar::tab:selected {{ background:{accent}; color:#FFFFFF; }}
     """)

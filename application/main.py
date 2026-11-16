@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from chainecotes import __version__
 from chainecotes.bureau import icones, state, widgets
 from chainecotes.core.donnees import ecrireSansPerte
 from chainecotes.core.errors import ErreurChaine
@@ -193,7 +194,7 @@ class Fenetre(QMainWindow):
         self.actionRetablir.setEnabled(bool(self._retablissables))
         nom = Path(state.chemin()).name if state.chemin() else "Étude non enregistrée"
         validee = " [validée]" if etatValidation(p) == "valide" else ""
-        self.setWindowTitle(f"{nom}[*]{validee} — {TITRE}")
+        self.setWindowTitle(f"{nom}[*]{validee} — {TITRE} {__version__}")
         self.setWindowModified(state.modifiee())
 
     def _garderReprise(self) -> None:
