@@ -6,24 +6,19 @@ A. Dans le navigateur, sans rien installer
    https://theo33-oss.github.io/chaines-de-cotes-1D/
 
 B. Sur le bureau Windows (dossiers PDF et Word, enregistrement sur le disque)
-   1. Installer Python 3.12 (une seule fois)
-      https://www.python.org/downloads/
-      Dans l'installateur, laisser "py launcher" coché.
-   2. Récupérer le dossier de l'application
-      Sur https://github.com/theo33-oss/chaines-de-cotes-1D : bouton vert
-      "Code" > "Download ZIP", puis clic droit sur le .zip > Extraire tout.
-      Ne pas lancer l'application depuis l'intérieur du .zip.
-   3. Double-cliquer sur 1_Ouvrir_application.bat
-      Si Windows affiche "Windows a protégé votre ordinateur" :
+   1. Télécharger ChainesDeCotes_Installation_x.y.z.exe
+      https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest
+   2. Le lancer. Si Windows affiche "Windows a protégé votre ordinateur" :
       Informations complémentaires > Exécuter quand même.
-      Le premier lancement installe les bibliothèques : 5 à 10 minutes,
-      environ 1 Go, Internet nécessaire. Une fenêtre noire reste ouverte
-      pendant l'installation, ne la fermez pas.
-      Les fois suivantes, l'application s'ouvre en quelques secondes,
-      même sans Internet.
-   4. Utiliser l'application
-      Elle s'ouvre dans sa propre fenêtre, sans navigateur.
-      Pour l'arrêter, fermez cette fenêtre.
+   3. L'installation se fait pour vous seul (pas de droits d'administrateur)
+      et crée une icône sur le Bureau. Rien d'autre à installer : Python
+      et les bibliothèques sont inclus.
+   Désinstaller : Paramètres de Windows > Applications > Chaînes de cotes 1D.
+
+Pour les développeurs, depuis le code source : installer Python 3.12
+(https://www.python.org/downloads/, "py launcher" coché), puis double-cliquer
+sur 1_Ouvrir_application.bat (il installe les bibliothèques au premier
+lancement, 5 à 10 minutes, environ 1 Go, Internet nécessaire).
 
 Vos données restent sur votre ordinateur : rien n'est envoyé sur Internet.
 

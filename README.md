@@ -4,6 +4,7 @@
 répond en une phrase : au pire des cas, en statistique, ou pas du tout, avec la cote sur laquelle agir en premier.
 
 [![Ouvrir dans le navigateur](https://img.shields.io/badge/Ouvrir%20dans%20le%20navigateur-5C4B99?style=for-the-badge)](https://theo33-oss.github.io/chaines-de-cotes-1D/)
+[![Télécharger pour Windows](https://img.shields.io/badge/T%C3%A9l%C3%A9charger%20pour%20Windows-3D246C?style=for-the-badge)](https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest)
 [![Licence PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/licence-PolyForm%20Noncommercial%201.0.0-3D246C)](LICENSE)
 
 ![Page d'accueil : trois actions pour démarrer](docs/captures/accueil.jpg)
@@ -35,9 +36,9 @@ répond en une phrase : au pire des cas, en statistique, ou pas du tout, avec la
 
 | | Dans le navigateur | Sur le bureau (Windows) |
 |---|---|---|
-| Installation | aucune | Python 3.11 ou plus à installer, puis les bibliothèques au premier lancement (environ 1 Go, 5 à 10 minutes) |
-| Démarrage | 10 à 30 secondes au premier chargement | quelques secondes |
-| Internet | à chaque visite | au premier lancement seulement |
+| Installation | aucune | un installateur à télécharger (Python compris) |
+| Démarrage | 10 à 30 secondes la première fois | quelques secondes |
+| Internet | au premier chargement | jamais après l'installation |
 | Données | restent dans votre navigateur | restent sur votre ordinateur |
 | En plus | lien de partage de l'étude (tout est dans l'adresse), téléphone | dossiers PDF et Word, enregistrement direct sur le disque |
 
@@ -74,7 +75,7 @@ Le menu du site a quatre entrées : Accueil, Étude, Mécanisme et Aides.
 | | Tables ISO 286 | Calculatrice d'écarts, tableau des IT, écarts fondamentaux |
 | | Matériaux | 93 matériaux : α, domaine d'emploi, courbes de dilatation |
 
-L'application de bureau a les mêmes pages, rangées dans un menu à gauche (Étude, Outils, Informations).
+L'application de bureau a le même bandeau, le même menu en haut et les mêmes noms de pages (« À propos » en plus, sous Aides).
 
 ![Assistant de chaîne : plan des pièces et chaîne minimale](docs/captures/assistant.jpg)
 
@@ -101,13 +102,13 @@ Outil pédagogique et d'aide à la cotation, fourni sans garantie : vérifiez le
 
 ## Pour les développeurs
 
-Application de bureau : double-cliquer sur `1_Ouvrir_application.bat` (voir [`LISEZ-MOI.txt`](LISEZ-MOI.txt)), ou à la
+Depuis le code source, double-cliquer sur `1_Ouvrir_application.bat` (voir [`LISEZ-MOI.txt`](LISEZ-MOI.txt)), ou à la
 main :
 
 ```bash
 cd application
 python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt pytest pytest-qt
+.venv\Scripts\python -m pip install -r requirements.lock pytest pytest-qt
 .venv\Scripts\python main.py              # application de bureau
 .venv\Scripts\python -m pytest -q tests   # tests
 ```
@@ -126,11 +127,12 @@ puis ouvrir <http://localhost:8000>.
 | `application/chainecotes/bureau` | l'application de bureau (PySide6) |
 | `application/data`, `application/tests` | tables (ISO 286, matériaux, exemples) et tests |
 | `docs/` | le site publié par GitHub Pages ; `docs/pont.py` relie la page au calcul |
+| `construire_bureau.py`, `installateur.iss` | l'application autonome et l'installateur Windows |
 
 Le site exécute dans le navigateur, avec [Pyodide](https://pyodide.org), **le même code Python** que l'application de
 bureau : mêmes résultats, mêmes exemples, rien n'est réécrit en JavaScript. Après toute modification de
 `application/chainecotes`, de `application/data` ou de la page, `python construire_web.py` reconstruit le calcul et
-versionne les scripts. `essai_pont.py` fait passer tous les exemples par les fonctions de la page, sans navigateur.
+versionne les scripts. `python construire_bureau.py` fabrique l'application autonome et l'installateur ; sur GitHub, une étiquette `v*` les publie dans les Releases. Ce qui change à chaque version est dans [CHANGELOG.md](CHANGELOG.md). `application/tools/essai_pont.py` fait passer tous les exemples par les fonctions de la page, sans navigateur.
 
 ## Auteur et licence
 

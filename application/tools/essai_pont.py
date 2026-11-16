@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 
-racine = Path(__file__).resolve().parent
+racine = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(racine / "application"), str(racine / "docs")]
 sys.modules["pandas"] = None  # la page web n'a pas pandas au démarrage : le pont ne doit pas en dépendre
 import pont  # noqa: E402

@@ -5,3 +5,7 @@ __pycache__/
 *.tmp
 .claude/CLAUDE.md
 .claude/rules/
+# fabriqués par les scripts, jamais suivis
+/build/
+/dist/
+/*.zip

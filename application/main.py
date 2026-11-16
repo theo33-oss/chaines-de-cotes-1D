@@ -8,23 +8,28 @@ import sys
 import traceback
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QSize, Qt, QTimer
-from PySide6.QtGui import QGuiApplication, QKeySequence
+from PySide6.QtCore import QSettings, QSize, Qt, QTimer, QUrl
+from PySide6.QtGui import QDesktopServices, QGuiApplication, QKeySequence
 from PySide6.QtWebEngineWidgets import QWebEngineView  # noqa: F401 : à importer avant QApplication
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
+    QLabel,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
     QMessageBox,
+    QPushButton,
+    QSizePolicy,
     QStackedWidget,
+    QVBoxLayout,
     QWidget,
 )
 
 from chainecotes import __version__
-from chainecotes.bureau import icones, state, widgets
+from chainecotes.bureau import icones, state, tache, widgets
 from chainecotes.core.donnees import ecrireSansPerte
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.services import procedes_atelier, projet_io
@@ -50,19 +55,28 @@ MENU = (
     ("parcours", "Nouvelle étude (guidé)", parcours.PageParcours),
     ("assistant", "Assistant de chaîne", assistant.PageAssistant),
     # une seule entrée pour l'étude : ses trois modes (barre en haut de page) partagent la ligne de « calcul »
-    ("calcul", "Étude en cours", calcul.PageCalcul),
+    ("calcul", "Étude", calcul.PageCalcul),
     ("inverse", None, inverse.PageInverse),
     ("optimisation", None, optimisation.PageOptimisation),
-    ("mecanisme", "Mécanisme (plusieurs chaînes)", mecanisme.PageMecanisme),
+    ("mecanisme", "Mécanisme", mecanisme.PageMecanisme),
     ("Outils", None, None),
-    ("exemples", "Bibliothèque d'exemples", exemples.PageExemples),
-    ("ajustement", "Assistant d'ajustement", ajustement.PageAjustement),
+    ("exemples", "Exemples", exemples.PageExemples),
+    ("ajustement", "Ajustements", ajustement.PageAjustement),
     ("iso286", "Tables ISO 286", iso286.PageIso286),
-    ("materiaux", "Matériaux et dilatation", materiaux.PageMateriaux),
+    ("materiaux", "Matériaux", materiaux.PageMateriaux),
     ("Informations", None, None),
     ("apropos", "À propos", apropos.PageAPropos),
 )
 
+URL_EN_LIGNE = "https://theo33-oss.github.io/chaines-de-cotes-1D/"  # la version en ligne, toujours à jour
+# barre du haut, comme le site (docs/app.js) : Accueil, puis ces familles ; (page, libellé du bouton)
+FAMILLES = (
+    ("Étude", (("calcul", "Étude"), ("inverse", "Optimiser"), ("optimisation", "Comparer"), ("parcours", "Nouvelle étude (guidé)"))),
+    ("Mécanisme", (("mecanisme", "Mécanisme"),)),
+    ("Aides", (("assistant", "Assistant de chaîne"), ("exemples", "Exemples"), ("ajustement", "Ajustements"),
+               ("iso286", "Tables ISO 286"), ("materiaux", "Matériaux"), ("apropos", "À propos"))),
+)  # fmt: skip
+PAGE_DE_FAMILLE = {"Étude": "analyser", "Mécanisme": "mecanisme", "Aides": "exemples"}  # tracé de l'icône de chaque famille
 TITRE = "Chaînes de cotes 1D"
 FILTRE = "Étude (*.json)"
 ANNULATIONS_MAX = 50
@@ -104,12 +118,11 @@ class Fenetre(QMainWindow):
         self.reglages: QSettings | None = None  # posé par main() : les tests ne touchent pas aux préférences du poste
         self.fichierReprise: Path | None = None  # idem : copie de secours de l'étude modifiée (reprise après un plantage)
         centre = QWidget()
-        h = QHBoxLayout(centre)
-        h.setContentsMargins(0, 0, 0, 0)
-        h.setSpacing(0)
-        self.menu = QListWidget()
+        colonne = QVBoxLayout(centre)
+        colonne.setContentsMargins(0, 0, 0, 0)
+        colonne.setSpacing(0)
+        self.menu = QListWidget()  # modèle des pages, non affiché : l'ordre et la page ouverte (les boutons du haut le pilotent)
         self.menu.setObjectName("menu")
-        self.menu.setFixedWidth(235)
         self.menu.setIconSize(QSize(18, 18))
         self.pile = QStackedWidget()
         self.pages: dict[str, tuple[int, widgets.Page]] = {}
@@ -127,8 +140,9 @@ class Fenetre(QMainWindow):
                 continue
             self.pages[ident] = (self.menu.count(), page)
             self.menu.addItem(QListWidgetItem(icones.iconeMenu(ident), libelle))
-        h.addWidget(self.menu)
-        h.addWidget(self.pile, 1)
+        colonne.addWidget(self._bandeau())
+        colonne.addWidget(self._barre())
+        colonne.addWidget(self.pile, 1)
         self.setCentralWidget(centre)
         self.menu.currentRowChanged.connect(self._ouvrir)
         self._menus()
@@ -140,6 +154,113 @@ class Fenetre(QMainWindow):
         self._veille.start()
         self._surveiller()
         self.aller("accueil")
+
+    # ---------------------------------------------------------------------------------------------- bandeau et menu
+
+    def _bandeau(self) -> QWidget:
+        """Marque, phrase de confiance, thème et bouton vers la version en ligne (comme le haut du site)."""
+        bandeau = QWidget()
+        bandeau.setObjectName("bandeau")
+        h = QHBoxLayout(bandeau)
+        h.setContentsMargins(18, 10, 18, 8)
+        h.setSpacing(16)
+        icone = QLabel()
+        icone.setPixmap(icones.iconeApplication(72).pixmap(36, 36))
+        marque = QLabel(TITRE)
+        marque.setObjectName("marque")
+        confiance = QLabel("Calcul de tolérances d'un assemblage. Tout est calculé sur votre ordinateur : "
+                           "aucune cote n'est envoyée sur Internet.")  # fmt: skip
+        confiance.setObjectName("confiance")
+        confiance.setWordWrap(True)
+        confiance.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Minimum)
+        self.bouton_theme = QPushButton()
+        self.bouton_theme.setObjectName("bouton")
+        self.bouton_theme.clicked.connect(self.basculerTheme)
+        en_ligne = QPushButton("Version en ligne")
+        en_ligne.setObjectName("primaire")
+        en_ligne.setToolTip("Ouvre la version dans le navigateur : sans installation, toujours à jour.")
+        en_ligne.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(URL_EN_LIGNE)))
+        for w in (icone, marque):
+            h.addWidget(w)
+        h.addWidget(confiance, 1)
+        h.addWidget(self.bouton_theme)
+        h.addWidget(en_ligne)
+        self._texte_theme()
+        return bandeau
+
+    def _barre(self) -> QWidget:
+        """Barre du haut : Accueil et les familles, puis les pages de la famille choisie."""
+        barre = QFrame()
+        barre.setObjectName("barreMenu")
+        v = QVBoxLayout(barre)
+        v.setContentsMargins(18, 4, 18, 6)
+        v.setSpacing(2)
+        haut = QHBoxLayout()
+        haut.setSpacing(6)
+        self.famille_de: dict[str, str] = {}
+        self.boutons_familles: dict[str | None, QPushButton] = {}
+        self.boutons_pages: dict[str, QPushButton] = {}
+        self.rang_famille: dict[str, int] = {}
+        self.derniere_page: dict[str, str] = {}  # famille → dernière page ouverte (le bouton de la famille y revient)
+        accueil = self._bouton_menu("Accueil", "famille", icones.iconeMenu("accueil", self._couleur_icone(), 36),
+                                    lambda: self.aller("accueil"))
+        self.boutons_familles[None] = accueil
+        haut.addWidget(accueil)
+        self.sous = QStackedWidget()
+        for nom, pages in FAMILLES:
+            self.derniere_page[nom] = pages[0][0]
+            b = self._bouton_menu(nom, "famille", icones.iconeMenu(PAGE_DE_FAMILLE[nom], self._couleur_icone(), 36),
+                                  lambda _=False, n=nom: self.aller(self.derniere_page[n]))
+            self.boutons_familles[nom] = b
+            haut.addWidget(b)
+            rangee = QWidget()
+            r = QHBoxLayout(rangee)
+            r.setContentsMargins(0, 0, 0, 0)
+            r.setSpacing(6)
+            for ident, libelle in pages:
+                self.famille_de[ident] = nom
+                p = self._bouton_menu(libelle, "sousmenu", None, lambda _=False, i=ident: self.aller(i))
+                self.boutons_pages[ident] = p
+                r.addWidget(p)
+            r.addStretch(1)
+            self.rang_famille[nom] = self.sous.addWidget(rangee)
+        haut.addStretch(1)
+        v.addLayout(haut)
+        v.addWidget(self.sous)
+        return barre
+
+    @staticmethod
+    def _couleur_icone() -> str:
+        return "#EDE6F7" if state.v.get("sombre") else "#2A1B4A"
+
+    @staticmethod
+    def _bouton_menu(texte: str, nom: str, icone, action) -> QPushButton:
+        b = QPushButton(texte)
+        b.setObjectName(nom)
+        b.setCheckable(True)
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+        if icone is not None:
+            b.setIcon(icone)
+            b.setIconSize(QSize(18, 18))
+        b.clicked.connect(action)
+        return b
+
+    def _maj_barre(self, ident: str) -> None:
+        """Marque la famille et la page ouvertes ; la rangée des pages n'existe que pour une famille à plusieurs pages."""
+        famille = self.famille_de.get(ident)
+        if famille is not None:
+            self.derniere_page[famille] = ident
+        for nom, b in self.boutons_familles.items():
+            b.setChecked(nom == famille)
+        for i, b in self.boutons_pages.items():
+            b.setChecked(i == ident)
+        plusieurs = famille is not None and len(dict(FAMILLES)[famille]) > 1
+        self.sous.setVisible(plusieurs)
+        if plusieurs:
+            self.sous.setCurrentIndex(self.rang_famille[famille])
+
+    def _texte_theme(self) -> None:
+        self.bouton_theme.setText("Thème clair" if state.v.get("sombre") else "Thème sombre")
 
     def _menus(self) -> None:
         def action(menu, texte: str, raccourci: str, fonction):
@@ -167,6 +288,9 @@ class Fenetre(QMainWindow):
         state.v["sombre"] = not state.v.get("sombre")
         self.actionSombre.setChecked(bool(state.v["sombre"]))
         widgets.appliquerTheme(QApplication.instance())
+        self._texte_theme()
+        for nom, b in self.boutons_familles.items():
+            b.setIcon(icones.iconeMenu(PAGE_DE_FAMILLE.get(nom, "accueil"), self._couleur_icone(), 36))
         self.pile.currentWidget().afficher()
 
     def _surveiller(self) -> None:
@@ -323,6 +447,9 @@ class Fenetre(QMainWindow):
             page = next((p for rang, p in self.pages.values() if rang == ligne), None)
         if page is not None:
             self.pile.setCurrentWidget(page)
+            ident = next((i for i, (_, p) in self.pages.items() if p is page), None)
+            if ident:
+                self._maj_barre(ident)
             page.afficher()
 
     def aller(self, ident: str) -> None:
@@ -332,6 +459,7 @@ class Fenetre(QMainWindow):
             self._mode = ident
         if self.menu.currentRow() == rang:
             self.pile.setCurrentWidget(page)  # même ligne du menu, autre mode de l'étude
+            self._maj_barre(ident)
             page.afficher()
         else:
             self.menu.setCurrentRow(rang)
@@ -341,6 +469,61 @@ def _signalerErreur(genre: type, erreur: BaseException, trace: object) -> None:
     """Sans console (pythonw), une erreur inattendue serait muette : elle s'affiche à l'écran."""
     detail = "".join(traceback.format_exception(genre, erreur, trace))
     QMessageBox.critical(None, "Erreur de l'application", f"{erreur}\n\n{detail[-1500:]}")
+
+
+def verifier(app: QApplication, fenetre: "Fenetre", sortie: str) -> int:
+    """Auto-vérification (main.py --verifier fichier.txt) : ouvre chaque page, calcule l'étude, fabrique les dossiers.
+
+    Sert à contrôler l'application empaquetée (modules ou données oubliés), en local et sur GitHub. Écrit un rapport
+    et rend 0 si tout va bien, 1 sinon.
+    """
+    from chainecotes.services.dossier_fichier import fichierDossier
+
+    erreurs: list[str] = []
+    sys.excepthook = lambda g, e, t: erreurs.append("".join(traceback.format_exception(g, e, t))[-1500:])
+
+    def pause(ms: int) -> None:
+        fin: list[int] = []
+        QTimer.singleShot(ms, lambda: fin.append(1))
+        while not fin:
+            app.processEvents()
+
+    lignes = []
+    for ident, libelle, _ in MENU:
+        if libelle is None and ident not in ("inverse", "optimisation"):
+            continue
+        avant = len(erreurs)
+        try:
+            fenetre.aller(ident)
+            pause(300)
+        except Exception:  # noqa: BLE001 : toute erreur est notée, la vérification continue
+            erreurs.append(traceback.format_exc()[-1500:])
+        lignes.append(f"page {ident} : {'OK' if len(erreurs) == avant else 'ERREUR'}")
+    avant = len(erreurs)
+    try:  # le calcul de l'étude ouverte : Monte-Carlo, graphiques, explications
+        fenetre.aller("calcul")
+        fenetre.calculer()
+        while tache.occupe():
+            app.processEvents()
+        pause(600)
+        bundle = state.resultat()
+        assert bundle is not None, "aucun résultat après le calcul"
+    except Exception:  # noqa: BLE001
+        erreurs.append(traceback.format_exc()[-1500:])
+        bundle = None
+    lignes.append(f"calcul de l'étude : {'OK' if len(erreurs) == avant and bundle else 'ERREUR'}")
+    for format_, debut in (("HTML", b"<"), ("PDF", b"%PDF"), ("Word", b"PK")):  # polices, gabarit, reportlab-free fpdf2, docx
+        avant = len(erreurs)
+        try:
+            contenu = fichierDossier(state.probleme(), bundle, format_)["contenu"]
+            contenu = contenu.encode("utf-8") if isinstance(contenu, str) else contenu
+            assert contenu.lstrip()[: len(debut)] == debut, f"début inattendu : {contenu[:12]!r}"
+        except Exception:  # noqa: BLE001
+            erreurs.append(traceback.format_exc()[-1500:])
+        lignes.append(f"dossier {format_} : {'OK' if len(erreurs) == avant else 'ERREUR'}")
+    with open(sortie, "w", encoding="utf-8") as f:
+        f.write("\n".join(lignes) + "\n\n" + "\n\n".join(erreurs))
+    return 1 if erreurs else 0
 
 
 def main() -> int:
@@ -365,6 +548,8 @@ def main() -> int:
     if reglages.value("geometrie") is not None:
         fenetre.restoreGeometry(reglages.value("geometrie"))
     fenetre.show()
+    if "--verifier" in sys.argv:  # auto-vérification de l'exécutable : main.py --verifier rapport.txt
+        return verifier(app, fenetre, sys.argv[sys.argv.index("--verifier") + 1])
     if fenetre.fichierReprise.exists():
         fenetre.reprendre()
     return app.exec()

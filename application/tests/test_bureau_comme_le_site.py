@@ -60,6 +60,8 @@ def test_couleurs_du_bureau_identiques_au_site(fenetre):
     css = (Path(application.__file__).resolve().parent.parent / "docs" / "style.css").read_text(encoding="utf-8")
     clair, sombre = css.split(':root[data-theme="dark"]')[0], css.split(':root[data-theme="dark"]')[1].split("}")[0]
     noms = ("fond", "carte", "encre", "discret", "bord", "bord-fort", "accent", "bandeau", "lien")
+    state.v["sombre"] = False
+    widgets.appliquerTheme(QApplication.instance())
     for bloc, sombre_voulu in ((clair, False), (sombre, True)):
         if bool(state.v.get("sombre")) != sombre_voulu:
             fenetre.basculerTheme()
@@ -133,3 +135,25 @@ def test_copie_de_secours_illisible_ignoree(fenetre, tmp_path):
     avant = state.probleme()
     fenetre.reprendre()
     assert state.probleme() is avant and not fenetre.fichierReprise.exists()
+
+
+def test_menu_du_haut_comme_le_site():
+    """Accueil, Étude, Mécanisme, Aides et les pages d'Aides ont, sur le bureau, les noms et l'ordre du site."""
+    import re
+    from pathlib import Path
+
+    docs = Path(application.__file__).resolve().parent.parent / "docs"
+    app_js = (docs / "app.js").read_text(encoding="utf-8")
+    entrees = re.search(r"const entrees = \[(.*?)\];\n", app_js, re.S)[1]
+    noms_site = re.findall(r'\["[a-z]+", "([^"]+)"', entrees)
+    assert noms_site == ["Accueil", "Étude", "Mécanisme", "Aides"]
+    assert [nom for nom, _ in application.FAMILLES] == noms_site[1:]
+    ids = re.search(r"const AIDES = \[(.*?)\];", app_js)[1]
+    ids_site = re.findall(r'"([a-z0-9]+)"', ids)
+    titres = {}
+    for js in (docs / "js").glob("*.js"):
+        for ident, titre in re.findall(r'enregistrerPage\(\{ id: "([a-z0-9]+)"(?:, dans: "[a-z]+")?, titre: "([^"]+)"', js.read_text(encoding="utf-8")):
+            titres[ident] = titre
+    aides = dict(application.FAMILLES)["Aides"]
+    assert [libelle for _, libelle in aides if libelle != "À propos"] == [titres[i] for i in ids_site]
+    assert [libelle for _, libelle in dict(application.FAMILLES)["Étude"] if libelle != "Nouvelle étude (guidé)"] == ["Étude", titres["repartir"], titres["comparer"]]

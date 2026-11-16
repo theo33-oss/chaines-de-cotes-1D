@@ -965,4 +965,14 @@ def appliquerTheme(app: QApplication) -> None:
     QTabWidget::pane {{ border:1px solid {fort}; }}
     QTabBar::tab {{ background:{carte}; border:1px solid {fort}; padding:5px 9px; }}
     QTabBar::tab:selected {{ background:{accent}; color:#FFFFFF; }}
+    #bandeau {{ background:{fond}; }}
+    #marque {{ font-size:16pt; font-weight:bold; }}
+    #confiance {{ font-size:9pt; color:{discret}; }}
+    #barreMenu {{ background:{fond}; border-bottom:2px solid {fort}; }}
+    #famille, #sousmenu {{ background:transparent; color:{encre}; border:1px solid transparent; border-radius:6px;
+                           padding:6px 14px; }}
+    #famille {{ font-weight:bold; font-size:11pt; }}
+    #sousmenu {{ font-size:10pt; padding:4px 14px; }}
+    #famille:hover, #sousmenu:hover {{ border-color:{fort}; }}
+    #famille:checked, #sousmenu:checked {{ background:{accent}; color:#FFFFFF; }}
     """)

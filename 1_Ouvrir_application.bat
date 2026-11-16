@@ -15,7 +15,7 @@ if not defined PYTHON goto sans_python
 echo Premier lancement : installation en cours, 5 a 10 minutes (environ 1 Go).
 echo Ne fermez pas cette fenetre : l'application s'ouvrira toute seule.
 %PYTHON% -m venv .venv || goto erreur
-".venv\Scripts\python.exe" -m pip install --quiet --disable-pip-version-check -r requirements.txt || goto erreur
+".venv\Scripts\python.exe" -m pip install --quiet --disable-pip-version-check -r requirements.lock || goto erreur
 echo ok> ".venv\installation_ok.txt"
 
 :lancer
