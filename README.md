@@ -5,6 +5,8 @@ répond en une phrase : au pire des cas, en statistique, ou pas du tout, avec la
 
 [![Ouvrir dans le navigateur](https://img.shields.io/badge/Ouvrir%20dans%20le%20navigateur-5C4B99?style=for-the-badge)](https://theo33-oss.github.io/chaines-de-cotes-1D/)
 [![Télécharger pour Windows](https://img.shields.io/badge/T%C3%A9l%C3%A9charger%20pour%20Windows-3D246C?style=for-the-badge)](https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest)
+[![Tests](https://github.com/theo33-oss/chaines-de-cotes-1D/actions/workflows/tests.yml/badge.svg)](https://github.com/theo33-oss/chaines-de-cotes-1D/actions/workflows/tests.yml)
+[![Dernière version](https://img.shields.io/github/v/release/theo33-oss/chaines-de-cotes-1D?label=derni%C3%A8re%20version&color=3D246C)](https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest)
 [![Licence PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/licence-PolyForm%20Noncommercial%201.0.0-3D246C)](LICENSE)
 
 ![Page d'accueil : trois actions pour démarrer](docs/captures/accueil.jpg)
@@ -108,7 +110,7 @@ main :
 ```bash
 cd application
 python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.lock pytest pytest-qt
+.venv\Scripts\python -m pip install -r requirements.lock pytest pytest-qt pypdf
 .venv\Scripts\python main.py              # application de bureau
 .venv\Scripts\python -m pytest -q tests   # tests
 ```
