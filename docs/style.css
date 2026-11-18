@@ -308,3 +308,49 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
 .ia-panneau a { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 12px; border: 1px solid var(--bord-fort); border-radius: 4px; text-decoration: none; color: var(--encre); background: var(--carte); }
 .ia-panneau[hidden] { display: none; }
 @media print { .ia-flottant { display: none !important; } }
+/* téléphone : en-tête compact, menus qui défilent sur une ligne, boutons flottants plus petits */
+@media (max-width: 640px) {
+  h1 { font-size: 1.45rem; margin: 12px 0 2px; }
+  header .intro { font-size: .78rem; line-height: 1.35; margin-bottom: 4px; }
+  header .telecharger { display: none; } /* le lien reste dans le pied de page */
+  .ia-flottant { left: 10px; bottom: 10px; }
+  .ia-bouton { min-height: 34px; padding: 4px 12px; font-size: .85rem; }
+  .toast { bottom: 58px; } /* au-dessus du bouton « Demander à une IA » */
+  html { scroll-padding-top: 100px; }
+  #menu .principal, #menu .sous { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 4px; }
+  #menu .principal button, #menu .sous button { white-space: nowrap; flex: 0 0 auto; }
+  #menu .principal .theme { margin-left: 0; }
+  #menu .principal.fondu-droite, #menu .sous.fondu-droite { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+  #menu .principal.fondu-gauche, #menu .sous.fondu-gauche { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
+  #menu .principal.fondu-gauche.fondu-droite, #menu .sous.fondu-gauche.fondu-droite { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
+  details.bandeau > summary { flex-wrap: nowrap; }
+  details.bandeau > summary h2 { display: block; flex: 1 1 0; min-width: 0; font-size: 1.05rem; }
+  details.bandeau > summary .resume { flex: 0 1 auto; font-size: .78rem; }
+  button.poignee { display: none; } /* le schéma reste dessus ou dessous : le bouton « Schéma » suffit */
+}
+/* au doigt : zones tactiles d'au moins 40 px */
+@media (pointer: coarse) {
+  button.petit { min-height: 40px; }
+  #menu .sous button { min-height: 40px; }
+  input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; }
+  label.case input { width: 22px; height: 22px; }
+  label.case { min-height: 40px; }
+  footer a { display: inline-block; padding: 6px 2px; }
+}
+/* impression : papier blanc, sans barres ni boutons, blocs non coupés */
+@media print {
+  :root, :root[data-theme="dark"] {
+    color-scheme: light;
+    --fond: #FFFFFF; --carte: #FFFFFF; --encre: #000000; --bord: #999999; --bord-fort: #555555; --discret: #444444;
+    --alt: #F3F3F3; --figure-fond: #FFFFFF; --ombre: none;
+  }
+  body { background: #fff; color: #000; padding: 0; }
+  #barre, header .telecharger, footer, #guide, .ia-flottant, .toast, .barre-image, .tableau > .copier, #onglets, button.poignee,
+  #calculer, #ajouter, #annuler, #retablir, #disposition, #export-txt, #export-excel, .actions { display: none !important; }
+  details.bandeau > summary { background: #fff; color: #000; border-bottom: 2px solid #000; }
+  #zone-maillons { display: block; }
+  #zone-maillons #apercu-section { position: static; max-height: none; overflow: visible; }
+  details.bandeau, .figure, .tableau, .message, tr { break-inside: avoid; }
+  .defile { overflow: visible; }
+  @page { margin: 12mm; }
+}

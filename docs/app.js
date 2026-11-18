@@ -64,6 +64,21 @@ const App = (() => {
     document.dispatchEvent(new Event("themechange")); // les pages qui dessinent seules (silhouettes du schéma) se redessinent
   }
 
+  // Impression : le papier est blanc ; si le thème sombre est affiché, tout (figures comprises) est redessiné en clair le temps de l'impression.
+  let themeAvantImpression = null;
+  window.addEventListener("beforeprint", () => {
+    if (!sombre()) return;
+    themeAvantImpression = "dark";
+    document.documentElement.dataset.theme = "light";
+    for (const d of document.querySelectorAll(".js-plotly-plot")) if (d._figure) tracer(d, d._figure);
+  });
+  window.addEventListener("afterprint", () => {
+    if (!themeAvantImpression) return;
+    document.documentElement.dataset.theme = themeAvantImpression;
+    themeAvantImpression = null;
+    for (const d of document.querySelectorAll(".js-plotly-plot")) if (d._figure) tracer(d, d._figure);
+  });
+
   const ICONES = {
     accueil: '<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',
     analyser: '<path d="M3 7v10M21 7v10M3 12h18M7 9l-4 3 4 3M17 9l4 3-4 3"/>',
@@ -497,6 +512,18 @@ const App = (() => {
     for (const p of pages) if (p.dans && p.afficher && $("page-" + p.id).open) p.afficher();
   }
 
+  // Menu qui défile (téléphone) : un fondu sur le bord signale ce qui dépasse, et l'entrée courante se centre.
+  function indiceDefilement(barre) {
+    const maj = () => {
+      barre.classList.toggle("fondu-gauche", barre.scrollLeft > 4);
+      barre.classList.toggle("fondu-droite", barre.scrollLeft + barre.clientWidth < barre.scrollWidth - 4);
+    };
+    if (!barre._indice) { barre._indice = true; barre.addEventListener("scroll", maj, { passive: true }); window.addEventListener("resize", maj); }
+    const a = barre.querySelector('[aria-current="true"]');
+    if (a && barre.scrollWidth > barre.clientWidth) barre.scrollLeft = Math.max(0, a.offsetLeft - (barre.clientWidth - a.offsetWidth) / 2);
+    maj();
+  }
+
   // Barre fixe en haut : Accueil, Étude, Mécanisme, Aides ; dessous, le sommaire de l'étude ou la liste des aides.
   function majMenu() {
     const h = haut(courante);
@@ -518,6 +545,8 @@ const App = (() => {
     } else if (h === "aides") {
       sous.replaceChildren(...AIDES.map((id) => bouton(pages.find((p) => p.id === id).titre, () => { afficherPage(id); window.scrollTo(0, 0); }, id === courante)));
     }
+    indiceDefilement(document.querySelector("#menu .principal"));
+    if (!sous.hidden) indiceDefilement(sous);
   }
 
   function menu() {
