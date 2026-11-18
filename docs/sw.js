@@ -4,7 +4,7 @@
 // Bibliothèques des CDN (Pyodide, Plotly, html-to-image, roue plotly) : copie gardée d'abord, d'une version du site à l'autre.
 // Le numéro change avec construire_web.py (empreinte du zip, de app.js et de style.css) : les anciennes copies sont effacées.
 
-const VERSION = "chainecotes-1.0.0-7e725b4d";
+const VERSION = "chainecotes-1.0.0-bcfb6df6";
 const CDN_CACHE = "chainecotes-cdn"; // adresses à version figée : gardées d'une version du site à l'autre
 const CDN = ["https://cdn.jsdelivr.net/", "https://cdnjs.cloudflare.com/", "https://files.pythonhosted.org/", "https://pypi.org/"];
 
@@ -34,7 +34,8 @@ self.addEventListener("fetch", (e) => {
       const cache = await caches.open(VERSION);
       try {
         const rep = await fetch(req);
-        if (rep.ok) cache.put(req, rep.clone());
+        // ?verif= et ?maj= sont à usage unique (horodatage) : les garder ferait grossir le cache à chaque visite
+        if (rep.ok && !/[?&](verif|maj)=/.test(url)) cache.put(req, rep.clone());
         return rep;
       } catch (err) {
         // hors ligne : la copie gardée, sans tenir compte de ?maj= ou ?verif= ; le zip garde son ?v= (son empreinte)

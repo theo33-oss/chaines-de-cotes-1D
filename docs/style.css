@@ -270,13 +270,13 @@ button.retour-ok { background: var(--ok-fond) !important; color: var(--ok-texte)
 button.retour-ko { background: var(--err-fond) !important; color: var(--err-texte) !important; border-color: var(--err-texte) !important; animation: secousse .4s; }
 @keyframes rebond { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 @keyframes secousse { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-.toast { position: fixed; left: 50%; bottom: 24px; z-index: 90; transform: translate(-50%, 12px); max-width: min(90vw, 460px); padding: 10px 18px; border-radius: 8px; border: 1px solid var(--bord-fort); background: var(--carte); color: var(--encre); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; }
-.toast.visible { opacity: 1; transform: translate(-50%, 0); }
-.toast.succes { background: var(--ok-fond); color: var(--ok-texte); border-color: var(--ok-texte); }
-.toast.erreur { background: var(--err-fond); color: var(--err-texte); border-color: var(--err-texte); }
+.message-flottant { position: fixed; left: 50%; bottom: 24px; z-index: 90; transform: translate(-50%, 12px); max-width: min(90vw, 460px); padding: 10px 18px; border-radius: 8px; border: 1px solid var(--bord-fort); background: var(--carte); color: var(--encre); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; }
+.message-flottant.visible { opacity: 1; transform: translate(-50%, 0); }
+.message-flottant.succes { background: var(--ok-fond); color: var(--ok-texte); border-color: var(--ok-texte); }
+.message-flottant.erreur { background: var(--err-fond); color: var(--err-texte); border-color: var(--err-texte); }
 @media (prefers-reduced-motion: reduce) {
   button.retour-ok, button.retour-ko { animation: none; }
-  .toast { transition: none; }
+  .message-flottant { transition: none; }
 }
 /* « Copier l'image » : barre au-dessus des blocs, cadre de la capture hors écran */
 .barre-image { display: flex; justify-content: flex-end; margin: 4px 0 2px; }
@@ -315,7 +315,7 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
   header .telecharger { display: none; } /* le lien reste dans le pied de page */
   .ia-flottant { left: 10px; bottom: 10px; }
   .ia-bouton { min-height: 34px; padding: 4px 12px; font-size: .85rem; }
-  .toast { bottom: 58px; } /* au-dessus du bouton « Demander à une IA » */
+  .message-flottant { bottom: 58px; } /* au-dessus du bouton « Demander à une IA » */
   html { scroll-padding-top: 100px; }
   #menu .principal, #menu .sous { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 4px; }
   #menu .principal button, #menu .sous button { white-space: nowrap; flex: 0 0 auto; }
@@ -345,7 +345,7 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
     --alt: #F3F3F3; --figure-fond: #FFFFFF; --ombre: none;
   }
   body { background: #fff; color: #000; padding: 0; }
-  #barre, header .telecharger, footer, #guide, .ia-flottant, .toast, .barre-image, .tableau > .copier, #onglets, button.poignee,
+  #barre, header .telecharger, footer, #guide, .ia-flottant, .message-flottant, .barre-image, .tableau > .copier, #onglets, button.poignee,
   #calculer, #ajouter, #annuler, #retablir, #disposition, #export-txt, #export-excel, .actions { display: none !important; }
   details.bandeau > summary { background: #fff; color: #000; border-bottom: 2px solid #000; }
   #zone-maillons { display: block; }

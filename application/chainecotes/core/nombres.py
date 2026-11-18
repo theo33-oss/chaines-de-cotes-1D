@@ -7,7 +7,9 @@ import math
 import re
 
 _HAUT = str.maketrans("0123456789+-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻")
+_BAS = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻", "0123456789+-")
 _EXPOSANT = re.compile(r"[eE]([+-]?)0*(\d+)")
+_EXPOSANT_ECRIT = re.compile(r"·10([⁺⁻]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)")
 
 
 def exposants(texte: str) -> str:
@@ -20,6 +22,14 @@ def exposants(texte: str) -> str:
         return "·10" + (signe + m.group(2)).translate(_HAUT)
 
     return _EXPOSANT.sub(_remplacer, texte)
+
+
+def versTableur(texte: str) -> str:
+    """Remet les exposants écrits « ·10⁵ » en « e5 », que le tableur lit comme un nombre (« 1,2·10⁵ » y serait du texte).
+
+    Entrée : texte (cases d'un tableau copié pour Excel). Sortie : texte, inchangé s'il n'y a pas d'exposant.
+    """
+    return _EXPOSANT_ECRIT.sub(lambda m: "e" + m.group(1).translate(_BAS), texte)
 
 
 def fr(v: float, fmt: str = ".4f") -> str:

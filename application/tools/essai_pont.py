@@ -153,3 +153,9 @@ assert cm["maillons"][-1]["sens"] == "" and cm["maillons"][-1]["sens2"] == "+" a
 assert "erreur" in json.loads(pont.cfFusionner(json.dumps({"chaines": [ch1]})))
 print("saisie invalide ->", vide["erreur"])
 print("fichier invalide ->", mauvais["erreur"])
+# le texte de l'étude reprend le dernier calcul (mêmes chiffres qu'à l'écran, pas de second Monte-Carlo)
+exemple = pont.charger("reducteur_jeu_axial")
+pont.calculer(exemple)
+dernier = pont._dernier["bundle"]
+assert pont._dernier["cle"] == exemple and json.loads(pont.texteEtude(exemple))["texte"].count("Monte-Carlo (100000 tirages") == 1
+assert pont._dernier["bundle"] is dernier, "le texte de l'étude doit réutiliser le dernier calcul"

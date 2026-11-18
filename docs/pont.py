@@ -272,6 +272,18 @@ def _sensibilite(bundle: dict) -> dict:
     return sortie
 
 
+_dernier: dict = {"cle": None, "bundle": None}  # dernier calcul : le texte de l'étude le reprend au lieu de tout refaire
+
+
+def _bundle(texte: str, garderCartouche: bool = False) -> dict:
+    """Résultat du calcul de l'étude (JSON) : celui du dernier « Calculer » s'il porte sur la même saisie, sinon recalculé."""
+    if _dernier["cle"] == texte and _dernier["bundle"] is not None:
+        return _dernier["bundle"]
+    bundle = calculerChaine(_nettoyer(json.loads(texte), garderCartouche=garderCartouche), n=N_TIRAGES)
+    _dernier.update(cle=texte, bundle=bundle)
+    return bundle
+
+
 def calculer(texte: str) -> str:
     """Calcul complet d'un problème (JSON) : verdict, conseil, tableaux, figures Plotly (JSON), explications.
 
@@ -284,6 +296,7 @@ def calculer(texte: str) -> str:
         if "erreur" in ap:
             return json.dumps({"erreur": ap["erreur"]})
         bundle = calculerChaine(probleme, n=N_TIRAGES)
+        _dernier.update(cle=texte, bundle=bundle)
         conclusion = conclusionEtude(bundle)
         graphiquesVoulus = [
             ("comparaison", "Comparaison des méthodes", graphiques.figureComparaison),
@@ -826,9 +839,7 @@ def _texteEtude(texte: str, ia: bool) -> str:
     from chainecotes.services.export_texte import texteEtude, texteIA
 
     try:
-        probleme = _nettoyer(json.loads(texte), garderCartouche=True)
-        bundle = calculerChaine(probleme)
-        return json.dumps({"texte": (texteIA if ia else texteEtude)(probleme, bundle)}, allow_nan=False)
+        return json.dumps({"texte": (texteIA if ia else texteEtude)(_bundle(texte))}, allow_nan=False)
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:

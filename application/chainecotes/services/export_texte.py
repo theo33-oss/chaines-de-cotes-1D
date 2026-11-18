@@ -28,10 +28,10 @@ def _limite(v: float) -> str:
     return "aucune" if not math.isfinite(v) else f"{_mm(v)} mm"
 
 
-def texteEtude(probleme: dict, bundle: dict) -> str:
+def texteEtude(bundle: dict) -> str:
     """Étude complète en texte simple (données, résultats, démarche).
 
-    Entrées : probleme (dict condition, reglages, maillons), bundle (sortie de calculerChaine).
+    Entrée : bundle (sortie de calculerChaine : il contient déjà le problème et ses résultats).
     Sortie : texte (lignes séparées par « \n »).
     """
     res, v = bundle["res"], bundle["verdicts"]
@@ -82,9 +82,9 @@ def texteEtude(probleme: dict, bundle: dict) -> str:
     return "\n".join(L) + "\n"
 
 
-def texteIA(probleme: dict, bundle: dict) -> str:
+def texteIA(bundle: dict) -> str:
     """Consigne pour une IA suivie de l'étude complète (à coller dans une conversation).
 
-    Entrées : probleme, bundle (comme texteEtude). Sortie : texte.
+    Entrée : bundle (comme texteEtude). Sortie : texte.
     """
-    return f"{CONSIGNE_IA}\n\n--- ÉTUDE ---\n{texteEtude(probleme, bundle)}--- FIN DE L'ÉTUDE ---\n"
+    return f"{CONSIGNE_IA}\n\n--- ÉTUDE ---\n{texteEtude(bundle)}--- FIN DE L'ÉTUDE ---\n"

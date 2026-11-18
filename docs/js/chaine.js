@@ -834,18 +834,22 @@
       place = localStorage.getItem("chainecotes.schemaPlace") || (localStorage.getItem("chainecotes.schemaDessous") === "1" ? "dessous" : "droite");
     } catch (e) { /* sans mémoire */ }
     if (!PLACES[place]) place = "droite";
+    // sous 1200 px, « gauche » et « droite » n'existent pas : la page affiche le schéma dessous, et le bouton le dit
+    const permises = () => (window.innerWidth >= 1200 ? NOMS : ["dessus", "dessous"]);
+    const courante = () => (permises().includes(place) ? place : "dessous");
     const dispo = () => {
       for (const p of NOMS) $("zone-maillons").classList.toggle(p, p === place);
-      $("disposition").textContent = "Schéma : " + PLACES[place];
+      $("disposition").textContent = "Schéma : " + PLACES[courante()];
     };
+    window.addEventListener("resize", dispo);
     const poser = (p, annonce) => {
       place = p;
       try { localStorage.setItem("chainecotes.schemaPlace", place); } catch (e) { /* sans mémoire */ }
       dispo();
       apercu();
-      if (annonce) App.toast("Schéma placé " + PLACES[place] + ".");
+      if (annonce) App.messageFlottant("Schéma placé " + PLACES[courante()] + ".");
     };
-    const suivante = () => NOMS[(NOMS.indexOf(place) + 1) % NOMS.length];
+    const suivante = () => permises()[(permises().indexOf(courante()) + 1) % permises().length];
     dispo();
     // poignée : on tire le schéma vers un bord du tableau des maillons ; un cadre pointillé montre la place visée
     const poignee = Object.assign(document.createElement("button"), { type: "button", className: "poignee", textContent: "⠿" });
@@ -855,8 +859,7 @@
     const cibleDepot = (x, y) => { // bord le plus proche du pointeur, en fraction de la zone ; sous 1200 px, seulement dessus ou dessous
       const r = $("zone-maillons").getBoundingClientRect();
       const d = { gauche: (x - r.left) / r.width, droite: (r.right - x) / r.width, dessus: (y - r.top) / r.height, dessous: (r.bottom - y) / r.height };
-      const permis = window.innerWidth >= 1200 ? NOMS : ["dessus", "dessous"];
-      return permis.reduce((a, b) => (d[b] < d[a] ? b : a));
+      return permises().reduce((a, b) => (d[b] < d[a] ? b : a));
     };
     const cadreDepot = (cible) => {
       const r = $("zone-maillons").getBoundingClientRect();
@@ -891,7 +894,7 @@
       if (!glisse) return;
       const { cible, bouge } = glisse;
       finGlisse();
-      if (bouge && cible !== place) poser(cible, true);
+      if (bouge && cible !== courante()) poser(cible, true);
     });
     poignee.addEventListener("pointercancel", finGlisse);
     poignee.addEventListener("keydown", (e) => { if (e.key === "Escape" && glisse) finGlisse(); });
@@ -1019,9 +1022,10 @@
     const iaFermer = () => { iaPanneau.hidden = true; iaBouton.setAttribute("aria-expanded", "false"); };
     iaBouton.addEventListener("click", async () => {
       iaBouton.disabled = true;
-      await new Promise((r) => setTimeout(r, 30)); // laisse afficher l'état avant le calcul
+      // le texte se prépare après le clic (30 ms pour afficher l'état) mais la copie est demandée dans le clic même
+      const texte = new Promise((r) => setTimeout(r, 30)).then(() => texteDeLEtude(true));
       let ok = false, erreur = "";
-      try { ok = await App.copier(texteDeLEtude(true)); } catch (e) { erreur = e.message; }
+      try { ok = await App.copierDiffere(texte); } catch (e) { erreur = e.message; }
       iaBouton.disabled = false;
       App.confirmer(null, ok, "Étude copiée", erreur ? "Impossible : " + erreur : "Copie impossible", "Étude copiée : collez-la dans l'IA (Ctrl+V).");
       iaPanneau.hidden = !ok;

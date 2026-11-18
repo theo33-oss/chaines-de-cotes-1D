@@ -54,6 +54,7 @@ from chainecotes.core.donnees import ecrireSansPerte
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.formules import texVersHtml
 from chainecotes.core.lexique import aideTerme
+from chainecotes.core.nombres import versTableur
 from chainecotes.plots._common import FOND_FIGURE, TEXTE
 
 _DOSSIER_FIGURES = Path(tempfile.mkdtemp(prefix="chaines_cotes_"))
@@ -132,22 +133,22 @@ def _repeindre(w: QWidget) -> None:
     w.update()
 
 
-def toast(fenetre: QWidget, texte: str, niveau: str = "succes") -> None:
+def messageFlottant(fenetre: QWidget, texte: str, niveau: str = "succes") -> None:
     """Message flottant en bas de la fenêtre (un seul, réutilisé), comme le message du site : il disparaît tout seul.
 
     Entrées : fenetre (fenêtre principale), texte, niveau (« succes » ou « erreur » : plus longtemps à l'écran).
     """
-    t = getattr(fenetre, "_toast", None)
+    t = getattr(fenetre, "_messageFlottant", None)
     if t is None:
         t = QLabel(fenetre)
-        t.setObjectName("toast")
+        t.setObjectName("messageFlottant")
         t.setAlignment(Qt.AlignmentFlag.AlignCenter)
         t.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         t.setAccessibleName("Message")
         t.minuterie = QTimer(t)
         t.minuterie.setSingleShot(True)
         t.minuterie.timeout.connect(t.hide)
-        fenetre._toast = t
+        fenetre._messageFlottant = t
     t.setProperty("niveau", niveau)
     _repeindre(t)
     t.setText(texte)
@@ -163,6 +164,7 @@ def retour(bouton: QPushButton, ok: bool, texteOk: str, texteKo: str = "Impossib
     """Le bouton passe au vert avec une coche (au rouge avec une croix si ko) un instant, puis reprend son texte."""
     if bouton.property("libelle") is None:
         bouton.setProperty("libelle", bouton.text())
+        bouton.setProperty("largeurMini", bouton.minimumWidth())  # rendue à la fin
         bouton.setMinimumWidth(bouton.width())  # la largeur ne saute pas quand le texte change
     bouton.setText(("✓ " + texteOk) if ok else ("✗ " + texteKo))
     bouton.setProperty("retour", "ok" if ok else "ko")
@@ -180,7 +182,8 @@ def _finRetour(bouton: QPushButton) -> None:
     bouton.setText(str(bouton.property("libelle")))
     bouton.setProperty("libelle", None)
     bouton.setProperty("retour", None)
-    bouton.setMinimumWidth(0)
+    bouton.setMinimumWidth(int(bouton.property("largeurMini") or 0))
+    bouton.setProperty("largeurMini", None)
     _repeindre(bouton)
 
 
@@ -189,7 +192,7 @@ def confirmer(fenetre: QWidget, bouton: QPushButton | None, ok: bool, texteOk: s
     """Retour complet d'une action : le bouton (facultatif) et un message flottant."""
     if bouton is not None:
         retour(bouton, ok, texteOk, texteKo)
-    toast(fenetre, (message or texteOk) if ok else (message or texteKo), "succes" if ok else "erreur")
+    messageFlottant(fenetre, (message or texteOk) if ok else (message or texteKo), "succes" if ok else "erreur")
 
 
 def _imageTableau(table: QTableWidget) -> Any:
@@ -331,7 +334,7 @@ def texteTableau(table: QTableWidget, selection: bool = False) -> str:
     cases = [[(table.item(i, j).text() if table.item(i, j) else "") for j in colonnes] for i in lignes]
     if avecTitres:
         cases.insert(0, [(table.horizontalHeaderItem(j).text() if table.horizontalHeaderItem(j) else "") for j in colonnes])
-    return "\n".join("\t".join(ligne) for ligne in cases)
+    return versTableur("\n".join("\t".join(ligne) for ligne in cases))  # pour Excel : « 1,2e5 », pas « 1,2·10⁵ » (du texte)
 
 
 def _installerCopie(table: QTableWidget) -> None:
@@ -339,7 +342,7 @@ def _installerCopie(table: QTableWidget) -> None:
     action = QAction("Copier le tableau", table)
     def copier() -> None:
         QApplication.clipboard().setText(texteTableau(table))
-        toast(table.window(), "Tableau copié : collez-le dans Excel.")
+        messageFlottant(table.window(), "Tableau copié : collez-le dans Excel.")
 
     action.triggered.connect(copier)
     table.addAction(action)
@@ -1107,7 +1110,7 @@ def appliquerTheme(app: QApplication) -> None:
     #famille:checked, #sousmenu:checked {{ background:{accent}; color:#FFFFFF; }}
     #bouton[retour="ok"], #primaire[retour="ok"], #petit[retour="ok"] {{ background:{ok[0]}; color:{ok[1]}; border:1px solid {ok[1]}; }}
     #bouton[retour="ko"], #primaire[retour="ko"], #petit[retour="ko"] {{ background:{ko[0]}; color:{ko[1]}; border:1px solid {ko[1]}; }}
-    #toast {{ border-radius:8px; padding:9px 18px; font-weight:bold; border:1px solid {fort}; }}
-    #toast[niveau="succes"] {{ background:{ok[0]}; color:{ok[1]}; border-color:{ok[1]}; }}
-    #toast[niveau="erreur"] {{ background:{ko[0]}; color:{ko[1]}; border-color:{ko[1]}; }}
+    #messageFlottant {{ border-radius:8px; padding:9px 18px; font-weight:bold; border:1px solid {fort}; }}
+    #messageFlottant[niveau="succes"] {{ background:{ok[0]}; color:{ok[1]}; border-color:{ok[1]}; }}
+    #messageFlottant[niveau="erreur"] {{ background:{ko[0]}; color:{ko[1]}; border-color:{ko[1]}; }}
     """)

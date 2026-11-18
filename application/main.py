@@ -287,6 +287,7 @@ class Fenetre(QMainWindow):
     def basculerTheme(self, *_: object) -> None:
         """Thème clair ↔ sombre (Ctrl+T) : même choix que la case de l'accueil et que le bouton du site."""
         state.v["sombre"] = not state.v.get("sombre")
+        self.themeForce = False  # un choix fait à la main est un vrai choix : il est retenu
         self.actionSombre.setChecked(bool(state.v["sombre"]))
         widgets.appliquerTheme(QApplication.instance())
         self._texte_theme()
@@ -425,7 +426,7 @@ class Fenetre(QMainWindow):
             return False
         state.etudeEnregistree(chemin)
         self._effacerReprise()
-        widgets.toast(self, f"Étude enregistrée : {Path(chemin).name}")
+        widgets.messageFlottant(self, f"Étude enregistrée : {Path(chemin).name}")
         self._surveiller()
         return True
 
@@ -436,6 +437,8 @@ class Fenetre(QMainWindow):
         if self.reglages is not None:
             self.reglages.setValue("geometrie", self.saveGeometry())
             for cle in PREFERENCES:
+                if cle == "sombre" and getattr(self, "themeForce", False):  # CHAINECOTES_THEME : valable pour cette séance seulement
+                    continue
                 self.reglages.setValue(cle, bool(state.v.get(cle)))
         self._effacerReprise()  # fermeture voulue (enregistrée ou abandonnée) : rien à reprendre
         evenement.accept()
@@ -606,6 +609,7 @@ def main() -> int:
     widgets.appliquerTheme(app)
     fenetre = Fenetre()
     fenetre.reglages = reglages
+    fenetre.themeForce = forcer in ("clair", "sombre")
     fenetre.fichierReprise = procedes_atelier.cheminParDefaut().with_name("derniere_etude.json")
     if reglages.value("geometrie") is not None:
         fenetre.restoreGeometry(reglages.value("geometrie"))

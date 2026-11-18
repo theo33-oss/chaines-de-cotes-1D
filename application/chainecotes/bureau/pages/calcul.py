@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from chainecotes.bureau import editeur, etude, ia, state, tache
-from chainecotes.bureau.widgets import COULEURS_VERDICT, Page, Zone, toast
+from chainecotes.bureau.widgets import COULEURS_VERDICT, Page, Zone, messageFlottant
 from chainecotes.core.chaine import TOL_COMPARAISON, capabilitesMaillons, libelleVerdict, sansLimite
 from chainecotes.core.derive import deriveSerie
 from chainecotes.core.errors import ErreurChaine
@@ -142,7 +142,7 @@ class PageCalcul(Page):
     def _demanderAUneIA(self, bouton) -> None:
         """Copie la consigne et l'étude du dernier calcul, puis propose d'ouvrir Claude ou ChatGPT."""
         bundle = state.resultat()
-        ia.demanderAUneIA(self.fenetre, bouton, problemeAvecCartouche(bundle) if bundle else None, bundle)
+        ia.demanderAUneIA(self.fenetre, bouton, bundle)
 
     def _calculer(self) -> None:
         oublierDossiers()
@@ -166,7 +166,7 @@ class PageCalcul(Page):
             state.definirResultat(bundle)
             state.ajouterHistorique(bundle, n, graine)
             self.tout()
-            toast(self.fenetre, "Calcul terminé.")
+            messageFlottant(self.fenetre, "Calcul terminé.")
 
         def echec(e: Exception) -> None:
             state.effacerResultat()
@@ -743,7 +743,7 @@ class PageCalcul(Page):
         self._enregistrerOuvrir(z, "onglet")
         z.sousTitre("Texte de l'étude")
         z.legende("Un fichier texte lisible dans le Bloc-notes : les données, les résultats, la conclusion et la démarche.")
-        z.telecharger("Bloc-notes (.txt)", lambda: texteEtude(problemeAvecCartouche(bundle), bundle), "etude.txt")
+        z.telecharger("Bloc-notes (.txt)", lambda: texteEtude(bundle), "etude.txt")
         z.sousTitre("Exporter en Excel pour valider le calcul")
         z.legende(
             "Un seul classeur : la feuille de formules (le calcul refait dans Excel et comparé à l'application) et "

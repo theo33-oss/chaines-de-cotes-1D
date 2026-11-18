@@ -91,6 +91,10 @@ const App = (() => {
   };
   const icone = (id) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONES[id]}</svg>`;
 
+  // Exposants écrits « ·10⁵ » → « e5 » : Excel lit un nombre, pas du texte (miroir de versTableur dans core/nombres.py).
+  const HAUT = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const versTableur = (t) => t.replace(/·10([⁺⁻]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (m, e) => "e" + [...e].map((c) => (HAUT.includes(c) ? HAUT.indexOf(c) : c === "⁻" ? "-" : "+")).join(""));
+
   // Copie dans le presse-papiers ; vrai si c'est fait.
   async function copier(texte) {
     try { await navigator.clipboard.writeText(texte); return true; } catch (e) { /* page non sécurisée ou refus : copie de secours */ }
@@ -102,24 +106,38 @@ const App = (() => {
     return ok;
   }
 
+  // Copie d'un texte qui demande du calcul : le presse-papiers reçoit la promesse tout de suite (dans le clic), sinon le
+  // navigateur peut refuser une écriture faite plusieurs secondes après le geste. Lève l'erreur de la promesse si elle échoue.
+  async function copierDiffere(promesseTexte) {
+    promesseTexte.catch(() => {}); // l'erreur est traitée plus bas, pas comme « rejet non géré »
+    try {
+      if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+        const blob = promesseTexte.then((t) => new Blob([t], { type: "text/plain" }));
+        await navigator.clipboard.write([new ClipboardItem({ "text/plain": blob })]);
+        return true;
+      }
+    } catch (e) { /* refus ou promesse en erreur : copie classique, qui relève l'erreur du calcul s'il y en a une */ }
+    return copier(await promesseTexte);
+  }
+
   // ---------- retour visible des boutons ----------
 
   // Message flottant en bas de l'écran (un seul, réutilisé) ; « erreur » reste plus longtemps.
-  let minuteToast = 0;
-  function toast(texte, niveau = "succes") {
-    let t = $("toast");
+  let minuterieMessage = 0;
+  function messageFlottant(texte, niveau = "succes") {
+    let t = $("message-flottant");
     if (!t) {
-      t = Object.assign(document.createElement("div"), { id: "toast", className: "toast" });
+      t = Object.assign(document.createElement("div"), { id: "message-flottant", className: "message-flottant" });
       t.setAttribute("role", "status");
       t.setAttribute("aria-live", "polite");
       document.body.append(t);
     }
-    clearTimeout(minuteToast);
+    clearTimeout(minuterieMessage);
     t.textContent = texte;
-    t.className = "toast " + niveau;
+    t.className = "message-flottant " + niveau;
     void t.offsetWidth; // relance l'animation si un message était déjà affiché
     t.classList.add("visible");
-    minuteToast = setTimeout(() => t.classList.remove("visible"), niveau === "erreur" ? 3500 : 2200);
+    minuterieMessage = setTimeout(() => t.classList.remove("visible"), niveau === "erreur" ? 3500 : 2200);
   }
 
   // Le bouton devient vert avec une coche (rouge avec une croix si ko) pendant 2 s, puis reprend son texte.
@@ -142,7 +160,7 @@ const App = (() => {
   // Bouton (facultatif) + message flottant : le retour habituel d'une action.
   function confirmer(bouton, ok, texteOk, texteKo, message) {
     retour(bouton, ok, texteOk, texteKo);
-    toast(message || (ok ? texteOk : texteKo), ok ? "succes" : "erreur");
+    messageFlottant(message || (ok ? texteOk : texteKo), ok ? "succes" : "erreur");
   }
 
   // ---------- copie d'un bloc en image (presse-papiers) ----------
@@ -328,7 +346,7 @@ const App = (() => {
     const b = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit copier", textContent: "Copier le tableau" });
     b.dataset.aide = "Copie le tableau avec des tabulations : à coller directement dans Excel.";
     b.addEventListener("click", async () => {
-      const ok = await copier([t.entetes, ...t.lignes].map((l) => l.join("\t")).join("\n"));
+      const ok = await copier(versTableur([t.entetes, ...t.lignes].map((l) => l.join("\t")).join("\n")));
       confirmer(b, ok, "Copié", "Copie impossible", ok ? "Tableau copié : collez-le dans Excel." : "Copie refusée par le navigateur.");
     });
     const bloc = document.createElement("div");
@@ -429,7 +447,7 @@ const App = (() => {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast("Fichier enregistré : " + nomFichier);
+    messageFlottant("Fichier enregistré : " + nomFichier);
   }
 
   // Nombre venu d'une table JSON écrit à la française (« 0,8 ») ; case absente → vide.
@@ -637,13 +655,13 @@ const App = (() => {
     try { return await travail(); } finally { mesures[nom] = Math.round(performance.now() - t); }
   }
 
+  // Version exacte de plotly : le service worker garde l'index PyPI et la roue sans jamais les périmer (hors ligne possible).
+  const PLOTLY = "6.9.0";
+
   // Remplit le cache du navigateur avec la roue plotly de PyPI pendant que Python se charge : micropip la trouvera déjà là.
   async function prechargerPlotly() {
     try {
-      const releases = (await (await fetch("https://pypi.org/pypi/plotly/json")).json()).releases;
-      const v = Object.keys(releases).filter((x) => /^6\.\d+\.\d+$/.test(x))
-        .sort((a, b) => a.split(".").map(Number).reduce((r, n, i) => r || n - b.split(".")[i], 0)).pop();
-      const roue = v && releases[v].find((u) => u.packagetype === "bdist_wheel");
+      const roue = (await (await fetch(`https://pypi.org/pypi/plotly/${PLOTLY}/json`)).json()).urls.find((u) => u.packagetype === "bdist_wheel");
       if (roue) await (await fetch(roue.url)).arrayBuffer();
     } catch (e) { /* micropip la téléchargera lui-même */ }
   }
@@ -685,7 +703,7 @@ const App = (() => {
       await chronometre("micropip", () => pyodide.loadPackage(["micropip"]));
       await Promise.all([
         chronometre("numpy_scipy", () => pyodide.loadPackage(["numpy", "scipy"])),
-        chronometre("plotly", () => pyodide.pyimport("micropip").install("plotly>=5.20,<7")),
+        chronometre("plotly", () => pyodide.pyimport("micropip").install("plotly==" + PLOTLY)),
       ]);
       etat("Préparation 3/3 : tables ISO 286, matériaux et exemples…", 3);
       await chronometre("chainecotes", async () => {
@@ -716,6 +734,6 @@ const App = (() => {
     console.info("Chaînes de cotes prêt (ms)", mesures);
   }
 
-  const exposition = { $, mesures, actualiserSite, verifierMiseAJour, sombre, icone, copier, copierImage, boutonImage, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
+  const exposition = { $, mesures, actualiserSite, verifierMiseAJour, sombre, icone, copier, copierDiffere, copierImage, boutonImage, messageFlottant, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();

@@ -14,14 +14,14 @@ def etude():
 
 
 def test_texte_contient_donnees_resultats_demarche(etude):
-    t = texteEtude(*etude)
+    t = texteEtude(etude[1])
     for mot in ("DONNÉES", "RÉSULTATS", "CONCLUSION", "DÉMARCHE", "Cote_1", "Pire des cas", "Cpk", "Monte-Carlo"):
         assert mot in t
     assert "nan" not in t.lower().replace("monte-carlo", "")
 
 
 def test_texte_ia_encadre_l_etude(etude):
-    t = texteIA(*etude)
+    t = texteIA(etude[1])
     assert t.startswith(CONSIGNE_IA)
     assert "--- ÉTUDE ---" in t and t.rstrip().endswith("--- FIN DE L'ÉTUDE ---")
 
@@ -29,4 +29,4 @@ def test_texte_ia_encadre_l_etude(etude):
 @pytest.mark.parametrize("i", range(len(listeExemples())))
 def test_tous_les_exemples(i):
     p = chargerExemple(listeExemples()[i]["id"])
-    assert "RÉSULTATS" in texteEtude(p, calculerChaine(p, n=500))
+    assert "RÉSULTATS" in texteEtude(calculerChaine(p, n=500))
