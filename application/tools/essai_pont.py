@@ -109,6 +109,9 @@ assert dr["nTotal"] > 20 and dr["nOk"] == dr["nTotal"] and not dr["ecarts"], (dr
 assert "Essai &lt;b&gt;" in dr["html"] and "<b>" not in dr["html"].split("Essai", 1)[1][:30], "cartouche échappé"
 assert "plotly" in dr["html"].lower() and "<img" not in dr["html"].split("<figure>", 1)[1][:80]
 assert "erreur" in json.loads(pont.dossier(json.dumps({"condition": {}, "reglages": {}, "maillons": [{"sens": "+", "cote": "abc"}]})))
+te = json.loads(pont.texteEtude(pont.charger("reducteur_jeu_axial"))); assert "RÉSULTATS" in te["texte"], te
+ti = json.loads(pont.texteIA(pont.charger("reducteur_jeu_axial"))); assert ti["texte"].startswith("Tu es") and "--- ÉTUDE ---" in ti["texte"]
+assert "erreur" in json.loads(pont.texteEtude(json.dumps({"condition": {}, "reglages": {}, "maillons": [{"sens": "+", "cote": "abc"}]})))
 # une étude validée sur la page doit rester « valide » quand le bureau la rouvre (même empreinte)
 from chainecotes.services.cartouche import etatValidation  # noqa: E402
 

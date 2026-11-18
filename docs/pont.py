@@ -821,6 +821,30 @@ def dossier(texte: str) -> str:
     return json.dumps({"html": d["html"], "nOk": d["nOk"], "nTotal": d["nTotal"], "bilan": d["bilan"], "ecarts": ecarts}, allow_nan=False)
 
 
+def _texteEtude(texte: str, ia: bool) -> str:
+    """Texte de l'étude (JSON {"texte"} ou {"erreur"}) : bloc-notes si ia est faux, consigne + étude sinon."""
+    from chainecotes.services.export_texte import texteEtude, texteIA
+
+    try:
+        probleme = _nettoyer(json.loads(texte), garderCartouche=True)
+        bundle = calculerChaine(probleme)
+        return json.dumps({"texte": (texteIA if ia else texteEtude)(probleme, bundle)}, allow_nan=False)
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    except (ValueError, TypeError, KeyError) as e:
+        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+
+
+def texteEtude(texte: str) -> str:
+    """Étude complète en texte simple pour le bloc-notes (JSON {"texte"} ou {"erreur"})."""
+    return _texteEtude(texte, False)
+
+
+def texteIA(texte: str) -> str:
+    """Consigne pour une IA suivie de l'étude complète (JSON {"texte"} ou {"erreur"})."""
+    return _texteEtude(texte, True)
+
+
 # ---------- assistant de chaîne ----------
 
 
