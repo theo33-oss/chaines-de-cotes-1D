@@ -50,3 +50,24 @@ def test_la_feuille_de_style_colore_le_retour(qtbot):
     widgets.appliquerTheme(QApplication.instance())
     css = QApplication.instance().styleSheet()
     assert '#primaire[retour="ok"]' in css and '#toast[niveau="erreur"]' in css
+
+
+def test_copier_l_image_d_un_long_tableau(qtbot):
+    """Un tableau qui défile sur place est copié en entier (pas seulement la partie visible)."""
+    import pandas as pd
+    from PySide6.QtWidgets import QApplication
+
+    f = _fenetre(qtbot)
+    t = widgets.TableauDonnees(pd.DataFrame({"Maillon": [f"Cote_{i}" for i in range(40)], "Cpk": [1.5] * 40}))
+    f.setCentralWidget(t)
+    qtbot.wait(100)  # la fenêtre place le tableau avant la mesure
+    avant = t.size()
+    barre = widgets.barreImage(t, f)
+    qtbot.addWidget(barre)
+    bouton = barre.findChild(QPushButton)
+    assert bouton.text() == "Copier l'image" and bouton.objectName() == "petit"
+    bouton.click()
+    qtbot.waitUntil(lambda: not QApplication.clipboard().pixmap().isNull(), timeout=3000)
+    assert QApplication.clipboard().pixmap().height() > widgets.HAUTEUR_TABLEAU_MAX
+    assert bouton.property("retour") == "ok" and f._toast.text().startswith("Image copiée")
+    assert t.size() == avant  # le tableau reprend sa taille

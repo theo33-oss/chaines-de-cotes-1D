@@ -192,6 +192,51 @@ def confirmer(fenetre: QWidget, bouton: QPushButton | None, ok: bool, texteOk: s
     toast(fenetre, (message or texteOk) if ok else (message or texteKo), "succes" if ok else "erreur")
 
 
+def _imageTableau(table: QTableWidget) -> Any:
+    """Image du tableau entier, même s'il défile sur place : il est un instant agrandi à sa taille complète."""
+    avant = (table.size(), table.minimumSize(), table.maximumSize())
+    en = table.horizontalHeader()
+    largeur = sum(table.columnWidth(j) for j in range(table.columnCount())) + table.verticalHeader().width() + 2 * table.frameWidth() + 2
+    hauteur = en.height() + sum(table.rowHeight(i) for i in range(table.rowCount())) + 2 * table.frameWidth() + 2
+    table.setFixedSize(max(largeur, table.width()), max(hauteur, table.height()))
+    try:
+        return table.grab()
+    finally:
+        table.setMinimumSize(avant[1])
+        table.setMaximumSize(avant[2])
+        table.resize(avant[0])
+
+
+def copierImage(w: QWidget, fenetre: QWidget, bouton: QPushButton | None = None) -> bool:
+    """Met une image du bloc dans le presse-papiers (à coller dans Word, un mail, un compte rendu).
+
+    Entrées : w (figure ou tableau), fenetre (pour le message flottant), bouton (facultatif : il passe au vert).
+    Sortie : True si l'image est copiée.
+    """
+    image = _imageTableau(w) if isinstance(w, QTableWidget) else w.grab()
+    ok = not image.isNull()
+    if ok:
+        QApplication.clipboard().setPixmap(image)
+    confirmer(fenetre, bouton, ok, "Image copiée", "Copie impossible",
+              "Image copiée dans le presse-papiers : à coller dans Word, un mail…" if ok else "Copie impossible.")  # fmt: skip
+    return ok
+
+
+def barreImage(w: QWidget, fenetre: QWidget) -> QWidget:
+    """Petite barre « Copier l'image » à placer juste au-dessus d'une figure ou d'un tableau, à droite."""
+    barre = QWidget()
+    ligne = QHBoxLayout(barre)
+    ligne.setContentsMargins(0, 0, 0, 0)
+    ligne.addStretch(1)
+    b = QPushButton("Copier l'image")
+    b.setObjectName("petit")
+    b.setToolTip("Met une image de ce bloc dans le presse-papiers : à coller dans Word, un mail, un compte rendu.")
+    b.setAccessibleName("Copier l'image")
+    b.clicked.connect(lambda: differer(lambda: copierImage(w, fenetre, b)))
+    ligne.addWidget(b)
+    return barre
+
+
 def systemeSombre() -> bool:
     """Vrai si Windows (ou le système) est réglé sur le thème sombre : réglage de départ de l'application."""
     return QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
@@ -582,10 +627,14 @@ class Zone:
 
     def tableau(self, df: pd.DataFrame, formats: dict | None = None, couleurs: dict | None = None,
                 index: bool = False) -> None:  # fmt: skip
-        self._ajouter(TableauDonnees(df, formats, couleurs, index))
+        t = TableauDonnees(df, formats, couleurs, index)
+        self._ajouter(barreImage(t, self.page.fenetre))
+        self._ajouter(t)
 
     def figure(self, fig: Any, legende: str | None = None) -> None:
-        self._ajouter(VueFigure(fig))
+        vue = VueFigure(fig)
+        self._ajouter(barreImage(vue, self.page.fenetre))
+        self._ajouter(vue)
         if legende:
             self.legende(legende)
 
@@ -1022,7 +1071,8 @@ def appliquerTheme(app: QApplication) -> None:
     QLineEdit:disabled, QComboBox:disabled {{ color:{discret}; }}
     QHeaderView::section {{ background:{bandeau}; color:#FFFFFF; padding:3px; border:none; }}
     #bouton {{ background:{carte}; border:1px solid {fort}; border-radius:4px; padding:5px 10px; }}
-    #bouton:hover {{ border-color:{encre}; }}
+    #bouton:hover, #petit:hover {{ border-color:{encre}; }}
+    #petit {{ background:{carte}; border:1px solid {fort}; border-radius:4px; padding:2px 10px; font-size:9pt; }}
     #bouton:disabled, #primaire:disabled {{ color:{discret}; }}
     #primaire {{ background:{accent}; color:#FFFFFF; border:none; border-radius:4px; padding:7px 12px;
                  font-weight:bold; }}
@@ -1052,8 +1102,8 @@ def appliquerTheme(app: QApplication) -> None:
     #sousmenu {{ font-size:10pt; padding:4px 14px; }}
     #famille:hover, #sousmenu:hover {{ border-color:{fort}; }}
     #famille:checked, #sousmenu:checked {{ background:{accent}; color:#FFFFFF; }}
-    #bouton[retour="ok"], #primaire[retour="ok"] {{ background:{ok[0]}; color:{ok[1]}; border:1px solid {ok[1]}; }}
-    #bouton[retour="ko"], #primaire[retour="ko"] {{ background:{ko[0]}; color:{ko[1]}; border:1px solid {ko[1]}; }}
+    #bouton[retour="ok"], #primaire[retour="ok"], #petit[retour="ok"] {{ background:{ok[0]}; color:{ok[1]}; border:1px solid {ok[1]}; }}
+    #bouton[retour="ko"], #primaire[retour="ko"], #petit[retour="ko"] {{ background:{ko[0]}; color:{ko[1]}; border:1px solid {ko[1]}; }}
     #toast {{ border-radius:8px; padding:9px 18px; font-weight:bold; border:1px solid {fort}; }}
     #toast[niveau="succes"] {{ background:{ok[0]}; color:{ok[1]}; border-color:{ok[1]}; }}
     #toast[niveau="erreur"] {{ background:{ko[0]}; color:{ko[1]}; border-color:{ko[1]}; }}
