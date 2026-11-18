@@ -826,23 +826,84 @@
     });
     $("ajouter").addEventListener("click", () => { afficherMaillons([...lireMaillons(), { ...MAILLON_VIDE }]); apercuDiffere(); });
     $("calculer").addEventListener("click", calculer);
-    // schéma à côté du tableau (écran large) ou dessous : choix gardé dans ce navigateur
-    let dessous = false;
-    try { dessous = localStorage.getItem("chainecotes.schemaDessous") === "1"; } catch (e) { /* sans mémoire */ }
+    // place du schéma par rapport au tableau des maillons : droite, gauche, dessus ou dessous (choix gardé dans ce navigateur)
+    const PLACES = { droite: "à droite", gauche: "à gauche", dessus: "au-dessus", dessous: "en dessous" };
+    const NOMS = Object.keys(PLACES);
+    let place = "droite";
+    try {
+      place = localStorage.getItem("chainecotes.schemaPlace") || (localStorage.getItem("chainecotes.schemaDessous") === "1" ? "dessous" : "droite");
+    } catch (e) { /* sans mémoire */ }
+    if (!PLACES[place]) place = "droite";
     const dispo = () => {
-      $("zone-maillons").classList.toggle("dessous", dessous);
-      $("disposition").textContent = dessous ? "Schéma : dessous" : "Schéma : à côté";
+      for (const p of NOMS) $("zone-maillons").classList.toggle(p, p === place);
+      $("disposition").textContent = "Schéma : " + PLACES[place];
     };
+    const poser = (p, annonce) => {
+      place = p;
+      try { localStorage.setItem("chainecotes.schemaPlace", place); } catch (e) { /* sans mémoire */ }
+      dispo();
+      apercu();
+      if (annonce) App.toast("Schéma placé " + PLACES[place] + ".");
+    };
+    const suivante = () => NOMS[(NOMS.indexOf(place) + 1) % NOMS.length];
     dispo();
+    // poignée : on tire le schéma vers un bord du tableau des maillons ; un cadre pointillé montre la place visée
+    const poignee = Object.assign(document.createElement("button"), { type: "button", className: "poignee", textContent: "⠿" });
+    poignee.setAttribute("aria-label", "Déplacer le schéma : le tirer vers un bord, ou appuyer sur Entrée pour changer de place");
+    poignee.title = "Tirer pour placer le schéma à gauche, à droite, au-dessus ou en dessous du tableau";
+    $("apercu-section").querySelector("summary").prepend(poignee);
+    const cibleDepot = (x, y) => { // bord le plus proche du pointeur, en fraction de la zone ; sous 1200 px, seulement dessus ou dessous
+      const r = $("zone-maillons").getBoundingClientRect();
+      const d = { gauche: (x - r.left) / r.width, droite: (r.right - x) / r.width, dessus: (y - r.top) / r.height, dessous: (r.bottom - y) / r.height };
+      const permis = window.innerWidth >= 1200 ? NOMS : ["dessus", "dessous"];
+      return permis.reduce((a, b) => (d[b] < d[a] ? b : a));
+    };
+    const cadreDepot = (cible) => {
+      const r = $("zone-maillons").getBoundingClientRect();
+      let c = $("depot-schema");
+      if (!c) { c = document.createElement("div"); c.id = "depot-schema"; document.body.append(c); }
+      const lateral = cible === "gauche" || cible === "droite";
+      const w = lateral ? r.width * 0.4 : r.width, h = lateral ? r.height : Math.min(r.height * 0.3, 260);
+      c.style.left = (cible === "droite" ? r.right - w : r.left) + "px";
+      c.style.top = (cible === "dessous" ? r.bottom - h : r.top) + "px";
+      c.style.width = w + "px";
+      c.style.height = h + "px";
+      c.dataset.texte = "Placer le schéma " + PLACES[cible];
+    };
+    let glisse = null;
+    const finGlisse = () => { $("depot-schema")?.remove(); $("apercu-section").classList.remove("deplace"); document.body.classList.remove("glisse"); glisse = null; };
+    poignee.addEventListener("pointerdown", (e) => {
+      if (e.button) return;
+      e.preventDefault();
+      poignee.setPointerCapture(e.pointerId);
+      glisse = { cible: cibleDepot(e.clientX, e.clientY), bouge: false };
+      $("apercu-section").classList.add("deplace");
+      document.body.classList.add("glisse");
+      cadreDepot(glisse.cible);
+    });
+    poignee.addEventListener("pointermove", (e) => {
+      if (!glisse) return;
+      glisse.bouge = true;
+      glisse.cible = cibleDepot(e.clientX, e.clientY);
+      cadreDepot(glisse.cible);
+    });
+    poignee.addEventListener("pointerup", () => {
+      if (!glisse) return;
+      const { cible, bouge } = glisse;
+      finGlisse();
+      if (bouge && cible !== place) poser(cible, true);
+    });
+    poignee.addEventListener("pointercancel", finGlisse);
+    poignee.addEventListener("keydown", (e) => { if (e.key === "Escape" && glisse) finGlisse(); });
+    poignee.addEventListener("click", (e) => { // clic sans glisser (clavier) : place suivante
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.detail === 0) poser(suivante(), true);
+    });
     // « Copier l'image » dans le titre des deux gros blocs (le schéma est copié avec son verdict et ses contrôles)
     $("apercu-section").querySelector("summary").append(App.boutonImage($("apercu-section"), "schema-et-controles.png"));
     $("resultats").querySelector("summary").append(App.boutonImage($("resultats"), "resultats.png"));
-    $("disposition").addEventListener("click", () => {
-      dessous = !dessous;
-      try { localStorage.setItem("chainecotes.schemaDessous", dessous ? "1" : "0"); } catch (e) { /* sans mémoire */ }
-      dispo();
-      apercu();
-    });
+    $("disposition").addEventListener("click", () => poser(suivante()));
     // images personnelles (restent dans ce navigateur)
     lirePerso();
     const direImage = (niveau, texte) => App.message($("perso-message"), niveau, texte);

@@ -218,10 +218,15 @@ details.bandeau > .message, details.bandeau > p.message { margin-top: 12px; }
 
 /* tableau des maillons à gauche, schéma à droite (au-dessus de 1200 px) */
 #zone-maillons { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 16px; align-items: start; }
+/* places du schéma : droite (défaut), gauche, dessus, dessous ; sous 1200 px, droite et gauche tombent en dessous */
+#zone-maillons.dessus #apercu-section { order: -1; }
 @media (min-width: 1200px) {
-  #zone-maillons:not(.dessous) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
-  #zone-maillons.large:not(.dessous) { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
-  #zone-maillons:not(.dessous) #apercu-section { position: sticky; top: 100px; max-height: calc(100vh - 116px); overflow: auto; }
+  #zone-maillons:not(.dessous):not(.dessus) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  #zone-maillons.large:not(.dessous):not(.dessus) { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  #zone-maillons.gauche { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  #zone-maillons.gauche.large { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  #zone-maillons.gauche #apercu-section { order: -1; }
+  #zone-maillons:not(.dessous):not(.dessus) #apercu-section { position: sticky; top: 100px; max-height: calc(100vh - 116px); overflow: auto; }
 }
 #zone-maillons #maillons { min-width: 640px; }
 
@@ -288,3 +293,9 @@ details.bandeau > summary .barre-image button { background: transparent; color: 
 .tableau { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
 .tableau > .defile { flex: 0 0 100%; }
 @media print { .barre-image { display: none !important; } }
+/* poignée de déplacement du schéma et cadre de dépôt */
+button.poignee { align-self: center; min-height: 0; padding: 0 8px; font-size: 1.3rem; line-height: 1.2; cursor: grab; touch-action: none; background: transparent; color: var(--sur-accent); border-color: var(--sur-accent); }
+body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
+#apercu-section.deplace { opacity: .55; }
+#depot-schema { position: fixed; z-index: 80; pointer-events: none; border: 3px dashed var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 22%, transparent); display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; color: var(--encre); }
+#depot-schema::after { content: attr(data-texte); background: var(--carte); padding: 4px 12px; border-radius: 6px; border: 1px solid var(--accent); }

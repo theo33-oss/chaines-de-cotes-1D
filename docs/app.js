@@ -365,7 +365,7 @@ const App = (() => {
       layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
     }
     Plotly.react(div, f.data, layout, { responsive: true, displaylogo: false });
-    if (!div._barre && !div.dataset.sansImage && div.parentNode) { // une seule barre « Copier l'image » au-dessus de la figure
+    if (!div._barre && div.dataset.sansImage === undefined && div.parentNode) { // une seule barre « Copier l'image » au-dessus de la figure
       div._barre = boutonImage(div, "graphique.png");
       div.before(div._barre);
     }
