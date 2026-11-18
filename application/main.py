@@ -4,6 +4,7 @@ Lancement : python main.py (ou 1_Ouvrir_application.bat sous Windows).
 """
 
 import copy
+import os
 import sys
 import traceback
 from pathlib import Path
@@ -526,6 +527,64 @@ def verifier(app: QApplication, fenetre: "Fenetre", sortie: str) -> int:
     return 1 if erreurs else 0
 
 
+def captures(app: QApplication, fenetre: "Fenetre", dossier: str) -> int:
+    """Captures d'écran (main.py --captures dossier) : une image par page et par onglet, pour contrôler la forme.
+
+    CHAINECOTES_THEME=clair ou sombre force le thème (sans le retenir pour le prochain lancement). Chaque image porte
+    le nom de la page, puis celui de l'onglet : calcul_resultats.png, accueil.png. Rend 0 si tout va bien, 1 sinon.
+    """
+    import unicodedata
+    from pathlib import Path
+
+    from PySide6.QtWidgets import QTabWidget
+
+    sortie = Path(dossier)
+    sortie.mkdir(parents=True, exist_ok=True)
+    erreurs: list[str] = []
+    sys.excepthook = lambda g, e, t: erreurs.append("".join(traceback.format_exception(g, e, t))[-1500:])
+    fenetre.resize(1500, 950)
+
+    def pause(ms: int) -> None:
+        fin: list[int] = []
+        QTimer.singleShot(ms, lambda: fin.append(1))
+        while not fin:
+            app.processEvents()
+
+    def nom(texte: str) -> str:
+        sans = unicodedata.normalize("NFD", texte).encode("ascii", "ignore").decode()
+        return "".join(c if c.isalnum() else "_" for c in sans.lower()).strip("_")
+
+    def photographier(fichier: str) -> None:
+        fenetre.grab().save(str(sortie / f"{fichier}.png"))
+        print(f"{fichier}.png")
+
+    for ident, libelle, _ in MENU:
+        if libelle is None and ident not in ("inverse", "optimisation"):
+            continue
+        try:
+            fenetre.aller(ident)
+            pause(400)
+            if ident == "calcul":  # l'étude ouverte est calculée : les onglets de résultats n'existent qu'après
+                fenetre.calculer()
+                while tache.occupe():
+                    app.processEvents()
+                pause(800)
+            rang, page = fenetre.pages[ident]
+            onglets = [t for t in page.findChildren(QTabWidget) if t.isVisible() and t.count() > 1]
+            if not onglets:
+                photographier(ident)
+            for t in onglets:
+                for k in range(t.count()):
+                    t.setCurrentIndex(k)
+                    pause(500)
+                    photographier(f"{ident}_{nom(t.tabText(k))}")
+        except Exception:  # noqa: BLE001 : toute erreur est notée, les captures continuent
+            erreurs.append(traceback.format_exc()[-1500:])
+    for e in erreurs:
+        print("ERREUR", e, file=sys.stderr)
+    return 1 if erreurs else 0
+
+
 def main() -> int:
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
@@ -536,6 +595,9 @@ def main() -> int:
         state.v[cle] = reglages.value(cle, False, type=bool)
     if not reglages.contains("sombre"):  # première ouverture : le thème de Windows
         state.v["sombre"] = widgets.systemeSombre()
+    forcer = os.environ.get("CHAINECOTES_THEME", "").lower()
+    if forcer in ("clair", "sombre"):  # pour les captures d'écran : le thème choisi, sans le retenir
+        state.v["sombre"] = forcer == "sombre"
     app.setWindowIcon(icones.iconeApplication())
     valeurs, erreur = procedes_atelier.lireFichier()  # procédés de l'atelier : ceux du dernier enregistrement
     inverse.poserValeursAtelier(valeurs)
@@ -548,6 +610,9 @@ def main() -> int:
     if reglages.value("geometrie") is not None:
         fenetre.restoreGeometry(reglages.value("geometrie"))
     fenetre.show()
+    if "--captures" in sys.argv:  # captures d'écran de chaque page : main.py --captures dossier
+        fenetre.reglages = None  # rien n'est retenu (thème forcé, taille de fenêtre)
+        return captures(app, fenetre, sys.argv[sys.argv.index("--captures") + 1])
     if "--verifier" in sys.argv:  # auto-vérification de l'exécutable : main.py --verifier rapport.txt
         return verifier(app, fenetre, sys.argv[sys.argv.index("--verifier") + 1])
     if fenetre.fichierReprise.exists():
