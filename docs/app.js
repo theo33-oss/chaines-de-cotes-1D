@@ -565,7 +565,26 @@ const App = (() => {
     }
   }
 
+  // Durées du démarrage (ms), lisibles dans la console : App.mesures
+  const mesures = {};
+  async function chronometre(nom, travail) {
+    const t = performance.now();
+    try { return await travail(); } finally { mesures[nom] = Math.round(performance.now() - t); }
+  }
+
+  // Remplit le cache du navigateur avec la roue plotly de PyPI pendant que Python se charge : micropip la trouvera déjà là.
+  async function prechargerPlotly() {
+    try {
+      const releases = (await (await fetch("https://pypi.org/pypi/plotly/json")).json()).releases;
+      const v = Object.keys(releases).filter((x) => /^6\.\d+\.\d+$/.test(x))
+        .sort((a, b) => a.split(".").map(Number).reduce((r, n, i) => r || n - b.split(".")[i], 0)).pop();
+      const roue = v && releases[v].find((u) => u.packagetype === "bdist_wheel");
+      if (roue) await (await fetch(roue.url)).arrayBuffer();
+    } catch (e) { /* micropip la téléchargera lui-même */ }
+  }
+
   async function demarrer() {
+    const debut = performance.now();
     menu();
     bandeaux();
     bulles();
@@ -577,21 +596,30 @@ const App = (() => {
       $("avance").hidden = true;
       return;
     }
+    // Les téléchargements partent tout de suite, en parallèle du moteur Python ; ils sont lus plus tard, déjà arrivés.
+    // « no-cache » : le navigateur revalide à chaque visite (réponse 304 si rien n'a changé). Sans cela, GitHub Pages
+    // fait garder ces fichiers 10 minutes, et une page mise à jour recevrait l'ancien calcul.
+    const archiveZip = fetch("chainecotes.zip", { cache: "no-cache" }).then((r) => r.arrayBuffer());
+    const textePont = fetch("pont.py", { cache: "no-cache" }).then((r) => r.text());
+    archiveZip.catch(() => {}); // l'erreur est traitée à l'attente, plus bas
+    textePont.catch(() => {});
+    prechargerPlotly();
     try {
-      pyodide = await loadPyodide();
-      etat("Préparation 2/4 : bibliothèques de calcul (numpy, scipy)…", 2);
-      await pyodide.loadPackage(["numpy", "scipy", "micropip"]);
-      etat("Préparation 3/4 : graphiques (plotly)…", 3);
-      await pyodide.pyimport("micropip").install("plotly>=5.20,<7");
-      etat("Préparation 4/4 : tables ISO 286, matériaux et exemples…", 4);
-      // « no-cache » : le navigateur revalide à chaque visite (réponse 304 si rien n'a changé). Sans cela, GitHub Pages
-      // fait garder ces fichiers 10 minutes, et une page mise à jour recevrait l'ancien calcul.
-      const archive = await (await fetch("chainecotes.zip", { cache: "no-cache" })).arrayBuffer();
-      pyodide.unpackArchive(archive, "zip", { extractDir: "/app" });
-      pyodide.FS.writeFile("/app/pont.py", await (await fetch("pont.py", { cache: "no-cache" })).text());
-      pyodide.runPython("import sys; sys.path.insert(0, '/app')");
-      pont = pyodide.pyimport("pont");
-      for (const p of pages) await p.apres(pont);
+      pyodide = await chronometre("python", () => loadPyodide());
+      etat("Préparation 2/3 : bibliothèques de calcul (numpy, scipy) et graphiques (plotly), chargés ensemble…", 2);
+      await chronometre("micropip", () => pyodide.loadPackage(["micropip"]));
+      await Promise.all([
+        chronometre("numpy_scipy", () => pyodide.loadPackage(["numpy", "scipy"])),
+        chronometre("plotly", () => pyodide.pyimport("micropip").install("plotly>=5.20,<7")),
+      ]);
+      etat("Préparation 3/3 : tables ISO 286, matériaux et exemples…", 3);
+      await chronometre("chainecotes", async () => {
+        pyodide.unpackArchive(await archiveZip, "zip", { extractDir: "/app" });
+        pyodide.FS.writeFile("/app/pont.py", await textePont);
+        pyodide.runPython("import sys; sys.path.insert(0, '/app')");
+        pont = pyodide.pyimport("pont");
+      });
+      await chronometre("pages", async () => { for (const p of pages) await p.apres(pont); });
     } catch (e) {
       pont = null;
       $("etat").className = "message erreur";
@@ -605,8 +633,10 @@ const App = (() => {
     etat("");
     $("pret").hidden = false;
     exposition.analyser.ouvrirLien();
+    mesures.total = Math.round(performance.now() - debut);
+    console.info("Chaînes de cotes prêt (ms)", mesures);
   }
 
-  const exposition = { $, sombre, icone, copier, copierImage, boutonImage, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
+  const exposition = { $, mesures, sombre, icone, copier, copierImage, boutonImage, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();
