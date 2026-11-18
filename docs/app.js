@@ -389,7 +389,10 @@ const App = (() => {
   // Onglets : onglets = [{ id, titre, rendu(panneau) }] ; le rendu se fait à l'ouverture (Plotly a besoin d'un panneau visible).
   function onglets(barre, panneau, liste, actif) {
     const ouvrir = (id) => {
-      for (const b of barre.children) b.setAttribute("aria-selected", String(b.dataset.id === id));
+      for (const b of barre.children) {
+        b.setAttribute("aria-selected", String(b.dataset.id === id));
+        b.tabIndex = b.dataset.id === id ? 0 : -1;
+      }
       panneau.replaceChildren();
       liste.find((o) => o.id === id).rendu(panneau);
     };
@@ -402,6 +405,18 @@ const App = (() => {
       b.addEventListener("click", () => ouvrir(o.id));
       return aide(b);
     }));
+    if (!barre._clavier) { // écouteur posé une fois, même si la barre est refaite à chaque calcul
+      barre._clavier = true;
+      barre.addEventListener("keydown", (e) => {
+        const tous = [...barre.children];
+        const i = tous.indexOf(document.activeElement);
+        const vers = { ArrowRight: (i + 1) % tous.length, ArrowLeft: (i - 1 + tous.length) % tous.length, Home: 0, End: tous.length - 1 }[e.key];
+        if (i < 0 || vers === undefined) return;
+        e.preventDefault();
+        tous[vers].click();
+        tous[vers].focus();
+      });
+    }
     ouvrir(liste.some((o) => o.id === actif) ? actif : liste[0].id);
   }
 
@@ -638,6 +653,8 @@ const App = (() => {
     const build = document.querySelector('meta[name="build"]')?.content || "";
     if (build) $("version").textContent += " · build " + build;
     $("actualiser").addEventListener("click", actualiserSite);
+    // lien « Aller au contenu » : le focus va au contenu sans changer l'adresse (le « # » sert aux liens d'étude)
+    document.querySelector(".evitement")?.addEventListener("click", (e) => { e.preventDefault(); $("contenu").focus(); });
     verifierMiseAJour(build);
     // « Actualiser le site » recharge avec ?maj=… (contourne le cache) : une fois chargée, l'adresse redevient propre
     // (sinon elle se retrouve dans les liens copiés)

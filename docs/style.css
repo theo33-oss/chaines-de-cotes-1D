@@ -356,3 +356,8 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
 }
 /* petit bouton qui a l'allure d'un lien (pied de page) */
 .lien-bouton { background: none; border: 0; padding: 0 2px; min-height: 0; font: inherit; color: var(--lien); text-decoration: underline; cursor: pointer; }
+/* lien « Aller au contenu » : invisible, il apparaît au premier appui sur Tab */
+.evitement { position: absolute; left: -9999px; }
+.evitement:focus { left: 16px; top: 8px; z-index: 60; background: var(--carte); color: var(--encre); border: 2px solid var(--accent); border-radius: 6px; padding: 6px 12px; }
+main:focus { outline: none; }
+@media print { .evitement { display: none !important; } }

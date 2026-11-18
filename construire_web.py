@@ -57,8 +57,14 @@ print(f"{sortie.relative_to(racine)} : {sortie.stat().st_size / 1024:.0f} Ko")
 shutil.copyfile(appli / "data" / "icone.svg", docs / "icone.svg")  # l'icône vient de l'application de bureau : une seule source
 
 
+def octets(chemin: str) -> bytes:
+    """Contenu d'un fichier de docs/, fins de ligne normalisées (Windows : CRLF, git et CI Linux : LF) pour des empreintes identiques."""
+    brut = (docs / chemin).read_bytes()
+    return brut if chemin.endswith(".zip") else brut.replace(b"\r\n", b"\n")
+
+
 def empreinte(chemin: str) -> str:
-    return hashlib.sha1((docs / chemin).read_bytes()).hexdigest()[:8]
+    return hashlib.sha1(octets(chemin)).hexdigest()[:8]
 
 
 def ecrire_si_change(chemin: Path, ancien: str, nouveau: str) -> None:
@@ -73,12 +79,12 @@ print(f"version {version}")
 # service worker : un nom de cache par version du site, les anciennes copies sont effacées
 sw = docs / "sw.js"
 texte_sw = open(sw, encoding="utf-8", newline="").read()
-cle = hashlib.sha1(b"".join((docs / f).read_bytes() for f in ("chainecotes.zip", "app.js", "style.css"))).hexdigest()[:8]
+cle = hashlib.sha1(b"".join(octets(f) for f in ("chainecotes.zip", "app.js", "style.css"))).hexdigest()[:8]
 ecrire_si_change(sw, texte_sw, re.sub(r'const VERSION = "[^"]*";', f'const VERSION = "chainecotes-{version}-{cle}";', texte_sw))
 
 # numéro de build : change dès qu'un fichier du site change (le site affiche le sien et le compare à celui en ligne)
 build = hashlib.sha1(
-    b"".join((docs / f).read_bytes() for f in sorted(["chainecotes.zip", "app.js", "style.css", "pont.py", *[f"js/{p.name}" for p in (docs / "js").glob("*.js")]]))
+    b"".join(octets(f) for f in sorted(["chainecotes.zip", "app.js", "style.css", "pont.py", *[f"js/{p.name}" for p in (docs / "js").glob("*.js")]]))
 ).hexdigest()[:8]
 
 index = docs / "index.html"

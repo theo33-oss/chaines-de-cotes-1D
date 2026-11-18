@@ -6,7 +6,7 @@
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
 <meta name="theme-color" content="#5C4B99">
-<meta name="build" content="ddb87d0d">
+<meta name="build" content="336be6fe">
 <meta name="zip" content="d044abc9">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -17,9 +17,10 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=831e689b">
+<link rel="stylesheet" href="style.css?v=92a4e35f">
 </head>
 <body>
+<a class="evitement" href="#contenu">Aller au contenu</a>
 <header>
   <div>
     <h1>Chaînes de cotes 1D</h1>
@@ -29,7 +30,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 </header>
 <div id="barre"><nav id="menu" aria-label="Pages" hidden></nav></div>
 
-<main>
+<main id="contenu" tabindex="-1">
   <div id="etat" class="message info" role="status">
     <span id="etat-texte">Préparation 1/3 : moteur Python… comptez 10 à 30 secondes la première fois. Vous pouvez lire la page en attendant.</span>
     <progress id="avance" max="3" value="1"></progress>
@@ -591,13 +592,13 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=f8fadfd6"></script>
+<script src="app.js?v=6cafd1ad"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=e7c783f7"></script>
-<script src="js/repartir.js?v=1b6ab5db"></script>
-<script src="js/comparer.js?v=b4b4c56c"></script>
-<script src="js/mecanisme.js?v=dc6158aa"></script>
-<script src="js/dossier.js?v=bea36620"></script>
+<script src="js/chaine.js?v=a55f3f82"></script>
+<script src="js/repartir.js?v=ab2c4d30"></script>
+<script src="js/comparer.js?v=a83ab01d"></script>
+<script src="js/mecanisme.js?v=cde448b1"></script>
+<script src="js/dossier.js?v=eb47df1c"></script>
 <script src="js/assistant.js?v=f069f614"></script>
 <script src="js/exemples.js?v=b8de49e5"></script>
 <script src="js/ajustement.js?v=27a8c5f2"></script>
