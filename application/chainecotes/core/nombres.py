@@ -4,6 +4,22 @@ Ce module n'importe ni streamlit ni plotly.
 """
 
 import math
+import re
+
+_HAUT = str.maketrans("0123456789+-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻")
+_EXPOSANT = re.compile(r"[eE]([+-]?)0*(\d+)")
+
+
+def exposants(texte: str) -> str:
+    """Remplace un exposant écrit « e+07 » par « ·10⁷ » (« e-05 » par « ·10⁻⁵ »).
+
+    Entrée : texte (nombre déjà écrit). Sortie : texte lisible, inchangé s'il n'y a pas d'exposant.
+    """
+    def _remplacer(m: re.Match) -> str:
+        signe = "-" if m.group(1) == "-" else ""
+        return "·10" + (signe + m.group(2)).translate(_HAUT)
+
+    return _EXPOSANT.sub(_remplacer, texte)
 
 
 def fr(v: float, fmt: str = ".4f") -> str:
@@ -17,7 +33,7 @@ def fr(v: float, fmt: str = ".4f") -> str:
         return "+∞" if v > 0 else "−∞"
     if abs(v) < 1e-12:
         v = 0.0
-    return format(v, fmt).replace(".", ",")
+    return exposants(format(v, fmt)).replace(".", ",")
 
 
 def ppmLisible(x: float | None, unite: bool = True) -> str:
