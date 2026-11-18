@@ -327,6 +327,7 @@
       const lien = location.href.split("#")[0] + "#etude=" + btoa(String.fromCharCode(...octets)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
       if (lien.length > 8000) return messageFichier("avertissement", "Étude trop grande pour un lien : utilisez « Enregistrer l'étude » et envoyez le fichier.");
       const copie = await App.copier(lien);
+      App.confirmer($("copier-lien"), copie, "Lien copié", "Copie impossible", copie ? "Lien copié : collez-le dans un message." : "Copie refusée par le navigateur.");
       messageFichier(copie ? "succes" : "erreur", copie ? "Lien copié : collez-le dans un message. Il contient l'étude, rien n'est envoyé sur Internet." : "Copie impossible : le navigateur l'a refusée.");
     } catch (e) { messageFichier("erreur", "Lien impossible : " + e.message); }
   }

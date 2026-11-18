@@ -87,6 +87,49 @@ const App = (() => {
     return ok;
   }
 
+  // ---------- retour visible des boutons ----------
+
+  // Message flottant en bas de l'écran (un seul, réutilisé) ; « erreur » reste plus longtemps.
+  let minuteToast = 0;
+  function toast(texte, niveau = "succes") {
+    let t = $("toast");
+    if (!t) {
+      t = Object.assign(document.createElement("div"), { id: "toast", className: "toast" });
+      t.setAttribute("role", "status");
+      t.setAttribute("aria-live", "polite");
+      document.body.append(t);
+    }
+    clearTimeout(minuteToast);
+    t.textContent = texte;
+    t.className = "toast " + niveau;
+    void t.offsetWidth; // relance l'animation si un message était déjà affiché
+    t.classList.add("visible");
+    minuteToast = setTimeout(() => t.classList.remove("visible"), niveau === "erreur" ? 3500 : 2200);
+  }
+
+  // Le bouton devient vert avec une coche (rouge avec une croix si ko) pendant 2 s, puis reprend son texte.
+  function retour(bouton, ok, texteOk, texteKo) {
+    if (!bouton) return;
+    if (bouton.dataset.libelle === undefined) bouton.dataset.libelle = bouton.textContent;
+    bouton.style.minWidth = bouton.offsetWidth + "px"; // la largeur ne saute pas quand le texte change
+    bouton.classList.remove("retour-ok", "retour-ko");
+    void bouton.offsetWidth;
+    bouton.classList.add(ok ? "retour-ok" : "retour-ko");
+    bouton.textContent = (ok ? "✓ " : "✗ ") + (ok ? texteOk : texteKo);
+    clearTimeout(bouton._retour);
+    bouton._retour = setTimeout(() => {
+      bouton.classList.remove("retour-ok", "retour-ko");
+      bouton.textContent = bouton.dataset.libelle;
+      bouton.style.minWidth = "";
+    }, 2000);
+  }
+
+  // Bouton (facultatif) + message flottant : le retour habituel d'une action.
+  function confirmer(bouton, ok, texteOk, texteKo, message) {
+    retour(bouton, ok, texteOk, texteKo);
+    toast(message || (ok ? texteOk : texteKo), ok ? "succes" : "erreur");
+  }
+
   // ---------- bulles d'aide au survol ----------
 
   // Lexique des termes affichés par le calcul (en-têtes, grandeurs, onglets) : le premier motif trouvé donne la bulle.
@@ -187,8 +230,8 @@ const App = (() => {
     const b = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit copier", textContent: "Copier le tableau" });
     b.dataset.aide = "Copie le tableau avec des tabulations : à coller directement dans Excel.";
     b.addEventListener("click", async () => {
-      b.textContent = (await copier([t.entetes, ...t.lignes].map((l) => l.join("\t")).join("\n"))) ? "Copié" : "Copie impossible";
-      setTimeout(() => { b.textContent = "Copier le tableau"; }, 1500);
+      const ok = await copier([t.entetes, ...t.lignes].map((l) => l.join("\t")).join("\n"));
+      confirmer(b, ok, "Copié", "Copie impossible", ok ? "Tableau copié : collez-le dans Excel." : "Copie refusée par le navigateur.");
     });
     const bloc = document.createElement("div");
     bloc.className = "tableau";
@@ -269,6 +312,7 @@ const App = (() => {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast("Fichier enregistré : " + nomFichier);
   }
 
   // Nombre venu d'une table JSON écrit à la française (« 0,8 ») ; case absente → vide.
@@ -476,6 +520,6 @@ const App = (() => {
     exposition.analyser.ouvrirLien();
   }
 
-  const exposition = { $, sombre, icone, copier, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
+  const exposition = { $, sombre, icone, copier, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();
