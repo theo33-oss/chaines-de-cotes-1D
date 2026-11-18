@@ -273,3 +273,18 @@ button.retour-ko { background: var(--err-fond) !important; color: var(--err-text
   button.retour-ok, button.retour-ko { animation: none; }
   .toast { transition: none; }
 }
+/* « Copier l'image » : barre au-dessus des blocs, cadre de la capture hors écran */
+.barre-image { display: flex; justify-content: flex-end; margin: 4px 0 2px; }
+.barre-image button { opacity: .85; }
+.barre-image button:hover, .barre-image button:focus-visible { opacity: 1; }
+.capture-hors-ecran { position: fixed; left: -100000px; top: 0; pointer-events: none; }
+.cadre-image { background: var(--carte); color: var(--encre); font: 16px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif; }
+.cadre-image > * { margin: 0 !important; box-shadow: none !important; }
+.cadre-image [data-aide] { text-decoration: none !important; }
+.cadre-image .defile { overflow: visible !important; }
+details.bandeau > summary .barre-image { margin: 0 0 0 auto; font-size: 1rem; font-weight: normal; }
+details.bandeau > summary .barre-image button { background: transparent; color: var(--sur-accent); border-color: var(--sur-accent); }
+.tableau .barre-image { margin: 2px 0 14px; }
+.tableau { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
+.tableau > .defile { flex: 0 0 100%; }
+@media print { .barre-image { display: none !important; } }

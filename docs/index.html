@@ -15,7 +15,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=7cf1b32c">
+<link rel="stylesheet" href="style.css?v=9d038289">
 </head>
 <body>
 <header>
@@ -130,12 +130,12 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
     <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 data-aide="Le dessin de la chaîne, mis à jour à chaque saisie, et la liste des incohérences trouvées." id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
       <h3 id="apercu-cf1-titre" hidden></h3>
       <p id="apercu-verdict" class="message" role="status" hidden></p>
-      <div id="apercu-fig" class="figure"></div>
+      <div id="apercu-fig" class="figure" data-sans-image></div>
       <p id="apercu-legende" class="legende"></p>
       <div id="apercu-cf2" hidden>
         <h3 id="apercu-cf2-titre"></h3>
         <p id="apercu-verdict2" class="message" role="status" hidden></p>
-        <div id="apercu-fig2" class="figure"></div>
+        <div id="apercu-fig2" class="figure" data-sans-image></div>
         <p id="apercu-legende2" class="legende"></p>
       </div>
       <ul id="controles" class="controles" aria-label="Contrôles de cohérence"></ul>
@@ -579,9 +579,9 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=c4cc8537"></script>
+<script src="app.js?v=03c046c8"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=0ef6ddd4"></script>
+<script src="js/chaine.js?v=634cf1e4"></script>
 <script src="js/repartir.js?v=1b6ab5db"></script>
 <script src="js/comparer.js?v=b4b4c56c"></script>
 <script src="js/mecanisme.js?v=dc6158aa"></script>

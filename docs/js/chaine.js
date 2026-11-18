@@ -834,6 +834,9 @@
       $("disposition").textContent = dessous ? "Schéma : dessous" : "Schéma : à côté";
     };
     dispo();
+    // « Copier l'image » dans le titre des deux gros blocs (le schéma est copié avec son verdict et ses contrôles)
+    $("apercu-section").querySelector("summary").append(App.boutonImage($("apercu-section"), "schema-et-controles.png"));
+    $("resultats").querySelector("summary").append(App.boutonImage($("resultats"), "resultats.png"));
     $("disposition").addEventListener("click", () => {
       dessous = !dessous;
       try { localStorage.setItem("chainecotes.schemaDessous", dessous ? "1" : "0"); } catch (e) { /* sans mémoire */ }

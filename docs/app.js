@@ -130,6 +130,89 @@ const App = (() => {
     toast(message || (ok ? texteOk : texteKo), ok ? "succes" : "erreur");
   }
 
+  // ---------- copie d'un bloc en image (presse-papiers) ----------
+
+  let chargementImage = null;
+  function chargerHtmlToImage() {
+    if (window.htmlToImage) return Promise.resolve(window.htmlToImage);
+    chargementImage = chargementImage || new Promise((ok, ko) => {
+      const s = Object.assign(document.createElement("script"), {
+        src: "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js",
+        integrity: "sha384-UbfRVKN3/elS1r7JcK2FhmPP+KlJ4CvYwbyYD7tH+uTkbT9bNJr9eJeQ0FoFbAgz", crossOrigin: "anonymous" });
+      s.onload = () => ok(window.htmlToImage);
+      s.onerror = () => { chargementImage = null; ko(new Error("html-to-image")); };
+      document.head.append(s);
+    });
+    return chargementImage;
+  }
+
+  // PNG du bloc dans le thème affiché : une figure Plotly seule est exportée par Plotly ; un autre bloc est recopié
+  // hors écran dans un cadre (sans ses boutons) puis dessiné par html-to-image.
+  async function imageDuBloc(cible) {
+    const racine = getComputedStyle(document.documentElement);
+    const fond = racine.getPropertyValue("--carte").trim() || "#FFFFFF";
+    if (cible.classList.contains("js-plotly-plot")) {
+      return (await fetch(await Plotly.toImage(cible, { format: "png", scale: 2 }))).blob();
+    }
+    const h2i = await chargerHtmlToImage();
+    const largeur = Math.max(cible.scrollWidth, cible.getBoundingClientRect().width);
+    const copie = cible.cloneNode(true);
+    copie.querySelectorAll(".barre-image, .copier").forEach((b) => b.remove());
+    copie.open = true; // un bloc replié (details) est copié ouvert
+    const cadre = Object.assign(document.createElement("div"), { className: "cadre-image" });
+    cadre.style.padding = "8px";
+    cadre.style.width = Math.ceil(largeur + 16) + "px";
+    cadre.append(copie);
+    const hors = Object.assign(document.createElement("div"), { className: "capture-hors-ecran" });
+    hors.setAttribute("aria-hidden", "true");
+    hors.append(cadre);
+    document.body.append(hors);
+    try {
+      await document.fonts.ready;
+      return await h2i.toBlob(cadre, { pixelRatio: 2, backgroundColor: fond, width: cadre.offsetWidth, height: cadre.offsetHeight });
+    } finally { hors.remove(); }
+  }
+
+  // Rend « copie », « telechargee » ou « echec ». L'écriture est lancée dans le clic (promesse du blob) : exigence des navigateurs.
+  async function copierImage(cible, nom = "chaine-de-cotes.png") {
+    const blob = imageDuBloc(cible);
+    try {
+      if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) throw new Error("presse-papiers");
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      return "copie";
+    } catch (e) { /* copie refusée : l'image est téléchargée à la place */ }
+    try {
+      const b = await blob;
+      if (!b) return "echec";
+      const url = URL.createObjectURL(b);
+      const a = Object.assign(document.createElement("a"), { href: url, download: nom });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return "telechargee";
+    } catch (e) { return "echec"; }
+  }
+
+  // Petite barre « Copier l'image » ; cible : un élément ou une fonction qui le donne. Dans un <summary>, le clic ne replie rien.
+  function boutonImage(cible, nom) {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit copie-image", textContent: "Copier l'image" });
+    b.dataset.aide = "Met une image de ce bloc dans le presse-papiers : à coller dans Word, un mail, un compte rendu.";
+    b.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      b.disabled = true;
+      const r = await copierImage(typeof cible === "function" ? cible() : cible, nom);
+      b.disabled = false;
+      if (r === "copie") confirmer(b, true, "Image copiée", "", "Image copiée dans le presse-papiers : à coller dans Word, un mail…");
+      else if (r === "telechargee") confirmer(b, true, "Image téléchargée", "", "Copie refusée par le navigateur : l'image a été téléchargée à la place.");
+      else confirmer(b, false, "", "Copie impossible", "");
+    });
+    const barre = Object.assign(document.createElement("div"), { className: "barre-image" });
+    barre.append(b);
+    return barre;
+  }
+
   // ---------- bulles d'aide au survol ----------
 
   // Lexique des termes affichés par le calcul (en-têtes, grandeurs, onglets) : le premier motif trouvé donne la bulle.
@@ -235,7 +318,7 @@ const App = (() => {
     });
     const bloc = document.createElement("div");
     bloc.className = "tableau";
-    bloc.append(enveloppe, b);
+    bloc.append(enveloppe, b, boutonImage(bloc, "tableau.png"));
     return bloc;
   }
 
@@ -282,6 +365,10 @@ const App = (() => {
       layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
     }
     Plotly.react(div, f.data, layout, { responsive: true, displaylogo: false });
+    if (!div._barre && !div.dataset.sansImage && div.parentNode) { // une seule barre « Copier l'image » au-dessus de la figure
+      div._barre = boutonImage(div, "graphique.png");
+      div.before(div._barre);
+    }
   }
 
   // Onglets : onglets = [{ id, titre, rendu(panneau) }] ; le rendu se fait à l'ouverture (Plotly a besoin d'un panneau visible).
@@ -520,6 +607,6 @@ const App = (() => {
     exposition.analyser.ouvrirLien();
   }
 
-  const exposition = { $, sombre, icone, copier, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
+  const exposition = { $, sombre, icone, copier, copierImage, boutonImage, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();
