@@ -998,6 +998,37 @@
     $("copier-lien").addEventListener("click", copierLien);
     window.addEventListener("hashchange", ouvrirLien); // lien collé dans la barre d'adresse de la page déjà ouverte
     document.addEventListener("themechange", () => { if (pont) apercu(); }); // silhouettes du schéma aux couleurs du thème
+    // texte de l'étude (données, résultats, démarche) : fabriqué par le calcul, pour le bloc-notes et pour une IA
+    const texteDeLEtude = (ia) => {
+      const r = JSON.parse(ia ? pont.texteIA(JSON.stringify(lireProbleme())) : pont.texteEtude(JSON.stringify(lireProbleme())));
+      if (r.erreur) throw new Error(r.erreur);
+      return r.texte;
+    };
+    $("export-txt").addEventListener("click", () => {
+      const b = $("export-txt");
+      try {
+        App.telecharger(nomFichier() + ".txt", texteDeLEtude(false), "text/plain;charset=utf-8");
+        App.retour(b, true, "Enregistré", "");
+      } catch (e) {
+        App.confirmer(b, false, "", "Export impossible", "Export impossible : " + e.message);
+      }
+    });
+    // « Demander à une IA » : copie la consigne et l'étude ; rien n'est envoyé, l'utilisateur colle lui-même
+    const iaBouton = $("ia-bouton"), iaPanneau = $("ia-panneau");
+    iaBouton.disabled = false;
+    const iaFermer = () => { iaPanneau.hidden = true; iaBouton.setAttribute("aria-expanded", "false"); };
+    iaBouton.addEventListener("click", async () => {
+      iaBouton.disabled = true;
+      await new Promise((r) => setTimeout(r, 30)); // laisse afficher l'état avant le calcul
+      let ok = false, erreur = "";
+      try { ok = await App.copier(texteDeLEtude(true)); } catch (e) { erreur = e.message; }
+      iaBouton.disabled = false;
+      App.confirmer(null, ok, "Étude copiée", erreur ? "Impossible : " + erreur : "Copie impossible", "Étude copiée : collez-la dans l'IA (Ctrl+V).");
+      iaPanneau.hidden = !ok;
+      iaBouton.setAttribute("aria-expanded", String(ok));
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") iaFermer(); });
+    document.addEventListener("click", (e) => { if (!$("ia-flottant").contains(e.target)) iaFermer(); });
     $("export-excel").addEventListener("click", async () => {
       const b = $("export-excel"), etat = $("export-excel-etat");
       b.disabled = true;

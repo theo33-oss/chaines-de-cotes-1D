@@ -299,3 +299,12 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
 #apercu-section.deplace { opacity: .55; }
 #depot-schema { position: fixed; z-index: 80; pointer-events: none; border: 3px dashed var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 22%, transparent); display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; color: var(--encre); }
 #depot-schema::after { content: attr(data-texte); background: var(--carte); padding: 4px 12px; border-radius: 6px; border: 1px solid var(--accent); }
+/* bouton flottant « Demander à une IA » (en bas à gauche, page Étude) */
+.ia-flottant { position: fixed; left: 16px; bottom: 16px; z-index: 80; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.ia-bouton { background: var(--accent); color: var(--sur-accent); border-color: var(--accent); font-weight: 600; padding: 8px 16px; border-radius: 999px; box-shadow: 0 4px 16px rgba(0, 0, 0, .3); }
+.ia-panneau { max-width: min(86vw, 340px); padding: 12px 14px; background: var(--carte); color: var(--encre); border: 1px solid var(--bord-fort); border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, .3); }
+.ia-panneau p { margin: 0 0 8px; font-size: .9rem; }
+.ia-panneau .ligne { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.ia-panneau a { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 12px; border: 1px solid var(--bord-fort); border-radius: 4px; text-decoration: none; color: var(--encre); background: var(--carte); }
+.ia-panneau[hidden] { display: none; }
+@media print { .ia-flottant { display: none !important; } }

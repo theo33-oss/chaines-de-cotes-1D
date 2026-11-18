@@ -15,7 +15,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=9c8f7865">
+<link rel="stylesheet" href="style.css?v=0f8f8355">
 </head>
 <body>
 <header>
@@ -36,6 +36,16 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
   <!-- ===== Page « Analyser » (js/chaine.js) ===== -->
   <div id="page-analyser" hidden>
+    <div class="ia-flottant" id="ia-flottant">
+      <div class="ia-panneau" id="ia-panneau" role="dialog" aria-label="Demander à une IA" hidden>
+        <p>Étude copiée : collez-la (Ctrl+V) dans l'IA. Elle présente d'abord le problème, puis posez-lui vos questions.</p>
+        <div class="ligne">
+          <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Ouvrir Claude</a>
+          <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Ouvrir ChatGPT</a>
+        </div>
+      </div>
+      <button id="ia-bouton" type="button" class="ia-bouton" aria-expanded="false" disabled data-aide="Copie l'étude (données, résultats, démarche) avec une consigne : l'IA présente le problème, puis vous lui posez vos questions. Rien n'est envoyé : vous collez le texte dans Claude ou ChatGPT.">Demander à une IA</button>
+    </div>
     <div id="guide" class="guide-seul">
       <h2>Nouvelle étude</h2>
       <p class="legende">Parcours guidé en cinq étapes pour mener une chaîne de cotes du jeu à garantir jusqu'au dossier à joindre à votre note de calcul.</p>
@@ -153,7 +163,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
       <p id="verdict" class="message"></p>
       <p id="conseil" class="expert-seul"></p>
       <p id="opt-invite" class="message avertissement expert-seul" hidden>Le jeu n'est pas tenu. <button id="opt-aller" type="button" class="primaire">Optimiser les tolérances</button></p>
-      <p class="ligne"><button id="export-excel" type="button" class="secondaire" data-aide="Un classeur Excel : une feuille de formules qui refait le calcul (pire des cas, statistique, Cp, Cpk, ppm) et compare avec le site, puis toutes les valeurs calculées par le site.">Exporter en Excel (pour vérifier le calcul)</button> <span id="export-excel-etat" class="legende" role="status"></span></p>
+      <p class="ligne"><button id="export-txt" type="button" class="secondaire" data-aide="Un fichier texte (.txt) lisible dans le Bloc-notes : les données, les résultats, la conclusion et la démarche du calcul.">Bloc-notes (.txt)</button> <button id="export-excel" type="button" class="secondaire" data-aide="Un classeur Excel : une feuille de formules qui refait le calcul (pire des cas, statistique, Cp, Cpk, ppm) et compare avec le site, puis toutes les valeurs calculées par le site.">Exporter en Excel (pour vérifier le calcul)</button> <span id="export-excel-etat" class="legende" role="status"></span></p>
       <ul id="plain-details" class="details guide-seul"></ul>
       <div id="plain-conseils" class="guide-seul"></div>
       <ul id="avertissements" class="legende"></ul>
@@ -581,7 +591,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
 <script src="app.js?v=5bd79483"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=370f168c"></script>
+<script src="js/chaine.js?v=e7c783f7"></script>
 <script src="js/repartir.js?v=1b6ab5db"></script>
 <script src="js/comparer.js?v=b4b4c56c"></script>
 <script src="js/mecanisme.js?v=dc6158aa"></script>
