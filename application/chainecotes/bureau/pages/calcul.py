@@ -10,7 +10,7 @@ import math
 import pandas as pd
 import plotly.graph_objects as go
 
-from chainecotes.bureau import editeur, etude, state, tache
+from chainecotes.bureau import editeur, etude, ia, state, tache
 from chainecotes.bureau.widgets import COULEURS_VERDICT, Page, Zone, toast
 from chainecotes.core.chaine import TOL_COMPARAISON, capabilitesMaillons, libelleVerdict, sansLimite
 from chainecotes.core.derive import deriveSerie
@@ -30,6 +30,7 @@ from chainecotes.services.cotation import exporterCotation
 from chainecotes.services.dossier_fichier import AVERTISSEMENT_IMAGES, FORMATS_DOSSIER, fichierDossier
 from chainecotes.services.exemples import chargerExemple, listeExemples
 from chainecotes.services.explications import explicationsCalcul
+from chainecotes.services.export_texte import texteEtude
 from chainecotes.services.classeur_complet import exporterClasseurComplet
 from chainecotes.services.feuille_chaine import exporterFeuilleChaine
 from chainecotes.services.validation import dossierValidation
@@ -131,6 +132,17 @@ class PageCalcul(Page):
         titre, action = z.colonnes([3, 1])  # le bouton reste visible en haut, même quand la colonne de saisie défile
         titre.titre("Analyse de la chaîne de cotes")
         action.bouton("Calculer (F5)", self._calculer, primaire=True)
+        boutonIA = action.bouton(
+            "Demander à une IA",
+            lambda: self._demanderAUneIA(boutonIA),
+            aide="Copie l'étude (données, résultats, démarche) avec une consigne : l'IA présente le problème, puis vous "
+            "lui posez vos questions. Rien n'est envoyé : vous collez le texte dans Claude ou ChatGPT.",
+        )
+
+    def _demanderAUneIA(self, bouton) -> None:
+        """Copie la consigne et l'étude du dernier calcul, puis propose d'ouvrir Claude ou ChatGPT."""
+        bundle = state.resultat()
+        ia.demanderAUneIA(self.fenetre, bouton, problemeAvecCartouche(bundle) if bundle else None, bundle)
 
     def _calculer(self) -> None:
         oublierDossiers()
@@ -729,6 +741,9 @@ class PageCalcul(Page):
     def _ongletFichiers(self, z: Zone, bundle: dict) -> None:
         """Enregistrement et ouverture du problème, export des résultats en tableur."""
         self._enregistrerOuvrir(z, "onglet")
+        z.sousTitre("Texte de l'étude")
+        z.legende("Un fichier texte lisible dans le Bloc-notes : les données, les résultats, la conclusion et la démarche.")
+        z.telecharger("Bloc-notes (.txt)", lambda: texteEtude(problemeAvecCartouche(bundle), bundle), "etude.txt")
         z.sousTitre("Exporter en Excel pour valider le calcul")
         z.legende(
             "Un seul classeur : la feuille de formules (le calcul refait dans Excel et comparé à l'application) et "

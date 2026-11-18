@@ -71,3 +71,23 @@ def test_copier_l_image_d_un_long_tableau(qtbot):
     assert QApplication.clipboard().pixmap().height() > widgets.HAUTEUR_TABLEAU_MAX
     assert bouton.property("retour") == "ok" and f._toast.text().startswith("Image copiée")
     assert t.size() == avant  # le tableau reprend sa taille
+
+
+def test_demander_a_une_ia_copie_la_consigne_et_l_etude(qtbot, monkeypatch):
+    from PySide6.QtWidgets import QApplication
+
+    from chainecotes.bureau import ia
+    from chainecotes.services.calcul import calculerChaine
+    from chainecotes.services.exemples import chargerExemple
+
+    menus = []
+    monkeypatch.setattr(ia, "_montrerMenu", lambda menu, position: menus.append([a.text() for a in menu.actions()]))
+    f = _fenetre(qtbot)
+    b = QPushButton("Demander à une IA", f)
+    p = chargerExemple("tableau_depart")
+    assert ia.demanderAUneIA(f, b, None, None) is False  # pas encore calculé : message, rien de copié
+    assert f._toast.property("niveau") == "erreur" and "Calculez" in f._toast.text() and not menus
+    assert ia.demanderAUneIA(f, b, p, calculerChaine(p, n=500)) is True
+    texte = QApplication.clipboard().text()
+    assert texte.startswith("Tu es un ingénieur") and "--- ÉTUDE ---" in texte and "Cote_1" in texte
+    assert menus[0][-2:] == ["Ouvrir Claude", "Ouvrir ChatGPT"]
