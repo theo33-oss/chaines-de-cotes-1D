@@ -22,3 +22,18 @@ jobs:
           cache-dependency-path: application/requirements.lock
       - run: pip install -r requirements.lock pytest pytest-qt pypdf
       - run: python -m pytest -q -p no:cacheprovider --ignore=tests/test_bouton_calculer_haut.py --ignore=tests/test_bureau.py --ignore=tests/test_bureau_comme_le_site.py --ignore=tests/test_comparer_repartition.py --ignore=tests/test_etude.py --ignore=tests/test_lot3.py --ignore=tests/test_procedes_atelier.py --ignore=tests/test_proposition_limites.py --ignore=tests/test_validation_verrou.py
+
+  site:
+    name: Site (docs/) à jour
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # le zip, les empreintes (?v=), le numéro de build et le service worker de docs/ doivent être ceux que construire_web.py
+      # fabrique : sinon la page web servirait un ancien calcul. construire_web.py n'a besoin d'aucune bibliothèque.
+      - name: docs/ est à jour
+        run: |
+          python construire_web.py
+          git diff --exit-code -- docs/chainecotes.zip docs/index.html docs/sw.js docs/app.js docs/icone.svg
