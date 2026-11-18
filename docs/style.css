@@ -354,3 +354,5 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
   .defile { overflow: visible; }
   @page { margin: 12mm; }
 }
+/* petit bouton qui a l'allure d'un lien (pied de page) */
+.lien-bouton { background: none; border: 0; padding: 0 2px; min-height: 0; font: inherit; color: var(--lien); text-decoration: underline; cursor: pointer; }

@@ -594,6 +594,27 @@ const App = (() => {
     }
   }
 
+  // « Actualiser le site » : efface les copies gardées (service worker, caches) et recharge en contournant le cache.
+  async function actualiserSite() {
+    try { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (e) { /* pas de service worker */ }
+    try { for (const n of await caches.keys()) if (n !== "chainecotes-cdn") await caches.delete(n); } catch (e) { /* pas de cache */ }
+    location.replace(location.pathname + "?maj=" + Date.now() + location.hash);
+  }
+
+  // Compare le numéro de build de cette page à celui de la page en ligne : si elles diffèrent, un bandeau propose d'actualiser.
+  async function verifierMiseAJour(build) {
+    if (!build || !/^https?:$/.test(location.protocol)) return;
+    try {
+      const t = await (await fetch(location.pathname + "?verif=" + Date.now(), { cache: "no-store" })).text();
+      const m = t.match(/name="build" content="([0-9a-f]+)"/);
+      if (!m || m[1] === build) return;
+      const bandeau = Object.assign(document.createElement("p"), { className: "message avertissement", textContent: `Une version plus récente du site est disponible (cette page : ${build}, en ligne : ${m[1]}). ` });
+      bandeau.setAttribute("role", "status");
+      bandeau.append(Object.assign(document.createElement("button"), { type: "button", className: "primaire", textContent: "Actualiser le site", onclick: actualiserSite }));
+      document.querySelector("main").prepend(bandeau);
+    } catch (e) { /* hors ligne : rien à comparer */ }
+  }
+
   // Durées du démarrage (ms), lisibles dans la console : App.mesures
   const mesures = {};
   async function chronometre(nom, travail) {
@@ -614,6 +635,13 @@ const App = (() => {
 
   async function demarrer() {
     const debut = performance.now();
+    const build = document.querySelector('meta[name="build"]')?.content || "";
+    if (build) $("version").textContent += " · build " + build;
+    $("actualiser").addEventListener("click", actualiserSite);
+    verifierMiseAJour(build);
+    // « Actualiser le site » recharge avec ?maj=… (contourne le cache) : une fois chargée, l'adresse redevient propre
+    // (sinon elle se retrouve dans les liens copiés)
+    if (/[?&]maj=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);
     menu();
     bandeaux();
     bulles();
@@ -628,7 +656,8 @@ const App = (() => {
     // Les téléchargements partent tout de suite, en parallèle du moteur Python ; ils sont lus plus tard, déjà arrivés.
     // « no-cache » : le navigateur revalide à chaque visite (réponse 304 si rien n'a changé). Sans cela, GitHub Pages
     // fait garder ces fichiers 10 minutes, et une page mise à jour recevrait l'ancien calcul.
-    const archiveZip = fetch("chainecotes.zip", { cache: "no-cache" }).then((r) => r.arrayBuffer());
+    const empreinteZip = document.querySelector('meta[name="zip"]')?.content || Date.now(); // adresse propre à ce zip : jamais un ancien
+    const archiveZip = fetch("chainecotes.zip?v=" + empreinteZip).then((r) => r.arrayBuffer());
     const textePont = fetch("pont.py", { cache: "no-cache" }).then((r) => r.text());
     archiveZip.catch(() => {}); // l'erreur est traitée à l'attente, plus bas
     textePont.catch(() => {});
@@ -662,10 +691,14 @@ const App = (() => {
     etat("");
     $("pret").hidden = false;
     exposition.analyser.ouvrirLien();
+    // usage hors ligne : le service worker garde une copie du site et des bibliothèques (https ou localhost seulement)
+    if ("serviceWorker" in navigator && window.isSecureContext) {
+      navigator.serviceWorker.register("sw.js").catch((e) => console.warn("Hors ligne indisponible :", e));
+    }
     mesures.total = Math.round(performance.now() - debut);
     console.info("Chaînes de cotes prêt (ms)", mesures);
   }
 
-  const exposition = { $, mesures, sombre, icone, copier, copierImage, boutonImage, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
+  const exposition = { $, mesures, actualiserSite, verifierMiseAJour, sombre, icone, copier, copierImage, boutonImage, toast, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
   return exposition; // les pages ajoutent leurs propres points d'entrée (App.analyser)
 })();
