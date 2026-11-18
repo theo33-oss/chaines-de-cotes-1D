@@ -440,6 +440,7 @@ class TableauEditable(QTableWidget):
                  surSelection: Callable[[int], None] | None = None) -> None:  # fmt: skip
         super().__init__(0, len(colonnes))
         self.colonnes, self.surChange, self.surSelection = colonnes, surChange, surSelection
+        self.setAccessibleName("Tableau de saisie des maillons")
         self.lignes: list[dict] = []
         self.setHorizontalHeaderLabels([c.titre for c in colonnes])
         for j, c in enumerate(colonnes):
@@ -808,6 +809,8 @@ class Zone:
             lab.setObjectName("etiquette")
             lab.setWordWrap(True)
             lab.setToolTip(aide or "")
+            lab.setBuddy(w)  # lecteur d'écran : le champ porte le nom de son étiquette
+            w.setAccessibleName(libelle)
             self._ajouter(lab)
         return self._ajouter(w)
 

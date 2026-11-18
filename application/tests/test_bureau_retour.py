@@ -91,3 +91,23 @@ def test_demander_a_une_ia_copie_la_consigne_et_l_etude(qtbot, monkeypatch):
     texte = QApplication.clipboard().text()
     assert texte.startswith("Tu es un ingénieur") and "--- ÉTUDE ---" in texte and "Cote_1" in texte
     assert menus[0][-2:] == ["Ouvrir Claude", "Ouvrir ChatGPT"]
+
+
+def test_les_champs_portent_le_nom_de_leur_etiquette(qtbot):
+    """Lecteur d'écran : chaque champ de saisie a un nom accessible (celui de son libellé)."""
+    from PySide6.QtWidgets import QLineEdit, QVBoxLayout, QWidget
+
+    from chainecotes.bureau.widgets import Zone
+
+    class _Page:
+        fenetre = None
+
+    hote = QWidget()
+    qtbot.addWidget(hote)
+    z = Zone(_Page(), QVBoxLayout(hote))
+    champ = QLineEdit()
+    z._etiquette("Nom de la cote condition", champ, "aide")
+    assert champ.accessibleName() == "Nom de la cote condition"
+    from PySide6.QtWidgets import QLabel
+
+    assert hote.findChild(QLabel).buddy() is champ
