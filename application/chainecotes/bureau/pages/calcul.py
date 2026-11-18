@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from chainecotes.bureau import editeur, etude, state, tache
-from chainecotes.bureau.widgets import COULEURS_VERDICT, Page, Zone
+from chainecotes.bureau.widgets import COULEURS_VERDICT, Page, Zone, toast
 from chainecotes.core.chaine import TOL_COMPARAISON, capabilitesMaillons, libelleVerdict, sansLimite
 from chainecotes.core.derive import deriveSerie
 from chainecotes.core.errors import ErreurChaine
@@ -154,7 +154,7 @@ class PageCalcul(Page):
             state.definirResultat(bundle)
             state.ajouterHistorique(bundle, n, graine)
             self.tout()
-            self.fenetre.statusBar().showMessage("Calcul terminé.", 5000)
+            toast(self.fenetre, "Calcul terminé.")
 
         def echec(e: Exception) -> None:
             state.effacerResultat()

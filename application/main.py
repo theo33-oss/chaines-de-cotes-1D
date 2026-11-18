@@ -424,7 +424,7 @@ class Fenetre(QMainWindow):
             return False
         state.etudeEnregistree(chemin)
         self._effacerReprise()
-        self.statusBar().showMessage(f"Étude enregistrée : {Path(chemin).name}", 6000)
+        widgets.toast(self, f"Étude enregistrée : {Path(chemin).name}")
         self._surveiller()
         return True
 

@@ -122,6 +122,76 @@ def vider(disposition: Any) -> None:
             vider(element.layout())
 
 
+DUREE_RETOUR_MS = 2000  # le bouton garde son aspect « fait » ce temps, puis reprend son texte (comme sur le site)
+
+
+def _repeindre(w: QWidget) -> None:
+    """Relit la feuille de style après un changement de propriété (niveau, retour)."""
+    w.style().unpolish(w)
+    w.style().polish(w)
+    w.update()
+
+
+def toast(fenetre: QWidget, texte: str, niveau: str = "succes") -> None:
+    """Message flottant en bas de la fenêtre (un seul, réutilisé), comme le message du site : il disparaît tout seul.
+
+    Entrées : fenetre (fenêtre principale), texte, niveau (« succes » ou « erreur » : plus longtemps à l'écran).
+    """
+    t = getattr(fenetre, "_toast", None)
+    if t is None:
+        t = QLabel(fenetre)
+        t.setObjectName("toast")
+        t.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        t.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        t.setAccessibleName("Message")
+        t.minuterie = QTimer(t)
+        t.minuterie.setSingleShot(True)
+        t.minuterie.timeout.connect(t.hide)
+        fenetre._toast = t
+    t.setProperty("niveau", niveau)
+    _repeindre(t)
+    t.setText(texte)
+    t.setMaximumWidth(max(200, int(fenetre.width() * 0.8)))
+    t.adjustSize()
+    t.move((fenetre.width() - t.width()) // 2, fenetre.height() - t.height() - 56)
+    t.show()
+    t.raise_()
+    t.minuterie.start(3500 if niveau == "erreur" else 2200)
+
+
+def retour(bouton: QPushButton, ok: bool, texteOk: str, texteKo: str = "Impossible") -> None:
+    """Le bouton passe au vert avec une coche (au rouge avec une croix si ko) un instant, puis reprend son texte."""
+    if bouton.property("libelle") is None:
+        bouton.setProperty("libelle", bouton.text())
+        bouton.setMinimumWidth(bouton.width())  # la largeur ne saute pas quand le texte change
+    bouton.setText(("✓ " + texteOk) if ok else ("✗ " + texteKo))
+    bouton.setProperty("retour", "ok" if ok else "ko")
+    _repeindre(bouton)
+    m = getattr(bouton, "minuterieRetour", None)
+    if m is None:
+        m = QTimer(bouton)
+        m.setSingleShot(True)
+        m.timeout.connect(lambda: _finRetour(bouton))
+        bouton.minuterieRetour = m
+    m.start(DUREE_RETOUR_MS)
+
+
+def _finRetour(bouton: QPushButton) -> None:
+    bouton.setText(str(bouton.property("libelle")))
+    bouton.setProperty("libelle", None)
+    bouton.setProperty("retour", None)
+    bouton.setMinimumWidth(0)
+    _repeindre(bouton)
+
+
+def confirmer(fenetre: QWidget, bouton: QPushButton | None, ok: bool, texteOk: str, texteKo: str = "Impossible",
+              message: str | None = None) -> None:  # fmt: skip
+    """Retour complet d'une action : le bouton (facultatif) et un message flottant."""
+    if bouton is not None:
+        retour(bouton, ok, texteOk, texteKo)
+    toast(fenetre, (message or texteOk) if ok else (message or texteKo), "succes" if ok else "erreur")
+
+
 def systemeSombre() -> bool:
     """Vrai si Windows (ou le système) est réglé sur le thème sombre : réglage de départ de l'application."""
     return QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
@@ -222,7 +292,11 @@ def texteTableau(table: QTableWidget, selection: bool = False) -> str:
 def _installerCopie(table: QTableWidget) -> None:
     """Ctrl+C copie la sélection, et le clic droit « Copier le tableau » copie tout, pour Excel."""
     action = QAction("Copier le tableau", table)
-    action.triggered.connect(lambda: QApplication.clipboard().setText(texteTableau(table)))
+    def copier() -> None:
+        QApplication.clipboard().setText(texteTableau(table))
+        toast(table.window(), "Tableau copié : collez-le dans Excel.")
+
+    action.triggered.connect(copier)
     table.addAction(action)
     table.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
     copie = QShortcut(QKeySequence.StandardKey.Copy, table)
@@ -650,15 +724,17 @@ class Zone:
                 contenu = donnees() if callable(donnees) else donnees
             except ErreurChaine as e:  # saisie invalide : message à l'écran plutôt qu'une erreur de l'application
                 QMessageBox.warning(self.page, "Enregistrement impossible", e.message)
+                confirmer(self.page.fenetre, b, False, "", "Enregistrement impossible", "Enregistrement impossible.")
                 return
             try:
                 ecrireSansPerte(chemin, contenu)
             except OSError as e:
                 QMessageBox.warning(self.page, "Enregistrement impossible", str(e))
+                confirmer(self.page.fenetre, b, False, "", "Enregistrement impossible", "Enregistrement impossible.")
             else:
-                self.page.fenetre.statusBar().showMessage(f"Fichier enregistré : {Path(chemin).name}", 6000)
+                confirmer(self.page.fenetre, b, True, "Enregistré", message=f"Fichier enregistré : {Path(chemin).name}")
 
-        self.bouton(libelle, ecrire)
+        b = self.bouton(libelle, ecrire)
 
     def ouvrirFichier(self, libelle: str, filtre: str, action: Callable[[list[tuple[str, bytes]]], None],
                       multiple: bool = False, aide: str | None = None) -> None:  # fmt: skip
@@ -923,6 +999,7 @@ def appliquerTheme(app: QApplication) -> None:
     else:
         fond, carte, encre, discret, bord, fort = "#F6F4FA", FOND_FIGURE, "#2A1B4A", "#5E5577", "#C9C1E0", "#5C4B99"
         accent, bandeau, lien, menu, texteMenu = "#5C4B99", "#3D246C", "#4A3A8C", "#3D246C", "#FFFFFF"
+    ok, ko = COULEURS_MESSAGE["succes"], COULEURS_MESSAGE["erreur"]
     app.setStyleSheet(f"""
     QWidget {{ background:{fond}; color:{encre}; font-size:10pt; }}
     QLabel {{ background:transparent; }}
@@ -975,4 +1052,9 @@ def appliquerTheme(app: QApplication) -> None:
     #sousmenu {{ font-size:10pt; padding:4px 14px; }}
     #famille:hover, #sousmenu:hover {{ border-color:{fort}; }}
     #famille:checked, #sousmenu:checked {{ background:{accent}; color:#FFFFFF; }}
+    #bouton[retour="ok"], #primaire[retour="ok"] {{ background:{ok[0]}; color:{ok[1]}; border:1px solid {ok[1]}; }}
+    #bouton[retour="ko"], #primaire[retour="ko"] {{ background:{ko[0]}; color:{ko[1]}; border:1px solid {ko[1]}; }}
+    #toast {{ border-radius:8px; padding:9px 18px; font-weight:bold; border:1px solid {fort}; }}
+    #toast[niveau="succes"] {{ background:{ok[0]}; color:{ok[1]}; border-color:{ok[1]}; }}
+    #toast[niveau="erreur"] {{ background:{ko[0]}; color:{ko[1]}; border-color:{ko[1]}; }}
     """)
