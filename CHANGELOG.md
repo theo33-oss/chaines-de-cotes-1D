@@ -8,6 +8,7 @@ l'installateur Windows de chaque version est dans les [Releases](https://github.
 Site : mise en page de l'étude
 - Séparateur à glisser entre le tableau des maillons et le schéma (flèches, double-clic ou « Moitié-moitié » pour 50 / 50), en temps réel ; le choix est gardé.
 - « Deux cotes condition » : la deuxième cote condition part des mêmes maillons et des mêmes limites que la première (plus de chaîne vide ni de « il faut au moins deux maillons »).
+- Comparer, Optimiser, Mécanisme, Assistant, Ajustements et Dossier : sur grand écran (1 200 px et plus), la saisie et le résultat se mettent côte à côte avec le même séparateur à glisser (flèches, double-clic, « Moitié-moitié ») et un bouton « Empiler » / « Côte à côte » ; réglages gardés par page.
 - Bouton « Calculer » toujours visible dans la barre collante du haut.
 - « Demander à une IA » se range sur le bord gauche en languette « IA » ; elle s'ouvre au survol et un clic la remet en place.
 

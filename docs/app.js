@@ -713,6 +713,83 @@ const App = (() => {
     return chargees[nom];
   }
 
+  // ---------- pages à deux volets : saisie à gauche, résultat à droite, largeur réglable ----------
+
+  // Sur grand écran, la saisie d'une page et son résultat se mettent côte à côte, avec un séparateur à glisser (flèches, double-clic :
+  // moitié-moitié) et un bouton « Côte à côte / Empilé ». Choix gardés par page. Les blocs sont déplacés, pas copiés : leurs écouteurs restent.
+  const ZONES = [
+    // [page, élément qui porte le contenu (null : la page elle-même), résultat, clé de mémoire, libellé]
+    ["page-comparer", "cmp-comparatif", "cmp-sortie", "comparer", "la comparaison"],
+    ["page-repartir", null, "rp-resultat", "repartir", "l'optimisation"],
+    ["page-mecanisme", null, "mc-resultat", "mecanisme", "le mécanisme"],
+    ["page-assistant", null, "as-resultat", "assistant", "l'assistant"],
+    ["page-ajustement", null, "aj-resultat", "ajustement", "l'ajustement"],
+    ["page-dossier", null, "dos-resultat", "dossier", "le dossier"],
+  ];
+
+  function diviser([idPage, idHote, idResultat, cle, quoi]) {
+    const page = $(idPage), resultat = $(idResultat);
+    if (!page || !resultat) return;
+    const hote = idHote ? $(idHote) : page;
+    const enfants = [...hote.children].filter((x) => x.tagName !== "SUMMARY");
+    if (!enfants.includes(resultat)) return; // le résultat doit être un bloc direct de la page : sinon elle reste comme avant
+    const zone = document.createElement("div");
+    zone.className = "zone-divisee";
+    zone.id = "zone-" + cle;
+    const barre = document.createElement("div");
+    barre.className = "zone-barre ligne";
+    const sep = document.createElement("div");
+    sep.id = "sep-" + cle;
+    sep.className = "zone-sep";
+    sep.setAttribute("role", "separator");
+    sep.setAttribute("aria-orientation", "vertical");
+    sep.setAttribute("aria-label", `Largeur de la saisie et du résultat de ${quoi} : glisser, flèches gauche et droite, double-clic pour moitié-moitié`);
+    sep.setAttribute("aria-valuemin", "25");
+    sep.setAttribute("aria-valuemax", "75");
+    sep.tabIndex = 0;
+    sep.title = "Glisser pour changer la largeur (double-clic : moitié-moitié)";
+    sep.innerHTML = '<span aria-hidden="true">⋮</span>';
+    const bCote = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit" });
+    const bMoitie = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit", textContent: "Moitié-moitié" });
+    barre.append(bCote, bMoitie);
+    for (const e of enfants) zone.append(e);
+    resultat.before(sep);
+    zone.prepend(barre);
+    hote.append(zone);
+
+    const lire = (k, defaut) => { try { return localStorage.getItem("chainecotes." + k + "." + cle) ?? defaut; } catch (e) { return defaut; } };
+    const garder = (k, v) => { try { localStorage.setItem("chainecotes." + k + "." + cle, String(v)); } catch (e) { /* sans mémoire */ } };
+    let cote = lire("cote", "1") === "1";
+    let part = Number(lire("part", "50")) || 50;
+    const appliquer = () => {
+      zone.classList.toggle("cote", cote);
+      zone.style.setProperty("--part", String(part));
+      sep.setAttribute("aria-valuenow", String(part));
+      bCote.textContent = cote ? "Empiler (saisie au-dessus du résultat)" : "Côte à côte (saisie | résultat)";
+      bMoitie.hidden = !cote;
+      window.dispatchEvent(new Event("resize")); // les figures se recalent
+    };
+    const poser = (p, memoriser = true) => { part = Math.max(25, Math.min(75, Math.round(p))); appliquer(); if (memoriser) garder("part", part); };
+    // le résultat apparaît (hidden retiré) : la colonne de droite n'existe que s'il y a quelque chose à y mettre
+    const suivre = () => zone.classList.toggle("avec-resultat", !resultat.hidden);
+    new MutationObserver(suivre).observe(resultat, { attributes: true, attributeFilter: ["hidden"] });
+    suivre();
+    bCote.addEventListener("click", () => { cote = !cote; garder("cote", cote ? "1" : "0"); appliquer(); });
+    bMoitie.addEventListener("click", () => poser(50));
+    let tire = false;
+    sep.addEventListener("pointerdown", (e) => { if (e.button) return; tire = true; sep.setPointerCapture(e.pointerId); document.body.classList.add("glisse"); e.preventDefault(); });
+    sep.addEventListener("pointermove", (e) => { if (tire) { const r = zone.getBoundingClientRect(); poser(((e.clientX - r.left) / r.width) * 100, false); } });
+    const fin = () => { if (tire) { tire = false; document.body.classList.remove("glisse"); poser(part); } };
+    sep.addEventListener("pointerup", fin);
+    sep.addEventListener("pointercancel", fin);
+    sep.addEventListener("keydown", (e) => {
+      const pas = { ArrowLeft: -2, ArrowRight: 2 }[e.key];
+      if (pas !== undefined) { e.preventDefault(); poser(part + pas); } else if (e.key === "Home") { e.preventDefault(); poser(50); }
+    });
+    sep.addEventListener("dblclick", () => poser(50));
+    appliquer();
+  }
+
   // Durées du démarrage (ms), lisibles dans la console : App.mesures
   const mesures = {};
   async function chronometre(nom, travail) {
@@ -786,6 +863,7 @@ const App = (() => {
       exposition.pyodide = pyodide; // pour les essais et la console (App.pyodide)
       await plotlyPret; // les pages dessinent des figures dès leur préparation
       await chronometre("pages", async () => { for (const p of pages) await p.apres(pont); });
+      for (const z of ZONES) { try { diviser(z); } catch (e) { console.warn("Page à deux volets indisponible :", z[0], e); } } // une page qui ne s'y prête pas reste comme avant
     } catch (e) {
       pont = null;
       $("etat").className = "message erreur";
