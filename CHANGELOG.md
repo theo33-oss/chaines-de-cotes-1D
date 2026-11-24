@@ -3,7 +3,7 @@
 Le numéro de version est celui de `application/chainecotes/__init__.py`. Le site suit toujours la dernière version ;
 l'installateur Windows de chaque version est dans les [Releases](https://github.com/theo33-oss/chaines-de-cotes-1D/releases).
 
-## Non publié
+## 1.1.0 (24 novembre 2026)
 
 Comparer plusieurs chaînes et plusieurs cotes condition (site)
 - Page Comparer : un comparatif de 12 chaînes au plus, côte à côte. Une colonne = une chaîne avec sa cote condition, venue de l'étude en cours (deux colonnes si elle a deux cotes condition), de « Mes études », d'un exemple ou d'un fichier ; « Nouvelle CF sur ces maillons » crée une autre cote condition sur les mêmes cotes (sens +, − ou exclu au choix).
