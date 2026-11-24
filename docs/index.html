@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#2C2348" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="build" content="4e08b0e9">
+<meta name="build" content="42b3a801">
 <meta name="zip" content="e46ba666">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -20,7 +20,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=bca7d4d4">
+<link rel="stylesheet" href="style.css?v=0a8f4cc9">
 </head>
 <body>
 <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -36,6 +36,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 <main id="contenu" tabindex="-1">
   <div id="etat" class="message info" role="status">
     <span id="etat-texte">Préparation 1/3 : moteur Python… comptez 10 à 30 secondes la première fois. Vous pouvez lire la page en attendant.</span>
+    <span id="etat-temps" class="legende" aria-hidden="true"></span>
     <progress id="avance" max="3" value="1"></progress>
   </div>
   <p id="etude-cours" class="legende" hidden><span id="etude-texte"></span> <button id="etude-modifier" type="button" class="secondaire petit">Voir ou modifier</button></p>
@@ -165,10 +166,10 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
     <p data-etape="4"><button data-aide="Lance les trois calculs : pire des cas, statistique et Monte-Carlo (touche Entrée)." id="calculer" type="button" class="primaire">Calculer</button> <span class="legende expert-seul">Le verdict s'affiche juste en dessous.</span></p>
     <p id="erreur" class="message erreur" role="alert" hidden data-etape="4"></p>
 
-    <details class="bandeau" id="resultats" open aria-live="polite" hidden data-etape="4">
+    <details class="bandeau" id="resultats" open hidden data-etape="4">
       <summary><h2 id="t-resultats">Résultats</h2></summary>
       <p id="resultat-ancien" class="message avertissement" role="status" hidden>Résultat ancien : l'étude a changé depuis le dernier calcul. <button id="recalculer" type="button" class="primaire petit">Recalculer</button></p>
-      <p id="verdict" class="message"></p>
+      <p id="verdict" class="message" role="status"></p>
       <div id="decision" class="decision" hidden>
         <div id="decision-chiffres" class="metriques" aria-label="Chiffres clés du résultat"></div>
         <p id="decision-cause" class="expert-seul"><strong>Cause principale :</strong> <span id="decision-cause-texte"></span> <button id="decision-aller" type="button" class="secondaire petit" data-aide="Ouvre le tableau des maillons sur la cote qui pèse le plus dans la dispersion du jeu.">Aller à la cause</button></p>
@@ -636,11 +637,9 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel. Aucun cookie, aucune mesure d'audience.</p>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
-<script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=ed507c52"></script>
+<script src="app.js?v=67d35b36"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=8859d95b"></script>
+<script src="js/chaine.js?v=93cc4f06"></script>
 <script src="js/repartir.js?v=ab2c4d30"></script>
 <script src="js/comparer.js?v=a83ab01d"></script>
 <script src="js/mecanisme.js?v=cde448b1"></script>

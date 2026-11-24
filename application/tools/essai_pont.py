@@ -34,6 +34,16 @@ ap = json.loads(pont.apercu(json.dumps({"condition": {}, "reglages": {}, "maillo
 assert ap["erreur"] and ap["fig"], ap
 mauvais = json.loads(pont.sauver(json.dumps({"condition": {}, "reglages": {"kSigma": 3, "tref": 20, "modeT": "x"}, "maillons": []})))
 assert "erreur" in mauvais, mauvais
+# ---- limites : nombre au-delà de 10^18 refusé, erreur arithmétique traduite en français
+_grand = json.loads(pont.charger(exemples[0]["id"]))
+_grand["maillons"][0]["cote"] = 1e30
+for _f in (pont.calculer, pont.apercu, pont.sauver):
+    _r = json.loads(_f(json.dumps(_grand)))
+    assert "10^18" in _r["erreur"] and "Maillon 1" in _r["erreur"], _r
+_grand["maillons"][0]["cote"] = 1e18
+pont._nettoyer(_grand)  # 1e18 pile : accepté par le plafond
+assert "domaine des nombres" in pont._phraseArithmetique(ZeroDivisionError("float division by zero"))
+assert pont._phraseArithmetique(RuntimeError("bug")) is None
 # ---- phase 2 : exemples, ISO 286, ajustements, matériaux
 cartes = json.loads(pont.cartes())
 assert len(cartes) == len(exemples) and all(c["maillons"]["lignes"] and (c["pireCas"] or c["erreur"]) for c in cartes)
@@ -166,3 +176,6 @@ cmp_ = json.loads(pont.comparerN(json.dumps({"colonnes": cols, "reference": 0, "
 assert [c["verdict"] for c in cmp_["colonnes"]][-1] == "erreur" and len(cmp_["colonnes"]) == 4, cmp_.get("erreur")
 assert [f["id"] for f in cmp_["figures"]] == ["plages", "cpk", "distributions"] and cmp_["csv"].startswith("\ufeff") and "\t" in cmp_["texte"]
 assert "erreur" in json.loads(pont.comparerN(json.dumps({"colonnes": [], "reference": 0})))
+# bloc « Décision » : chiffres clés et cote qui pèse le plus
+dec = json.loads(pont.calculer(pont.charger("reducteur_jeu_axial")))["decision"]
+assert len(dec["chiffres"]) >= 3 and dec["principaux"][0]["nom"] and 0 < dec["principaux"][0]["part"] <= 100

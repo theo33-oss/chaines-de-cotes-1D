@@ -4,6 +4,7 @@ Le navigateur appelle ces fonctions par Pyodide ; elles servent aussi aux essais
 Rien n'est calculé en JavaScript : la page ne fait qu'afficher ce que ce module renvoie.
 """
 
+import functools
 import json
 import math
 import re
@@ -89,8 +90,87 @@ def _vide(v) -> bool:
     return v is None or (isinstance(v, str) and not v.strip())
 
 
-def _nettoyer(p: dict, garderCartouche: bool = False) -> dict:
-    """Cases vides de la page (texte vide) → None pour la condition et les réglages, champ absent pour un maillon."""
+# ---------- limite de taille des nombres saisis ----------
+
+PLAFOND = 1e18  # valeur absolue maximale d'un nombre saisi (ou lu dans un fichier, un lien) ; au-delà, l'unité est fausse
+_ID_PLAFOND = "Chaine:Saisie:plafond"
+_CHAMPS_CONDITION = {"jmin": "Jmin", "jmax": "Jmax"}  # mm ; l'infini (côté sans limite) reste permis
+_CHAMPS_REGLAGES = {
+    "kSigma": ("le procédé garanti k", ""),
+    "tref": ("la température de référence", " °C"),
+    "tservice": ("la température de service", " °C"),
+    "decentrage": ("le décentrage", " σ_J"),
+}
+_CHAMPS_MAILLON = {
+    "cote": ("la cote nominale", " mm"),
+    "es": ("l'écart supérieur", " mm"),
+    "ei": ("l'écart inférieur", " mm"),
+    "alpha": ("le coefficient de dilatation", " µm/m/K"),
+    "tservice": ("la température de service", " °C"),
+    "derive": ("la dérive", " µm / 1000 pièces"),
+    "facteur": ("le facteur", ""),
+    "angle": ("l'angle", " °"),
+    "sigma_reel": ("l'écart type mesuré", " mm"),
+    "moyenne_reelle": ("la moyenne mesurée", " mm"),
+    "imageAngle": ("l'inclinaison de l'image", " °"),
+}
+
+
+def _trop_grand(v) -> str | None:
+    """Texte du nombre si c'est un nombre fini de valeur absolue > PLAFOND, sinon None (vide, texte, infini, nan : non concernés)."""
+    if v is None or isinstance(v, bool):
+        return None
+    try:
+        x = float(v)
+    except OverflowError:  # entier de plusieurs centaines de chiffres
+        return "un nombre démesuré"
+    except (TypeError, ValueError):
+        return None
+    return fr(x, ".6g") if math.isfinite(x) and abs(x) > PLAFOND else None
+
+
+def _refus(prefixe: str, sujet: str, quoi: str, valeur: str, unite: str) -> ErreurChaine:
+    return ErreurChaine(_ID_PLAFOND, f"{prefixe}{sujet} : {quoi} vaut {valeur}, au-delà de 10^18{unite} : vérifiez l'unité.")
+
+
+def _controlerPlafond(p: dict, prefixe: str = "") -> None:
+    """Refuse (ErreurChaine) tout nombre fini de valeur absolue > PLAFOND dans un problème (condition, réglages, maillons).
+
+    Une valeur infinie ou nan n'est pas jugée ici (jmin et jmax infinis = côté sans limite ; le reste est refusé par le calcul).
+    Le message dit où est la valeur, ce qu'elle vaut et dans quelle unité : le plus souvent une unité mal choisie.
+    """
+    condition, reglages = p.get("condition") or {}, p.get("reglages") or {}
+    for cle, nom in _CHAMPS_CONDITION.items():
+        if (v := _trop_grand(condition.get(cle))) is not None:
+            raise _refus(prefixe, "Cote condition", nom, v, " mm")
+    for cle, (quoi, unite) in _CHAMPS_REGLAGES.items():
+        if (v := _trop_grand(reglages.get(cle))) is not None:
+            raise _refus(prefixe, "Réglages", quoi, v, unite)
+    for i, m in enumerate(p.get("maillons") or [], start=1):
+        nom = m.get("nom")
+        sujet = f"Maillon {i}" + (f" ({nom})" if isinstance(nom, str) and nom.strip() else "")
+        for cle, (quoi, unite) in _CHAMPS_MAILLON.items():
+            if (v := _trop_grand(m.get(cle))) is not None:
+                raise _refus(prefixe, sujet, quoi, v, unite)
+
+
+class _ProblemeRefuse(dict):
+    """Problème refusé par le plafond, que le calcul des services copie (deepcopy) avant de le calculer : la copie relève
+    alors l'erreur, et la colonne ou la chaîne est signalée en erreur sans empêcher les autres de se calculer."""
+
+    def __init__(self, probleme: dict, erreur: ErreurChaine):
+        super().__init__(probleme)
+        self._erreur = erreur
+
+    def __deepcopy__(self, memo):
+        raise self._erreur
+
+
+def _nettoyer(p: dict, garderCartouche: bool = False, controler: bool = True) -> dict:
+    """Cases vides de la page (texte vide) → None pour la condition et les réglages, champ absent pour un maillon.
+
+    Refuse (ErreurChaine) un nombre dont la valeur absolue dépasse PLAFOND, sauf si controler est faux.
+    """
     sortie = {
         "condition": {k: (None if _vide(v) else v) for k, v in p.get("condition", {}).items()},
         "reglages": {k: (None if _vide(v) else v) for k, v in p.get("reglages", {}).items()},
@@ -98,7 +178,53 @@ def _nettoyer(p: dict, garderCartouche: bool = False) -> dict:
     }
     if garderCartouche and p.get("cartouche"):
         sortie["cartouche"] = p["cartouche"]
+    if controler:
+        _controlerPlafond(sortie)
     return sortie
+
+
+# ---------- erreurs arithmétiques inattendues ----------
+
+PHRASE_ARITHMETIQUE = (
+    "Le calcul sort du domaine des nombres (division par zéro ou valeur trop grande) : "
+    "vérifiez les cotes, les tolérances et les limites saisies."
+)
+_MOTIFS_ARITHMETIQUES = ("math domain error", "cannot convert float", "out of range float values", "infs or nans")
+
+
+def _phraseArithmetique(e: BaseException) -> str | None:
+    """Phrase française pour une erreur arithmétique non prévue, ou None si l'erreur n'est pas de ce type.
+
+    Concerne ZeroDivisionError, OverflowError, FloatingPointError (toutes des ArithmeticError) et les ValueError de
+    nombres hors domaine (« math domain error », « cannot convert float infinity », nan ou inf à écrire en JSON).
+    Les autres erreurs ne sont pas traduites : un vrai bug ne doit pas être masqué.
+    """
+    if isinstance(e, ArithmeticError):
+        return PHRASE_ARITHMETIQUE
+    if isinstance(e, ValueError) and any(m in str(e).lower() for m in _MOTIFS_ARITHMETIQUES):
+        return PHRASE_ARITHMETIQUE
+    return None
+
+
+def _messageSaisie(e: BaseException, debut: str = "Saisie incomplète") -> str:
+    """Message d'erreur d'une saisie : la phrase arithmétique si c'en est une, sinon « début : texte de l'erreur »."""
+    return _phraseArithmetique(e) or f"{debut} : {e}"
+
+
+def _traduireArithmetique(f):
+    """Pour une fonction du pont qui renvoie du JSON : une erreur arithmétique non prévue devient {"erreur": phrase}."""
+
+    @functools.wraps(f)
+    def enveloppe(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except (ArithmeticError, ValueError) as e:
+            phrase = _phraseArithmetique(e)
+            if phrase is None:
+                raise
+            return json.dumps({"erreur": phrase})
+
+    return enveloppe
 
 
 def _figure(ident: str, titre: str, fig, legende: str) -> dict:
@@ -116,7 +242,27 @@ def apercu(texte: str) -> str:
     Sortie JSON : fig, legende (schéma), erreur (texte ou null), pireCas (niveau, texte, ou null) et controles
     (liste de niveau, maillon, message).
     """
-    probleme = _nettoyer(json.loads(texte))
+    probleme = _nettoyer(json.loads(texte), controler=False)
+    try:
+        _controlerPlafond(probleme)
+    except ErreurChaine as e:
+        return _apercuRefuse(e.message)
+    try:
+        return _apercu(probleme)
+    except (ArithmeticError, ValueError) as e:
+        phrase = _phraseArithmetique(e)
+        if phrase is None:
+            raise
+        return _apercuRefuse(phrase)
+
+
+def _apercuRefuse(message: str) -> str:
+    """Aperçu d'une saisie refusée (nombre trop grand, erreur arithmétique) : schéma vide et message, sans calcul."""
+    fig, legende = figureSchema({"condition": {}, "reglages": {}, "maillons": []}, {"erreur": message})
+    return json.dumps({"fig": json.loads(fig.to_json()), "legende": legende, "erreur": message, "pireCas": None, "controles": []})
+
+
+def _apercu(probleme: dict) -> str:
     ap = apercuChaine(probleme)
     fig, legende = figureSchema(probleme, ap)
     pire = None
@@ -286,6 +432,17 @@ def _bundle(texte: str, garderCartouche: bool = False) -> dict:
     return bundle
 
 
+def _decision(bundle: dict, conclusion: dict) -> dict:
+    """Chiffres clés sous le verdict et cotes qui pèsent le plus (bloc « Décision » de la page)."""
+    v = bundle["verdicts"]
+    chiffres = [["Jeu mini (pire cas)", f"{fr(v['pireCas']['min'])} mm"], ["Jeu maxi (pire cas)", f"{fr(v['pireCas']['max'])} mm"]]
+    if math.isfinite(v["cpk"]):
+        chiffres.append(["Cpk", fr(v["cpk"], ".3g")])
+    chiffres.append(["Hors tolérance", ppmLisible(v["ppm"])])
+    return {"chiffres": chiffres, "principaux": conclusion["principaux"]}
+
+
+@_traduireArithmetique
 def calculer(texte: str) -> str:
     """Calcul complet d'un problème (JSON) : verdict, conseil, tableaux, figures Plotly (JSON), explications.
 
@@ -321,6 +478,7 @@ def calculer(texte: str) -> str:
                 "conseils": conclusion["conseils"],
                 "details": conclusion["details"],
                 "avertissements": bundle["avertissements"],
+                "decision": _decision(bundle, conclusion),
                 "resultats": _resultats(bundle),
                 "statistiques": _statistiques(bundle),
                 "figuresStatistiques": [_figure(i, t, *f(bundle)) for i, t, f in statistiquesVoulues],
@@ -336,7 +494,7 @@ def calculer(texte: str) -> str:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e)})
 
 
 # ---------- bibliothèque d'exemples ----------
@@ -561,11 +719,15 @@ def materiauxSources() -> str:
     )
 
 
+@_traduireArithmetique
 def dilatation(nom: str, tref: float, temperature: float) -> str:
     """α moyen et allongement d'un matériau entre Tref et T, avis sur le domaine d'emploi et courbe de dilatation."""
     m = next((x for x in listeMateriaux() if x["nom"] == nom and x["nom"] != PERSONNALISE), None)
     if m is None:
         return json.dumps({"erreur": f"Matériau inconnu : {nom!r}."})
+    for quoi, v in (("La température de référence", tref), ("La température", temperature)):
+        if (texteV := _trop_grand(v)) is not None:
+            return json.dumps({"erreur": f"{quoi} vaut {texteV}, au-delà de 10^18 °C : vérifiez l'unité."})
     tref, temperature = float(tref), float(temperature)
     if temperature < -273.15 or tref < -273.15:
         return json.dumps({"erreur": "Une température ne peut pas être sous le zéro absolu (−273,15 °C)."})
@@ -604,6 +766,7 @@ def procedes() -> str:
     return json.dumps({"procedes": cout_mod.listeProcedes(), "fiabilite": cout_mod.fiabiliteProcedes()})
 
 
+@_traduireArithmetique
 def repartir(texte: str, methode: str, critere: str, figes: str = "[]", reglage: int = 0, procedesMaillons: str = "[]",
              atelier: str = "{}", arrondi: bool = False) -> str:
     """Répartit les tolérances de la chaîne pour tenir [Jmin ; Jmax] (JSON, voir services/repartition.py).
@@ -623,7 +786,7 @@ def repartir(texte: str, methode: str, critere: str, figes: str = "[]", reglage:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError, IndexError) as e:
-        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e)})
     lignes, info = sortie["maillons"], sortie.get("cout")
     nomReglage = lignes[sortie["reglage"]]["nom"]
     valeurs = [["Budget Jmax − Jmin", f"{fr(sortie['budget'])} mm"]]
@@ -689,6 +852,7 @@ def atelierImporter(texte: str) -> str:
 # ---------- comparaison de deux scénarios ----------
 
 
+@_traduireArithmetique
 def comparer(texteA: str, texteB: str, nomB: str = "B") -> str:
     """Compare deux problèmes (A = étude en cours, B = variante) : phrases, écarts, tolérances et barres jumelées."""
     try:
@@ -697,7 +861,7 @@ def comparer(texteA: str, texteB: str, nomB: str = "B") -> str:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e)})
 
     def f(v):
         return "—" if v is None else fr(v, ".4f")
@@ -722,6 +886,7 @@ CLASSE_VERDICT = {"conforme au pire des cas": "succes", "conforme en statistique
                   "non conforme": "erreur", "erreur de calcul": "info"}
 
 
+@_traduireArithmetique
 def mecaChaine(texte: str) -> str:
     """Chaîne de la page « Analyser » prête à entrer dans un mécanisme : nettoyée et validée (JSON {"probleme"} ou {"erreur"})."""
     try:
@@ -760,10 +925,14 @@ def cfFusionner(texte: str) -> str:
         return json.dumps({"erreur": "Fichier de mécanisme non exploitable."})
 
 
+@_traduireArithmetique
 def mecaImporter(texte: str) -> str:
     """Relit un mécanisme, ou un fichier d'étude simple promu en mécanisme d'une chaîne (JSON nom + chaines, ou erreur)."""
     try:
-        return json.dumps(meca.importerMecanisme(texte), allow_nan=False)
+        mecanisme = meca.importerMecanisme(texte)
+        for i, chaine in enumerate(mecanisme["chaines"], start=1):
+            _controlerPlafond(chaine, f"Chaîne {i} : ")
+        return json.dumps(mecanisme, allow_nan=False)
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
 
@@ -776,10 +945,19 @@ def mecaExporter(texte: str) -> str:
         return json.dumps({"erreur": e.message})
 
 
+@_traduireArithmetique
 def mecaCalculer(texte: str, n: int = 50_000, graine: int = 1, seuil: float = 1.33) -> str:
     """Calcule toutes les chaînes d'un mécanisme ; une chaîne en erreur n'empêche pas les autres (JSON)."""
     try:
-        r = meca.calculerMecanisme(json.loads(texte), int(n), int(graine), float(seuil))
+        d = json.loads(texte)
+        chaines = d.get("chaines") if isinstance(d, dict) else None
+        for i, p in enumerate(chaines if isinstance(chaines, list) else []):
+            if isinstance(p, dict):
+                try:
+                    _controlerPlafond(p)
+                except ErreurChaine as e:
+                    chaines[i] = _ProblemeRefuse(p, e)  # cette chaîne sera en erreur, les autres se calculent
+        r = meca.calculerMecanisme(d, int(n), int(graine), float(seuil))
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     niveau, phrase = meca.verdictGlobal(r)
@@ -803,6 +981,7 @@ def mecaCalculer(texte: str, n: int = 50_000, graine: int = 1, seuil: float = 1.
     )
 
 
+@_traduireArithmetique
 def comparerN(texte: str) -> str:
     """Compare plusieurs chaînes de cotes côte à côte (JSON {colonnes: [{nom, probleme}], reference, n}).
 
@@ -816,7 +995,9 @@ def comparerN(texte: str) -> str:
         for c in d["colonnes"]:
             try:
                 probleme = _nettoyer(c["probleme"])
-            except (ErreurChaine, ValueError, TypeError, KeyError):
+            except ErreurChaine as e:  # nombre au-delà du plafond : la colonne sera signalée en erreur
+                probleme = _ProblemeRefuse(c["probleme"], e)
+            except (ValueError, TypeError, KeyError):
                 probleme = c["probleme"]  # la colonne sera signalée en erreur par le calcul, sans bloquer les autres
             colonnes.append({"nom": c.get("nom", ""), "probleme": probleme})
         r = comparatif.comparerColonnes(colonnes, int(d.get("reference", 0)), int(d.get("n", N_TIRAGES)))
@@ -838,7 +1019,7 @@ def comparerN(texte: str) -> str:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({"erreur": f"Comparaison impossible : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e, "Comparaison impossible")})
 
 
 # ---------- dossier de validation ----------
@@ -851,9 +1032,10 @@ def cartouche() -> str:
 
 def empreinteProbleme(texte: str) -> str:
     """Empreinte du problème (posée au statut « Validé ») : la même que celle que le bureau recalcule à l'ouverture."""
-    return empreinte(_nettoyer(json.loads(texte)))
+    return empreinte(_nettoyer(json.loads(texte), controler=False))
 
 
+@_traduireArithmetique
 def dossier(texte: str) -> str:
     """Dossier de validation HTML : contrôles refaits sans le solveur, bilan et graphiques (JSON, voir validation.py).
 
@@ -869,11 +1051,12 @@ def dossier(texte: str) -> str:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e)})
     ecarts = [{"nom": c["nom"], "attendu": fr(c["attendu"], ".6g"), "obtenu": fr(c["obtenu"], ".6g")} for c in d["controles"] if c["statut"] != "OK"]
     return json.dumps({"html": d["html"], "nOk": d["nOk"], "nTotal": d["nTotal"], "bilan": d["bilan"], "ecarts": ecarts}, allow_nan=False)
 
 
+@_traduireArithmetique
 def _texteEtude(texte: str, ia: bool) -> str:
     """Texte de l'étude (JSON {"texte"} ou {"erreur"}) : bloc-notes si ia est faux, consigne + étude sinon."""
     from chainecotes.services.export_texte import texteEtude, texteIA
@@ -883,7 +1066,7 @@ def _texteEtude(texte: str, ia: bool) -> str:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e)})
 
 
 def texteEtude(texte: str) -> str:
@@ -918,6 +1101,10 @@ def assistant(cotes: str, contacts: str, depart: str = "", arrivee: str = "", no
         cotes, contacts = json.loads(cotes), json.loads(contacts)
         noeuds = surfaces(cotes)
         sortie = {"surfaces": noeuds}
+        for i, c in enumerate(cotes, start=1):
+            for cle in ("cote", "es", "ei"):
+                if isinstance(c, dict) and (v := _trop_grand(c.get(cle))) is not None:
+                    raise _refus("", f"Cote {i} ({c.get('piece') or '?'})", _CHAMPS_MAILLON[cle][0], v, " mm")
         if len(noeuds) < 2:
             return json.dumps({**sortie, "info": "Décrivez au moins une cote (pièce, deux surfaces, valeur) pour choisir les surfaces du jeu."})
         depart = depart if depart in noeuds else noeuds[0]  # surface renommée ou supprimée : on repart d'une surface connue
@@ -927,8 +1114,11 @@ def assistant(cotes: str, contacts: str, depart: str = "", arrivee: str = "", no
         lues, liens = lireSaisie(cotes, contacts)
     except ErreurChaine as e:
         return json.dumps({**locals().get("sortie", {"surfaces": []}), "erreur": e.message})
-    except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({**locals().get("sortie", {"surfaces": []}), "erreur": f"Saisie incomplète : {e}"})
+    except (ValueError, TypeError, KeyError, ArithmeticError) as e:
+        return json.dumps({**locals().get("sortie", {"surfaces": []}), "erreur": _messageSaisie(e)})
+    for quoi, v in (("Jmin", jmin), ("Jmax", jmax)):
+        if (texteV := _trop_grand(v)) is not None:
+            return json.dumps({**sortie, "erreur": _refus("", "Cote condition", quoi, texteV, " mm").message})
     i = min(max(int(choix), 0), len(chaines) - 1)
     chaine = chaines[i]
     jmin, jmax, nominal = float(jmin), float(jmax), chaine["nominal"]
@@ -962,14 +1152,20 @@ def assistant(cotes: str, contacts: str, depart: str = "", arrivee: str = "", no
 # ---------- fichiers d'étude (.json du bureau) ----------
 
 
+@_traduireArithmetique
 def ouvrir(texte: str) -> str:
     """Relit une étude enregistrée (par le bureau ou par cette page) et la contrôle ; JSON probleme + revisions."""
     try:
-        return json.dumps(projet_io.importerProjet(texte), allow_nan=False)
+        projet = projet_io.importerProjet(texte)
+        _controlerPlafond(projet["probleme"])
+        for i, r in enumerate(projet["revisions"], start=1):
+            _controlerPlafond(r["probleme"], f"Révision {i} : ")
+        return json.dumps(projet, allow_nan=False)
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
 
 
+@_traduireArithmetique
 def sauver(texteProbleme: str, texteRevisions: str = "[]") -> str:
     """Texte du fichier d'étude (même format que le bureau) ; JSON {"contenu"} ou {"erreur"} si la saisie est invalide."""
     try:
@@ -1018,6 +1214,7 @@ def _feuille(ws, ligne: int, titre: str, entetes: list, lignes: list, unite: boo
     return ligne + 2
 
 
+@_traduireArithmetique
 def exporterExcel(texte: str) -> str:
     """Classeur Excel de l'étude (JSON {"base64"} ou {"erreur"}) : la feuille « Chaîne » refait le calcul avec des formules
     et le compare au site ; les autres feuilles gardent toutes les valeurs calculées par le site (verdicts, parts,
@@ -1072,4 +1269,4 @@ def exporterExcel(texte: str) -> str:
     except ErreurChaine as e:
         return json.dumps({"erreur": e.message})
     except (ValueError, TypeError, KeyError) as e:
-        return json.dumps({"erreur": f"Saisie incomplète : {e}"})
+        return json.dumps({"erreur": _messageSaisie(e)})

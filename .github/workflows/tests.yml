@@ -37,3 +37,5 @@ jobs:
         run: |
           python construire_web.py
           git diff --exit-code -- docs/chainecotes.zip docs/index.html docs/sw.js docs/app.js docs/icone.svg
+      - name: Empreintes (integrity) des scripts tiers
+        run: python application/tools/verifier_sri.py

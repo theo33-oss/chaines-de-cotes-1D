@@ -421,3 +421,6 @@ dialog#recherche li[aria-selected="true"] { background: var(--accent); color: va
 dialog#recherche li.rech-vide { cursor: default; color: var(--discret); }
 #menu .principal .recherche-bouton { font-weight: 400; }
 @media print { dialog#recherche, .recherche-bouton { display: none !important; } }
+/* au doigt : champs à 16 px (l'iPhone ne zoome plus la page à la saisie) */
+@media (pointer: coarse) { input, select, textarea { font-size: 16px; } }
+h2:focus { outline: none; }

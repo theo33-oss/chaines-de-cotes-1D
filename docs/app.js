@@ -351,7 +351,13 @@ const App = (() => {
     });
     const bloc = document.createElement("div");
     bloc.className = "tableau";
-    bloc.append(enveloppe, b, boutonImage(bloc, "tableau.png"));
+    const csv = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit copier", textContent: "Exporter (.csv)" });
+    csv.dataset.aide = "Enregistre le tableau en .csv (séparateur « ; », virgule décimale) : s'ouvre directement dans Excel.";
+    csv.addEventListener("click", () => {
+      const cellule = (c) => { const x = versTableur(String(c)); return /[;"\n]/.test(x) ? '"' + x.replaceAll('"', '""') + '"' : x; };
+      telecharger("tableau.csv", "\ufeff" + [t.entetes, ...t.lignes].map((l) => l.map(cellule).join(";")).join("\r\n"), "text/csv;charset=utf-8");
+    });
+    bloc.append(enveloppe, b, csv, boutonImage(bloc, "tableau.png"));
     return bloc;
   }
 
@@ -398,8 +404,22 @@ const App = (() => {
       layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
     }
     Plotly.react(div, f.data, layout, { responsive: true, displaylogo: false });
+    if (!div.getAttribute("role")) { // figure = image pour un lecteur d'écran, avec son titre comme nom
+      div.setAttribute("role", "img");
+      const titre = (f.layout && f.layout.title && (f.layout.title.text || f.layout.title)) || "";
+      if (typeof titre === "string" && titre && !div.getAttribute("aria-label")) div.setAttribute("aria-label", "Graphique : " + titre.replaceAll(" | ", ", ").replace(/<[^>]*>/g, " "));
+    }
     if (!div._barre && div.dataset.sansImage === undefined && div.parentNode) { // une seule barre « Copier l'image » au-dessus de la figure
       div._barre = boutonImage(div, "graphique.png");
+      const svg = Object.assign(document.createElement("button"), { type: "button", className: "secondaire petit", textContent: "Image vectorielle (SVG)" });
+      svg.dataset.aide = "Enregistre le graphique en image vectorielle (.svg), à agrandir sans perte dans un compte rendu.";
+      svg.addEventListener("click", async () => {
+        try {
+          const url = await Plotly.toImage(div, { format: "svg" });
+          telecharger("graphique.svg", await (await fetch(url)).blob(), "image/svg+xml");
+        } catch (e) { messageFlottant("Export SVG impossible : " + e.message, "erreur"); }
+      });
+      div._barre.prepend(svg);
       div.before(div._barre);
     }
   }
@@ -517,6 +537,7 @@ const App = (() => {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  let courantePrecedente = null;
   function afficherPage(id) {
     const page = pages.find((p) => p.id === id);
     const ecran = page && page.dans ? page.dans : id; // les blocs de l'étude s'affichent dans la page Étude
@@ -529,6 +550,11 @@ const App = (() => {
       $("etude-texte").textContent = `Étude en cours : « ${p.condition.nom || "sans nom"} », ${p.maillons.length} maillon(s).`;
     }
     majMenu();
+    if (pont && courantePrecedente !== id) { // navigation : le focus va au titre de la page (lecteur d'écran, clavier)
+      const h = [...$("page-" + ecran).querySelectorAll("h2, summary h2")].find((x) => x.offsetParent !== null);
+      if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+    }
+    courantePrecedente = id;
     document.title = (page && id !== "accueil" ? page.titre + " · " : "") + "Chaînes de cotes 1D";
     requestAnimationFrame(() => ajusterGraphiques($("page-" + ecran)));
     if (page && page.dans) {
@@ -661,6 +687,24 @@ const App = (() => {
     } catch (e) { /* hors ligne : rien à comparer */ }
   }
 
+  // Bibliothèques tierces (Plotly, Pyodide) : chargées par le script, pas par la page, pour que le menu et l'accueil s'affichent
+  // tout de suite au lieu d'attendre ces gros fichiers. Empreinte « integrity » : le navigateur refuse un fichier modifié.
+  const BIBLIOTHEQUES = {
+    plotly: ["https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js", "sha384-8cEu0XVLh4s92OG4Ua4ZS75MN//b+0KqyCrhQqaXgHMVHnKC3DNVhwUyH5spa1J2"],
+    pyodide: ["https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js", "sha384-4X7gSPzQ4pHfjTE5aBEPJAQcHu55sciq+NWO3OUOZ3zHSJhn4te9CBjUyRSr+nei"],
+  };
+  const chargees = {};
+  function bibliotheque(nom) {
+    chargees[nom] = chargees[nom] || new Promise((ok, ko) => {
+      const [src, integrity] = BIBLIOTHEQUES[nom];
+      const s = Object.assign(document.createElement("script"), { src, integrity, crossOrigin: "anonymous" });
+      s.onload = () => ok();
+      s.onerror = () => { delete chargees[nom]; ko(new Error(`${nom} n'a pas pu être chargé (connexion ou bloqueur de contenu)`)); };
+      document.head.append(s);
+    });
+    return chargees[nom];
+  }
+
   // Durées du démarrage (ms), lisibles dans la console : App.mesures
   const mesures = {};
   async function chronometre(nom, travail) {
@@ -681,6 +725,8 @@ const App = (() => {
 
   async function demarrer() {
     const debut = performance.now();
+    const plotlyPret = bibliotheque("plotly"), pyodideJs = bibliotheque("pyodide"); // en route avant tout le reste, en parallèle
+    plotlyPret.catch(() => {}); pyodideJs.catch(() => {}); // l'erreur est traitée à l'attente, plus bas
     const build = document.querySelector('meta[name="build"]')?.content || "";
     if (build) $("version").textContent += " · build " + build;
     $("actualiser").addEventListener("click", actualiserSite);
@@ -688,6 +734,8 @@ const App = (() => {
     // lien « Aller au contenu » : le focus va au contenu sans changer l'adresse (le « # » sert aux liens d'étude)
     document.querySelector(".evitement")?.addEventListener("click", (e) => { e.preventDefault(); $("contenu").focus(); });
     verifierMiseAJour(build);
+    // secondes écoulées pendant la préparation : on voit que ça avance (aria-hidden : pas d'annonce toutes les secondes)
+    const horloge = setInterval(() => { $("etat-temps").textContent = ` ${Math.round((performance.now() - debut) / 1000)} s`; }, 1000);
     // « Actualiser le site » recharge avec ?maj=… (contourne le cache) : une fois chargée, l'adresse redevient propre
     // (sinon elle se retrouve dans les liens copiés)
     if (/[?&]maj=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);
@@ -699,7 +747,7 @@ const App = (() => {
     if (!exposition.analyser) { // un bloqueur de publicité ou un cache périmé a retenu un script
       $("etat").className = "message erreur";
       $("etat-texte").textContent = "Un script de la page n'a pas été chargé. Rechargez avec Ctrl+F5 ; si un bloqueur de publicité est actif, désactivez-le pour cette page.";
-      $("avance").hidden = true;
+      $("avance").hidden = true; clearInterval(horloge);
       return;
     }
     // Les téléchargements partent tout de suite, en parallèle du moteur Python ; ils sont lus plus tard, déjà arrivés.
@@ -713,7 +761,7 @@ const App = (() => {
     textePont.catch(() => {});
     prechargerPlotly();
     try {
-      pyodide = await chronometre("python", () => loadPyodide());
+      pyodide = await chronometre("python", async () => { await pyodideJs; return loadPyodide(); });
       etat("Préparation 2/3 : bibliothèques de calcul (numpy, scipy) et graphiques (plotly), chargés ensemble…", 2);
       await chronometre("micropip", () => pyodide.loadPackage(["micropip"]));
       await Promise.all([
@@ -727,13 +775,14 @@ const App = (() => {
         pyodide.runPython("import sys; sys.path.insert(0, '/app')");
         pont = pyodide.pyimport("pont");
       });
+      await plotlyPret; // les pages dessinent des figures dès leur préparation
       await chronometre("pages", async () => { for (const p of pages) await p.apres(pont); });
     } catch (e) {
       pont = null;
       $("etat").className = "message erreur";
       $("etat").setAttribute("role", "alert");
       $("etat-texte").textContent = "Le calcul n'a pas pu se charger (la connexion Internet est nécessaire la première fois). Vérifiez la connexion, puis réessayez. Détail : " + e;
-      $("avance").hidden = true;
+      $("avance").hidden = true; clearInterval(horloge);
       if (!$("etat-reessayer")) {
         const b = Object.assign(document.createElement("button"), { id: "etat-reessayer", type: "button", className: "secondaire petit", textContent: "Réessayer" });
         b.addEventListener("click", () => location.reload());
@@ -751,6 +800,7 @@ const App = (() => {
     if ("serviceWorker" in navigator && window.isSecureContext) {
       navigator.serviceWorker.register("sw.js").catch((e) => console.warn("Hors ligne indisponible :", e));
     }
+    clearInterval(horloge);
     mesures.total = Math.round(performance.now() - debut);
     console.info("Chaînes de cotes prêt (ms)", mesures);
   }

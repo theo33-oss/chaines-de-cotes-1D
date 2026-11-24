@@ -643,7 +643,7 @@
     const cause = d.principaux && d.principaux[0];
     $("decision-cause").hidden = !cause;
     if (cause) {
-      $("decision-cause-texte").textContent = `« ${cause.nom} » (${App.fr(cause.part, ".0f")} % de la variance du jeu)`;
+      $("decision-cause-texte").textContent = `« ${cause.nom} » (${Math.round(cause.part)} % de la variance du jeu)`;
       $("decision-aller").onclick = () => {
         const ligne = [...document.querySelectorAll("#maillons tbody tr")].find((tr) => tr.querySelector(".m-nom").value === cause.nom);
         if (!ligne) return;
