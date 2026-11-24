@@ -469,9 +469,17 @@
   }
 
   // Appelé à chaque aperçu (donc après chaque pause de saisie ou changement de structure) : garde l'état s'il a changé.
+  let instantaneCalcule = null; // état de l'étude au dernier calcul : s'il change, le résultat affiché est « ancien »
+  function marquerAncien(instantane) {
+    const ancien = !$("resultats").hidden && instantaneCalcule !== null && instantane !== instantaneCalcule;
+    $("resultats").classList.toggle("ancien", ancien);
+    $("resultat-ancien").hidden = !ancien;
+  }
+
   function memoriser() {
     if (restauration) return;
     const instantane = JSON.stringify(lireCommun());
+    marquerAncien(instantane);
     if (instantane === pile[position]) return;
     pile.splice(position + 1);
     pile.push(instantane);
@@ -626,8 +634,32 @@
     ];
   }
 
+  // Chiffres clés et cause principale sous le verdict (données « decision » du pont) ; « Aller à la cause » ouvre le tableau
+  // des maillons sur la cote qui pèse le plus.
+  function afficherDecision(d) {
+    $("decision").hidden = !d;
+    if (!d) return;
+    $("decision-chiffres").replaceChildren(...(d.chiffres?.length ? [App.metriques(d.chiffres)] : []));
+    const cause = d.principaux && d.principaux[0];
+    $("decision-cause").hidden = !cause;
+    if (cause) {
+      $("decision-cause-texte").textContent = `« ${cause.nom} » (${App.fr(cause.part, ".0f")} % de la variance du jeu)`;
+      $("decision-aller").onclick = () => {
+        const ligne = [...document.querySelectorAll("#maillons tbody tr")].find((tr) => tr.querySelector(".m-nom").value === cause.nom);
+        if (!ligne) return;
+        $("b-maillons").open = true;
+        ligne.scrollIntoView({ behavior: "smooth", block: "center" });
+        (ligne.querySelector(".m-iso").value ? ligne.querySelector(".m-iso") : ligne.querySelector(".m-es")).focus();
+      };
+    }
+  }
+
   function afficherResultats(r) {
     $("resultats").hidden = false;
+    instantaneCalcule = JSON.stringify(lireCommun());
+    $("resultats").classList.remove("ancien");
+    $("resultat-ancien").hidden = true;
+    afficherDecision(r.decision);
     $("t-resultats").textContent = $("deux-cf").checked ? `Résultats : CF${cfActive()} « ${lireProbleme().condition.nom || "sans nom"} »` : "Résultats";
     App.message($("verdict"), r.niveau, r.titre);
     $("conseil").textContent = r.conseil ? "À faire : " + r.conseil : "";
@@ -826,6 +858,7 @@
     });
     $("ajouter").addEventListener("click", () => { afficherMaillons([...lireMaillons(), { ...MAILLON_VIDE }]); apercuDiffere(); });
     $("calculer").addEventListener("click", calculer);
+    $("recalculer").addEventListener("click", calculer);
     // place du schéma par rapport au tableau des maillons : droite, gauche, dessus ou dessous (choix gardé dans ce navigateur)
     const PLACES = { droite: "à droite", gauche: "à gauche", dessus: "au-dessus", dessous: "en dessous" };
     const NOMS = Object.keys(PLACES);

@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
-<meta name="theme-color" content="#5C4B99">
-<meta name="build" content="7011f499">
+<meta name="theme-color" content="#5C4B99" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2C2348" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="build" content="4e08b0e9">
 <meta name="zip" content="e46ba666">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -17,7 +20,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=200ba19b">
+<link rel="stylesheet" href="style.css?v=bca7d4d4">
 </head>
 <body>
 <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -164,7 +167,12 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
     <details class="bandeau" id="resultats" open aria-live="polite" hidden data-etape="4">
       <summary><h2 id="t-resultats">Résultats</h2></summary>
+      <p id="resultat-ancien" class="message avertissement" role="status" hidden>Résultat ancien : l'étude a changé depuis le dernier calcul. <button id="recalculer" type="button" class="primaire petit">Recalculer</button></p>
       <p id="verdict" class="message"></p>
+      <div id="decision" class="decision" hidden>
+        <div id="decision-chiffres" class="metriques" aria-label="Chiffres clés du résultat"></div>
+        <p id="decision-cause" class="expert-seul"><strong>Cause principale :</strong> <span id="decision-cause-texte"></span> <button id="decision-aller" type="button" class="secondaire petit" data-aide="Ouvre le tableau des maillons sur la cote qui pèse le plus dans la dispersion du jeu.">Aller à la cause</button></p>
+      </div>
       <p id="conseil" class="expert-seul"></p>
       <p id="opt-invite" class="message avertissement expert-seul" hidden>Le jeu n'est pas tenu. <button id="opt-aller" type="button" class="primaire">Optimiser les tolérances</button></p>
       <p class="ligne"><button id="export-txt" type="button" class="secondaire" data-aide="Un fichier texte (.txt) lisible dans le Bloc-notes : les données, les résultats, la conclusion et la démarche du calcul.">Bloc-notes (.txt)</button> <button id="export-excel" type="button" class="secondaire" data-aide="Un classeur Excel : une feuille de formules qui refait le calcul (pire des cas, statistique, Cp, Cpk, ppm) et compare avec le site, puis toutes les valeurs calculées par le site.">Exporter en Excel (pour vérifier le calcul)</button> <span id="export-excel-etat" class="legende" role="status"></span></p>
@@ -619,7 +627,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
   </defs></svg>
 
 <footer>
-  <p>Chaînes de cotes 1D · version <span id="version">1.0.0</span> <button type="button" id="actualiser" class="lien-bouton" title="Efface les copies gardées par le navigateur et recharge toute la page">Actualiser le site</button> · Théo Brun ·
+  <p>Chaînes de cotes 1D · version <span id="version">1.0.0</span> <button type="button" id="partager" class="lien-bouton" title="Partager le site et le projet (feuille de partage du téléphone ; sur ordinateur, les liens sont copiés)">Partager</button> <button type="button" id="actualiser" class="lien-bouton" title="Efface les copies gardées par le navigateur et recharge toute la page">Actualiser le site</button> · Théo Brun ·
     <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">code source</a> ·
     <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/blob/main/LIMITES.md">limites connues</a> ·
     <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/issues">signaler une erreur</a> ·
@@ -630,9 +638,9 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=66725ffe"></script>
+<script src="app.js?v=ed507c52"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=f2d76868"></script>
+<script src="js/chaine.js?v=8859d95b"></script>
 <script src="js/repartir.js?v=ab2c4d30"></script>
 <script src="js/comparer.js?v=a83ab01d"></script>
 <script src="js/mecanisme.js?v=cde448b1"></script>
@@ -644,6 +652,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 <script src="js/materiaux.js?v=e542faad"></script>
 <script src="js/etudes.js?v=8e7cec11"></script>
 <script src="js/comparatif.js?v=e1867893"></script>
+<script src="js/recherche.js?v=abda43db"></script>
 <script>App.demarrer();</script>
 </body>
 </html>

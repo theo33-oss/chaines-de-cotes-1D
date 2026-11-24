@@ -627,6 +627,17 @@ const App = (() => {
     }
   }
 
+  // Partager le site et le projet : feuille de partage du téléphone (Messages, WhatsApp, Mail, AirDrop…) ; sur ordinateur, les liens sont copiés.
+  async function partagerSite() {
+    const texte = "Chaînes de cotes 1D : calcul de chaînes de cotes (pire des cas, statistique, Monte-Carlo) dans le navigateur.\nSite : https://theo33-oss.github.io/chaines-de-cotes-1D/\nProjet : https://github.com/theo33-oss/chaines-de-cotes-1D";
+    if (navigator.share) {
+      try { await navigator.share({ title: "Chaînes de cotes 1D", text: texte }); } catch (e) { if (e && e.name !== "AbortError") messageFlottant("Partage impossible : " + e.message, "erreur"); }
+      return;
+    }
+    const ok = await copier(texte);
+    messageFlottant(ok ? "Liens du site et du projet copiés : collez-les dans votre message." : "Copie impossible : le navigateur refuse l'accès au presse-papiers.", ok ? "succes" : "erreur");
+  }
+
   // « Actualiser le site » : efface les copies gardées (service worker, caches) et recharge en contournant le cache.
   async function actualiserSite() {
     // l'adresse github.io est partagée avec d'autres projets (MecaStruct…) : on ne touche qu'au service worker et aux caches de ce site
@@ -673,6 +684,7 @@ const App = (() => {
     const build = document.querySelector('meta[name="build"]')?.content || "";
     if (build) $("version").textContent += " · build " + build;
     $("actualiser").addEventListener("click", actualiserSite);
+    $("partager").addEventListener("click", partagerSite);
     // lien « Aller au contenu » : le focus va au contenu sans changer l'adresse (le « # » sert aux liens d'étude)
     document.querySelector(".evitement")?.addEventListener("click", (e) => { e.preventDefault(); $("contenu").focus(); });
     verifierMiseAJour(build);
@@ -694,8 +706,9 @@ const App = (() => {
     // « no-cache » : le navigateur revalide à chaque visite (réponse 304 si rien n'a changé). Sans cela, GitHub Pages
     // fait garder ces fichiers 10 minutes, et une page mise à jour recevrait l'ancien calcul.
     const empreinteZip = document.querySelector('meta[name="zip"]')?.content || Date.now(); // adresse propre à ce zip : jamais un ancien
-    const archiveZip = fetch("chainecotes.zip?v=" + empreinteZip).then((r) => r.arrayBuffer());
-    const textePont = fetch("pont.py", { cache: "no-cache" }).then((r) => r.text());
+    const lire = (r, quoi) => { if (!r.ok) throw new Error(`${quoi} : réponse ${r.status}`); return r; }; // une page d'erreur n'est pas un zip
+    const archiveZip = fetch("chainecotes.zip?v=" + empreinteZip).then((r) => lire(r, "chainecotes.zip").arrayBuffer());
+    const textePont = fetch("pont.py", { cache: "no-cache" }).then((r) => lire(r, "pont.py").text());
     archiveZip.catch(() => {}); // l'erreur est traitée à l'attente, plus bas
     textePont.catch(() => {});
     prechargerPlotly();
@@ -718,8 +731,14 @@ const App = (() => {
     } catch (e) {
       pont = null;
       $("etat").className = "message erreur";
-      $("etat-texte").textContent = "Le calcul n'a pas pu se charger (connexion Internet nécessaire ; rechargez la page avec Ctrl+F5) : " + e;
+      $("etat").setAttribute("role", "alert");
+      $("etat-texte").textContent = "Le calcul n'a pas pu se charger (la connexion Internet est nécessaire la première fois). Vérifiez la connexion, puis réessayez. Détail : " + e;
       $("avance").hidden = true;
+      if (!$("etat-reessayer")) {
+        const b = Object.assign(document.createElement("button"), { id: "etat-reessayer", type: "button", className: "secondaire petit", textContent: "Réessayer" });
+        b.addEventListener("click", () => location.reload());
+        $("etat").append(b);
+      }
       return;
     }
     for (const b of document.querySelectorAll("#menu button, #page-accueil button")) b.disabled = false;

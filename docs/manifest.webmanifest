@@ -1,0 +1,16 @@
+{
+  "name": "Chaînes de cotes 1D",
+  "short_name": "Chaînes de cotes",
+  "description": "Calcul de chaînes de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F4FA",
+  "theme_color": "#5C4B99",
+  "icons": [
+    { "src": "icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

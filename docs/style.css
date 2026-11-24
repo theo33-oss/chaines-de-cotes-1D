@@ -403,3 +403,21 @@ td.cmp-meilleur { box-shadow: inset 3px 0 0 var(--ok-texte); font-weight: 700; }
 #cmp-ajouts { align-items: flex-end; }
 #cmp-ajouts label.en-ligne { display: inline-flex; flex-direction: column; gap: 2px; font-size: .85rem; }
 #cmp-ajouts select { flex: 0 0 auto; width: auto; min-width: 9rem; max-width: min(22rem, calc(100vw - 64px)); height: 40px; }
+/* liens et boutons du pied de page : au moins 24 px de haut (cible tactile) */
+footer a, footer .lien-bouton { display: inline-block; min-height: 24px; line-height: 24px; }
+/* résultat : chiffres clés sous le verdict, résultat ancien grisé */
+.decision { margin: 8px 0; }
+.decision .metriques { margin: 4px 0; }
+#resultats.ancien > :not(summary):not(#resultat-ancien) { opacity: .55; filter: grayscale(.4); }
+#resultats.ancien #resultat-ancien { opacity: 1; filter: none; }
+@media print { #resultat-ancien { display: none !important; } }
+/* recherche globale (/ ou Ctrl+K) */
+dialog#recherche { width: min(92vw, 560px); margin: 12vh auto 0; padding: 12px 14px; background: var(--carte); color: var(--encre); border: 2px solid var(--bord-fort); border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+dialog#recherche::backdrop { background: rgba(0, 0, 0, .45); }
+dialog#recherche p { margin: 0 0 6px; }
+dialog#recherche ul { list-style: none; margin: 8px 0 0; padding: 0; max-height: 50vh; overflow: auto; }
+dialog#recherche li { padding: 8px 10px; border-radius: 4px; cursor: pointer; min-height: 40px; display: flex; align-items: center; }
+dialog#recherche li[aria-selected="true"] { background: var(--accent); color: var(--sur-accent); }
+dialog#recherche li.rech-vide { cursor: default; color: var(--discret); }
+#menu .principal .recherche-bouton { font-weight: 400; }
+@media print { dialog#recherche, .recherche-bouton { display: none !important; } }
