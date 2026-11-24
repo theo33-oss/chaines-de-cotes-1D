@@ -47,7 +47,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  padding: 0 16px 32px;
+  padding: 0 16px 88px; /* de la place sous le pied de page pour le bouton flottant « Demander à une IA » */
   background: var(--fond);
   color: var(--encre);
   font: 16px/1.5 "Segoe UI", system-ui, sans-serif;
@@ -221,8 +221,8 @@ details.bandeau > .message, details.bandeau > p.message { margin-top: 12px; }
 /* places du schéma : droite (défaut), gauche, dessus, dessous ; sous 1200 px, droite et gauche tombent en dessous */
 #zone-maillons.dessus #apercu-section { order: -1; }
 @media (min-width: 1200px) {
-  #zone-maillons:not(.dessous):not(.dessus) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
-  #zone-maillons.large:not(.dessous):not(.dessus) { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  #zone-maillons.large:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
   #zone-maillons.gauche { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
   #zone-maillons.gauche.large { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
   #zone-maillons.gauche #apercu-section { order: -1; }
@@ -323,9 +323,9 @@ body.glisse, body.glisse * { cursor: grabbing !important; user-select: none; }
   #menu .principal.fondu-droite, #menu .sous.fondu-droite { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
   #menu .principal.fondu-gauche, #menu .sous.fondu-gauche { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
   #menu .principal.fondu-gauche.fondu-droite, #menu .sous.fondu-gauche.fondu-droite { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
-  details.bandeau > summary { flex-wrap: nowrap; }
-  details.bandeau > summary h2 { display: block; flex: 1 1 0; min-width: 0; font-size: 1.05rem; }
-  details.bandeau > summary .resume { flex: 0 1 auto; font-size: .78rem; }
+  details.bandeau > summary { flex-wrap: wrap; }
+  details.bandeau > summary h2 { display: block; flex: 1 1 8rem; min-width: 0; font-size: 1.05rem; }
+  details.bandeau > summary .resume { flex: 1 1 100%; font-size: .78rem; overflow-wrap: anywhere; }
   button.poignee { display: none; } /* le schéma reste dessus ou dessous : le bouton « Schéma » suffit */
 }
 /* au doigt : zones tactiles d'au moins 40 px */
@@ -386,10 +386,11 @@ table.cmp-table { border-collapse: collapse; min-width: 100%; }
 table.cmp-table th, table.cmp-table td { border: 1px solid var(--bord); padding: 4px 8px; text-align: left; vertical-align: top; }
 table.cmp-table td { text-align: right; white-space: nowrap; }
 table.cmp-table thead th { background: var(--bandeau); color: var(--sur-accent); position: sticky; top: 0; }
-table.cmp-table tbody th[scope="row"] { background: var(--alt); position: sticky; left: 0; font-weight: 400; max-width: 16rem; }
+table.cmp-table tbody th[scope="row"] { background: var(--alt); color: var(--encre); position: sticky; left: 0; font-weight: 400; max-width: 16rem; }
 table.cmp-table tr.cmp-groupe th { background: var(--pi-fond); color: var(--encre); font-weight: 700; }
 .cmp-tete { min-width: 9rem; }
 .cmp-tete > span { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.cmp-tete > span.legende { color: var(--sur-accent); opacity: .85; font-weight: 400; }
 .cmp-tete .verdict { margin-top: 4px; padding: 1px 6px; border-radius: 4px; font-weight: 600; display: inline-block; }
 .cmp-tete .verdict.succes, td.verdict.succes { background: var(--ok-fond); color: var(--ok-texte); }
 .cmp-tete .verdict.erreur, td.verdict.erreur { background: var(--err-fond); color: var(--err-texte); }

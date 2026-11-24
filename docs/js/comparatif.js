@@ -276,7 +276,7 @@
     const tete = el("tr", {}, el("th", { scope: "col", texte: "Grandeur" }),
       ...cols.map((c, i) => el("th", { scope: "col", class: "cmp-tete" + (i === r.reference ? " cmp-ref" : "") },
         el("span", { texte: c.nom }), i === r.reference ? el("span", { class: "legende", texte: "référence" }) : null,
-        el("span", { class: "verdict " + (c.niveau || "info"), texte: verdictTexte[c.verdict] || c.verdict }),
+        el("span", { class: "verdict " + (c.niveau || "info"), texte: (verdictTexte[c.verdict] || c.verdict) + (c.verdict === "conforme" && c.niveau === "avertissement" ? " (statistique seulement)" : "") }),
         c.erreur ? el("span", { class: "legende", role: "alert", texte: c.erreur }) : null)));
     const corps = el("tbody", {});
     let groupe = null;
@@ -317,9 +317,13 @@
     }
   }
 
-  function csv() { App.telecharger("comparaison.csv", resultat.csv, "text/csv;charset=utf-8"); }
+  function csv() {
+    if (!resultat) return dire("avertissement", "Rien à exporter : lancez d'abord la comparaison.");
+    App.telecharger("comparaison.csv", resultat.csv, "text/csv;charset=utf-8");
+  }
 
   async function copier() {
+    if (!resultat) return dire("avertissement", "Rien à copier : lancez d'abord la comparaison.");
     const ok = await App.copier(resultat.texte);
     App.confirmer($("cmp-copier"), ok, "Copié", "Copie impossible", ok ? "Comparaison copiée : collez-la dans Excel." : "Copie refusée par le navigateur.");
   }

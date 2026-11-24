@@ -24,6 +24,11 @@ def _mm(v: float) -> str:
     return fr(float(v), ".4f")
 
 
+def _ppm(x: float) -> str:
+    """Taux hors tolérance lisible ; presque tout hors tolérance s'écrit en pourcentage."""
+    return "environ 100 % (1·10⁶ ppm)" if x is not None and x >= 999_999 else ppmLisible(x)
+
+
 def _limite(v: float) -> str:
     return "aucune" if not math.isfinite(v) else f"{_mm(v)} mm"
 
@@ -40,27 +45,43 @@ def texteEtude(bundle: dict) -> str:
     L = ["ÉTUDE DE CHAÎNE DE COTES (1D, unités : mm)", ""]
     L += ["DONNÉES", f"Condition : {cond['nom']}", f"  Jmin : {_limite(cond['jmin'])}", f"  Jmax : {_limite(cond['jmax'])}"]
     L += [f"Niveau statistique : ± {fr(k, 'g')} σ", f"Température de référence : {fr(res['Tref'], 'g')} °C"]
-    if res.get("thermique_actif"):
-        L.append("Dilatation thermique : prise en compte (températures de service différentes de la référence).")
+    thermique = bool(res.get("thermique_actif"))
+    if thermique:
+        L.append("Dilatation thermique : prise en compte (α et température de service de chaque cote ci-dessous).")
     L += ["", "Maillons (sens, cote nominale, écart sup. es, écart inf. ei, tolérance IT, loi) :"]
     for i, nom in enumerate(res["Nom"]):
         sens = "+" if res["proj"][i] > 0 else "−"
-        L.append(
+        ligne = (
             f"  {i + 1}. {nom} : {sens} {_mm(res['Cote'][i])}  es {_mm(res['ES'][i])}  ei {_mm(res['EI'][i])}"
             f"  IT {_mm(res['IT'][i])}  loi {res['loi'][i]}"
         )
+        if thermique:
+            ligne += f"  α {fr(float(res['alpha'][i]) * 1e6, '.2f')} µm/m/K  T service {fr(float(res['Tservice'][i]), 'g')} °C"
+        m = (res.get("maillons") or [{}] * (i + 1))[i]
+        facteur, theta = float(m.get("facteur", 1.0)), float(m.get("theta", 0.0))
+        if abs(facteur - 1.0) > 1e-12 or min(abs(theta % 360), abs(theta % 360 - 180)) > 1e-9:  # levier ou angle (180° = cote « − »)
+            ligne += f"  facteur {fr(facteur, 'g')}, angle {fr(theta, 'g')}° : la cote compte pour sa projection"
+        L.append(ligne)
     L += ["", "RÉSULTATS"]
-    L.append(f"Valeur nominale de {cond['nom']} : {_mm(res['CF_nom'])} mm")
+    L.append(f"Valeur nominale de {cond['nom']} : {_mm(res['CF_nom'])} mm" + (" (somme des cotes projetées, dilatation comprise)" if thermique else ""))
+    if thermique:
+        L.append(f"Décalage du jeu dû à la dilatation : {fr(float(res['dJ_th']), '+.4f')} mm")
     L.append(f"Moyenne : {_mm(res['CF_moy'])} mm ; écart-type σ : {fr(res['CF_sigma'], '.5f')} mm")
     pc, rk = v["pireCas"], v["rssK"]
-    L.append(f"Pire des cas : de {_mm(pc['min'])} à {_mm(pc['max'])} mm ({'tient' if pc['ok'] else 'ne tient pas'})")
-    L.append(f"Statistique ± {fr(k, 'g')} σ : de {_mm(rk['min'])} à {_mm(rk['max'])} mm ({'tient' if rk['ok'] else 'ne tient pas'})")
-    L.append(f"Cp : {fr(v['cp'], '.3f')} ; Cpk : {fr(v['cpk'], '.3f')} ; hors tolérance : {ppmLisible(v['ppm'])}")
+    sansLimite = not (math.isfinite(cond["jmin"]) or math.isfinite(cond["jmax"]))
+    if sansLimite:
+        L.append(f"Pire des cas : de {_mm(pc['min'])} à {_mm(pc['max'])} mm")
+        L.append(f"Statistique ± {fr(k, 'g')} σ : de {_mm(rk['min'])} à {_mm(rk['max'])} mm")
+        L.append("Aucune limite exigée : pas de verdict ni de taux hors tolérance (renseignez Jmin et/ou Jmax).")
+    else:
+        L.append(f"Pire des cas : de {_mm(pc['min'])} à {_mm(pc['max'])} mm ({'tient' if pc['ok'] else 'ne tient pas'})")
+        L.append(f"Statistique ± {fr(k, 'g')} σ : de {_mm(rk['min'])} à {_mm(rk['max'])} mm ({'tient' if rk['ok'] else 'ne tient pas'})")
+        L.append(f"Cp : {fr(v['cp'], '.3f')} ; Cpk : {fr(v['cpk'], '.3f')} ; hors tolérance (formule normale) : {_ppm(v['ppm'])}")
     mc = bundle.get("mc")
     if mc:
         L.append(
             f"Monte-Carlo ({int(mc['n'])} tirages, graine {mc['graine']}) : moyenne {_mm(mc['moyenne'])} mm, "
-            f"σ {fr(mc['ecartType'], '.5f')} mm, hors tolérance {ppmLisible(mc['ppm'])}"
+            f"σ {fr(mc['ecartType'], '.5f')} mm" + ("" if sansLimite else f", hors tolérance {_ppm(mc['ppm'])}")
         )
     c = conclusionEtude(bundle)
     L += ["", "CONCLUSION", c["titre"]] + [f"- {t}" for t in c["details"] + c["conseils"]]
@@ -74,9 +95,14 @@ def texteEtude(bundle: dict) -> str:
         "DÉMARCHE",
         "1. Chaque cote est comptée positive ou négative selon son sens dans la chaîne (équation de fermeture).",
         "2. Pire des cas : on additionne les écarts de tous les maillons (jeu minimal et maximal garantis).",
-        f"3. Statistique : chaque cote suit sa loi, indépendamment des autres ; σ de la condition = racine de la somme "
-        f"des variances ; intervalle ± {fr(k, 'g')} σ.",
-        "4. Cp et Cpk comparent la dispersion à l'intervalle Jmin–Jmax ; le taux hors tolérance en découle.",
+        (
+            "3. Statistique : chaque cote suit sa loi, indépendamment des autres ; σ de la condition = racine de la somme "
+            f"des variances ; intervalle ± k·σ avec k = {fr(k, 'g')}."
+        ),
+        (
+            "4. Cp = (Jmax − Jmin) / 6σ ; Cpk = distance de la moyenne à la limite la plus proche / 3σ ; "
+            "ppm = pièces hors tolérance par million (taux déduit d'une loi normale, puis Monte-Carlo)."
+        ),
         "5. Monte-Carlo : tirages aléatoires des cotes pour vérifier le résultat statistique.",
     ]
     return "\n".join(L) + "\n"

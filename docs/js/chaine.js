@@ -640,7 +640,7 @@
     $("decision").hidden = !d;
     if (!d) return;
     $("decision-chiffres").replaceChildren(...(d.chiffres?.length ? [App.metriques(d.chiffres)] : []));
-    const cause = d.principaux && d.principaux[0];
+    const cause = d.principaux && d.principaux[0] && d.principaux[0].part > 0 ? d.principaux[0] : null; // sans dispersion, pas de cause
     $("decision-cause").hidden = !cause;
     if (cause) {
       $("decision-cause-texte").textContent = `« ${cause.nom} » (${Math.round(cause.part)} % de la variance du jeu)`;
@@ -851,7 +851,7 @@
       else if (ctrl && touche === "y") aller(1);
       else if (ctrl && touche === "s") enregistrer();
       else if (ctrl && touche === "o") $("fichier").click();
-      else if (touche === "enter" && (ctrl || (e.target.tagName === "INPUT" && e.target.type === "text"))) {
+      else if (touche === "enter" && !e.target.closest("form, #page-comparer, #page-dossier, #page-repartir, #recherche") && (ctrl || (e.target.tagName === "INPUT" && e.target.type === "text"))) {
         if (!$("calculer").disabled) guide.actif ? allerEtape(3) : calculer();
       } else return;
       e.preventDefault();
@@ -1060,7 +1060,8 @@
       let ok = false, erreur = "";
       try { ok = await App.copierDiffere(texte); } catch (e) { erreur = e.message; }
       iaBouton.disabled = false;
-      App.confirmer(null, ok, "Étude copiée", erreur ? "Impossible : " + erreur : "Copie impossible", "Étude copiée : collez-la dans l'IA (Ctrl+V).");
+      App.confirmer(null, ok, "Étude copiée", erreur ? "Impossible : " + erreur : "Copie impossible",
+        ok ? "Étude copiée : collez-la dans l'IA (Ctrl+V)." : (erreur ? "Impossible : " + erreur : "Copie refusée par le navigateur."));
       iaPanneau.hidden = !ok;
       iaBouton.setAttribute("aria-expanded", String(ok));
     });

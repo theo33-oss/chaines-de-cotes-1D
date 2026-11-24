@@ -1006,9 +1006,10 @@ def comparerN(texte: str) -> str:
         v = [c["verdict"] for c in r["colonnes"]]
         n = len(v)
         ok, ko, err = v.count("conforme"), v.count("non conforme"), v.count("erreur")
+        stat = sum(1 for c in r["colonnes"] if c["verdict"] == "conforme" and c["niveau"] == "avertissement")  # tient en statistique seulement
         morceaux = [f"{n} chaîne{'s' if n > 1 else ''} comparée{'s' if n > 1 else ''}"]
         if ok:
-            morceaux.append(f"{ok} conforme{'s' if ok > 1 else ''}")
+            morceaux.append(f"{ok} conforme{'s' if ok > 1 else ''}" + (f", dont {stat} en statistique seulement" if stat else ""))
         if ko:
             morceaux.append(f"{ko} non conforme{'s' if ko > 1 else ''}")
         if err:

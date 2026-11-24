@@ -142,6 +142,9 @@ class PageCalcul(Page):
     def _demanderAUneIA(self, bouton) -> None:
         """Copie la consigne et l'étude du dernier calcul, puis propose d'ouvrir Claude ou ChatGPT."""
         bundle = state.resultat()
+        if bundle is not None and state.sansCartouche(bundle["probleme"]) != state.sansCartouche(state.probleme()):
+            messageFlottant(self.fenetre, "L'étude a changé depuis le dernier calcul : recalculez (F5) avant de la copier.", "erreur")
+            return
         ia.demanderAUneIA(self.fenetre, bouton, bundle)
 
     def _calculer(self) -> None:

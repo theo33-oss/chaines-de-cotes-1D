@@ -11,6 +11,7 @@
     App.afficherPage("analyser");
     const el = $(id);
     if (!el) return;
+    if (el.hidden) { App.messageFlottant("Pas encore de résultat : cliquez sur « Calculer » dans la page Étude.", "info"); return; }
     if (el.tagName === "DETAILS") el.open = true;
     requestAnimationFrame(() => el.scrollIntoView({ behavior: "smooth", block: "start" }));
   };

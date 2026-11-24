@@ -30,3 +30,18 @@ def test_texte_ia_encadre_l_etude(etude):
 def test_tous_les_exemples(i):
     p = chargerExemple(listeExemples()[i]["id"])
     assert "RÉSULTATS" in texteEtude(calculerChaine(p, n=500))
+
+
+def test_dilatation_levier_et_absence_de_limite_sont_ecrits():
+    from chainecotes.core.nombres import fr  # noqa: F401
+
+    p = chargerExemple("thermique_par_cote")
+    t = texteEtude(calculerChaine(p, n=500))
+    assert "α 23,00 µm/m/K" in t and "T service 100 °C" in t and "Décalage du jeu dû à la dilatation : +0,1840 mm" in t
+    assert "angle 180" not in t and "facteur" not in t  # un « − » n'est pas un levier
+    p2 = chargerExemple("tableau_depart")
+    p2["condition"]["jmin"] = None
+    p2["condition"]["jmax"] = None
+    t2 = texteEtude(calculerChaine(p2, n=500))
+    assert "Aucune limite exigée" in t2 and "tient" not in t2.split("RÉSULTATS")[1].split("CONCLUSION")[0]
+    assert "Cp = (Jmax − Jmin) / 6σ" in t2

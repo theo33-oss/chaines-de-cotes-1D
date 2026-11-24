@@ -16,7 +16,7 @@ from typing import Any
 
 import pandas as pd
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QAction, QColor, QGuiApplication, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QColor, QGuiApplication, QKeySequence, QPalette, QShortcut
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -296,6 +296,7 @@ class VueFigure(QWebEngineView):
         chemin.write_text(html, encoding="utf-8")
         self.setFixedHeight(hauteur + 2)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.page().setBackgroundColor(QColor("#1A1626" if sombre else FOND_FIGURE))  # pas de flash blanc avant le dessin
         self.load(QUrl.fromLocalFile(str(chemin)))
 
 
@@ -1055,6 +1056,10 @@ def appliquerTheme(app: QApplication) -> None:
         fond, carte, encre, discret, bord, fort = "#F6F4FA", FOND_FIGURE, "#2A1B4A", "#5E5577", "#C9C1E0", "#5C4B99"
         accent, bandeau, lien, menu, texteMenu = "#5C4B99", "#3D246C", "#4A3A8C", "#3D246C", "#FFFFFF"
     ok, ko = COULEURS_MESSAGE["succes"], COULEURS_MESSAGE["erreur"]
+    palette = app.palette()  # liens (« À propos », textes) à la couleur du thème : lisibles en clair comme en sombre
+    palette.setColor(QPalette.ColorRole.Link, QColor(lien))
+    palette.setColor(QPalette.ColorRole.LinkVisited, QColor(lien))
+    app.setPalette(palette)
     app.setStyleSheet(f"""
     QWidget {{ background:{fond}; color:{encre}; font-size:10pt; }}
     QLabel {{ background:transparent; }}
