@@ -691,7 +691,7 @@ const App = (() => {
   // tout de suite au lieu d'attendre ces gros fichiers. Empreinte « integrity » : le navigateur refuse un fichier modifié.
   const BIBLIOTHEQUES = {
     plotly: ["https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js", "sha384-8cEu0XVLh4s92OG4Ua4ZS75MN//b+0KqyCrhQqaXgHMVHnKC3DNVhwUyH5spa1J2"],
-    pyodide: ["https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js", "sha384-4X7gSPzQ4pHfjTE5aBEPJAQcHu55sciq+NWO3OUOZ3zHSJhn4te9CBjUyRSr+nei"],
+    pyodide: ["https://cdn.jsdelivr.net/pyodide/v314.0.8/full/pyodide.js", "sha384-0Tw0jFeRF+UzB1HbzjzDi5ZNMyMclQPHmYkEquv9V+lAj/rZBHxu1c35Uq28kDPo"],
   };
   const chargees = {};
   function bibliotheque(nom) {
@@ -775,6 +775,7 @@ const App = (() => {
         pyodide.runPython("import sys; sys.path.insert(0, '/app')");
         pont = pyodide.pyimport("pont");
       });
+      exposition.pyodide = pyodide; // pour les essais et la console (App.pyodide)
       await plotlyPret; // les pages dessinent des figures dès leur préparation
       await chronometre("pages", async () => { for (const p of pages) await p.apres(pont); });
     } catch (e) {
