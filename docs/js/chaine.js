@@ -511,11 +511,11 @@
 
   // Résumé affiché dans le titre d'un bandeau, utile quand il est replié.
   function majResumes() {
-    const lim = (v) => (String(v).trim() === "" ? "…" : String(v).trim());
-    $("resume-condition").textContent = `${$("c-nom").value || "sans nom"} : ${lim($("c-jmin").value)} à ${lim($("c-jmax").value)} mm`;
+    const lim = (v, vide) => (String(v).trim() === "" ? vide : String(v).trim()); // côté sans limite : −∞ ou +∞
+    $("resume-condition").textContent = `${$("c-nom").value || "sans nom"} : ${lim($("c-jmin").value, "−∞")} à ${lim($("c-jmax").value, "+∞")} mm`;
     $("cf-nom1").textContent = "CF1 : " + ($("c-nom").value || "sans nom");
     $("cf-nom2").textContent = "CF2 : " + ($("c2-nom").value || "sans nom");
-    if ($("deux-cf").checked) $("resume-condition").textContent += ` ; ${$("c2-nom").value || "sans nom"} : ${lim($("c2-jmin").value)} à ${lim($("c2-jmax").value)} mm`;
+    if ($("deux-cf").checked) $("resume-condition").textContent += ` ; ${$("c2-nom").value || "sans nom"} : ${lim($("c2-jmin").value, "−∞")} à ${lim($("c2-jmax").value, "+∞")} mm`;
     $("resume-maillons").textContent = `${$("maillons").tBodies[0].rows.length} maillon(s)`;
   }
 
@@ -643,7 +643,11 @@
     const cause = d.principaux && d.principaux[0] && d.principaux[0].part > 0 ? d.principaux[0] : null; // sans dispersion, pas de cause
     $("decision-cause").hidden = !cause;
     if (cause) {
-      $("decision-cause-texte").textContent = `« ${cause.nom} » (${Math.round(cause.part)} % de la variance du jeu)`;
+      const autre = d.principaux[1];
+      const egalite = autre && Math.abs(autre.part - cause.part) < 0.5; // deux cotes qui pèsent pareil : on le dit
+      $("decision-cause-texte").textContent = egalite
+        ? `« ${cause.nom} » et « ${autre.nom} » (${Math.round(cause.part)} % de la variance du jeu chacune, à égalité)`
+        : `« ${cause.nom} » (${Math.round(cause.part)} % de la variance du jeu)`;
       $("decision-aller").onclick = () => {
         const ligne = [...document.querySelectorAll("#maillons tbody tr")].find((tr) => tr.querySelector(".m-nom").value === cause.nom);
         if (!ligne) return;

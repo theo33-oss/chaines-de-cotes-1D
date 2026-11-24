@@ -251,3 +251,11 @@ def test_cpk_absent_affiche_tiret_et_figure_ignoree():
     assert r["classes"][r["lignes"].index(cpk)][1] == "vide"
     assert sum(1 for t in figuresComparatif(r)[1]["fig"].data if t.type == "bar") == 1
     _sans_nan(r)
+
+
+def test_ecart_relatif_enorme_s_ecrit_en_facteur():
+    from chainecotes.services.comparatif import _ecart
+
+    assert _ecart(114.7, 0.0004, "rel", ".4g").startswith("× ")  # pas « +28722188 % »
+    assert _ecart(120.0, 100.0, "rel", ".4g") == "+20 %"
+    assert _ecart(0.0, 5.0, "rel", ".4g") == "× 0"

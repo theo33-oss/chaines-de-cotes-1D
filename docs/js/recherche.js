@@ -26,7 +26,7 @@
     ["Étude : maillons (cotes, sens, tolérances)", "cotes tolerances iso 286 h7 sens plus moins loi normale uniforme triangulaire dilatation materiau alpha effet thermique image", etape("b-maillons")],
     ["Étude : résultats et verdict", "calculer verdict pire des cas statistique rss monte-carlo cp cpk ppm pareto excel", etape("resultats")],
     ["Optimiser les tolérances", "repartir repartition cout budget procedes atelier resserrer", page("repartir")],
-    ["Comparer des chaînes et des cotes condition", "comparatif plusieurs chaines colonnes scenarios ab cf nouvelle cf cote condition tableau cote a cote", page("comparer")],
+    ["Comparer des chaînes et des cotes condition", "comparatif plusieurs chaines colonnes scenarios ab cf nouvelle cote condition tableau cote a cote", page("comparer")],
     ["Dossier de validation", "dossier validation cartouche note de calcul html pdf controles", page("dossier")],
     ["Mécanisme (plusieurs chaînes)", "mecanisme assemblage chaines jeux fonctionnels", page("mecanisme")],
     ["Assistant de chaîne", "assistant construire pieces contacts surfaces", page("assistant")],

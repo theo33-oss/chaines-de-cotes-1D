@@ -59,6 +59,15 @@ _REVISION_ETUDE = {cle: ("texte", True) for cle in ("indice", "date", "auteur", 
 MAX_REVISIONS_ETUDE = 30
 
 
+def _du(ou: str) -> str:
+    """Complément « de … » accordé : « le bloc » → « du bloc », « les maillons » → « des maillons »."""
+    if ou.startswith("le "):
+        return "du " + ou[3:]
+    if ou.startswith("les "):
+        return "des " + ou[4:]
+    return "de " + ou
+
+
 def _erreur(message: str) -> ErreurChaine:
     return ErreurChaine(_ID, f"Fichier non reconnu : {message}")
 
@@ -153,7 +162,7 @@ def _controleProbleme(p, ou: str = "le problème") -> None:
             raise _erreur(f"clé inconnue « {cle} » dans {ou}.")
     for cle in ("condition", "reglages", "maillons"):
         if cle not in p:
-            raise _erreur(f"le bloc « {cle} » est absent de {ou}.")
+            raise _erreur(f"le bloc « {cle} » est absent {_du(ou)}.")
     _controleBloc(p["condition"], _CONDITION, "la cote condition")
     _controleBloc(p["reglages"], _REGLAGES, "les réglages")
     if "cartouche" in p:
@@ -199,7 +208,7 @@ def importerProjet(texte: str) -> dict:
     try:
         d = json.loads(texte)
     except (TypeError, ValueError) as err:
-        raise _erreur(f"ce n'est pas un fichier JSON lisible ({err}).") from err
+        raise _erreur("ce n'est pas un fichier JSON lisible (fichier tronqué, abîmé ou d'un autre format).") from err
     if not isinstance(d, dict) or d.get("application") != APPLICATION:
         raise _erreur("ce fichier n'a pas été enregistré par l'application Chaînes de cotes 1D.")
     version = d.get("version")

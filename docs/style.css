@@ -425,3 +425,21 @@ dialog#recherche li.rech-vide { cursor: default; color: var(--discret); }
 /* au doigt : champs à 16 px (l'iPhone ne zoome plus la page à la saisie) */
 @media (pointer: coarse) { input, select, textarea { font-size: 16px; } }
 h2:focus { outline: none; }
+/* finitions : pied de page, cases, tablette, toucher */
+.pied-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 16px; }
+.pied-liens > * { white-space: nowrap; }
+label.case input, input[type="checkbox"], input[type="radio"] { flex: 0 0 auto; }
+#maillons select.m-sens { min-width: 8.5rem; }
+@media (max-width: 900px) { .message-flottant { bottom: 58px; } } /* au-dessus du bouton « Demander à une IA » */
+@media (min-width: 641px) and (max-width: 860px) {
+  #menu .principal { gap: 4px; }
+  #menu .principal button { padding: 4px 10px; }
+  #menu .principal .theme { margin-left: 0; }
+}
+@media (pointer: coarse) {
+  summary { min-height: 40px; }
+  .lien-bouton, footer a, .pied-liens button { min-height: 40px; display: inline-flex; align-items: center; }
+  details.info > summary { min-width: 40px; min-height: 40px; }
+  button.secondaire { min-height: 40px; min-width: 40px; }
+  .ia-bouton { min-height: 40px; }
+}

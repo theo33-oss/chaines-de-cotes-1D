@@ -1,4 +1,4 @@
-"""Pont du site (docs/pont.py) : plafond de 10^18 sur les nombres saisis et phrase française pour les erreurs arithmétiques."""
+"""Pont du site (docs/pont.py) : plafond de 10¹⁸ sur les nombres saisis et phrase française pour les erreurs arithmétiques."""
 
 import copy
 import json
@@ -36,13 +36,13 @@ def _sortie(f, *args) -> dict:
     return json.loads(f(*args))
 
 
-# ---------------------------------------------------------------- plafond de 10^18
+# ---------------------------------------------------------------- plafond de 10¹⁸
 
 
 def test_cote_trop_grande_refusee_partout():
     t = _texte(_avec(lambda p: p["maillons"][1].update(cote=1e30)))
     for r in (_sortie(pont.calculer, t), _sortie(pont.apercu, t), _sortie(pont.sauver, t), _sortie(pont.mecaChaine, t)):
-        assert "10^18" in r["erreur"] and "la cote nominale" in r["erreur"] and "Maillon 2" in r["erreur"], r
+        assert "10¹⁸" in r["erreur"] and "la cote nominale" in r["erreur"] and "Maillon 2" in r["erreur"], r
         assert "mm" in r["erreur"] and "vérifiez l'unité" in r["erreur"]
 
 
@@ -79,7 +79,7 @@ def test_chaque_champ_est_plafonne(bloc, champ, libelle, unite, valeur):
 
     with pytest.raises(ErreurChaine) as e:
         pont._nettoyer(_avec(modif))
-    assert "10^18" in e.value.message and libelle in e.value.message and unite in e.value.message
+    assert "10¹⁸" in e.value.message and libelle in e.value.message and unite in e.value.message
     if bloc == "maillon":
         assert "Maillon 2" in e.value.message
 
@@ -88,7 +88,7 @@ def test_plafond_exact_accepte_et_juste_au_dessus_refuse():
     for v in (1e18, -1e18):
         pont._nettoyer(_avec(lambda p, v=v: p["maillons"][0].update(cote=abs(v), es=v, ei=-1e18)))  # ne lève pas
     r = _sortie(pont.calculer, _texte(_avec(lambda p: p["maillons"][0].update(cote=1e18))))
-    assert "10^18" not in r.get("erreur", "")  # le calcul (hors tables ISO) répond, pas le plafond
+    assert "10¹⁸" not in r.get("erreur", "")  # le calcul (hors tables ISO) répond, pas le plafond
     with pytest.raises(ErreurChaine):
         pont._nettoyer(_avec(lambda p: p["maillons"][0].update(cote=1.0000001e18)))
 
@@ -96,7 +96,7 @@ def test_plafond_exact_accepte_et_juste_au_dessus_refuse():
 def test_entier_demesure_refuse():
     with pytest.raises(ErreurChaine) as e:
         pont._nettoyer(_avec(lambda p: p["maillons"][0].update(cote=10**400)))
-    assert "10^18" in e.value.message
+    assert "10¹⁸" in e.value.message
 
 
 def test_limite_sans_borne_et_infinis_gardent_leur_comportement():
@@ -106,12 +106,12 @@ def test_limite_sans_borne_et_infinis_gardent_leur_comportement():
     r = _sortie(pont.calculer, _texte(_avec(lambda p: p["condition"].update(jmax=None))))
     assert "erreur" not in r
     r = _sortie(pont.calculer, _texte(_avec(lambda p: p["condition"].update(jmax=float("inf")))))  # refus existant du calcul
-    assert "10^18" not in r["erreur"]
+    assert "10¹⁸" not in r["erreur"]
 
 
 def test_texte_non_numerique_laisse_au_calcul():
     r = _sortie(pont.calculer, _texte(_avec(lambda p: p["maillons"][0].update(cote="abc"))))
-    assert "doit être un nombre" in r["erreur"] and "10^18" not in r["erreur"]
+    assert "doit être un nombre" in r["erreur"] and "10¹⁸" not in r["erreur"]
 
 
 def test_empreinte_ne_refuse_pas():
@@ -126,11 +126,11 @@ def test_fichier_refuse_a_l_ouverture():
     d = json.loads(fichier)
     d["probleme"]["maillons"][0]["es"] = 5e20
     r = _sortie(pont.ouvrir, json.dumps(d))
-    assert "10^18" in r["erreur"] and "l'écart supérieur" in r["erreur"]
+    assert "10¹⁸" in r["erreur"] and "l'écart supérieur" in r["erreur"]
     d["probleme"]["maillons"][0]["es"] = 0.05
     d["revisions"] = [{"indice": "A", "date": "", "auteur": "", "objet": "", "probleme": _avec(lambda p: p["maillons"][1].update(cote=1e19))}]
     r = _sortie(pont.ouvrir, json.dumps(d))
-    assert "Révision 1" in r["erreur"] and "10^18" in r["erreur"]
+    assert "Révision 1" in r["erreur"] and "10¹⁸" in r["erreur"]
 
 
 def test_mecanisme_import_refuse_et_calcul_par_chaine():
@@ -138,11 +138,11 @@ def test_mecanisme_import_refuse_et_calcul_par_chaine():
     mauvaise["condition"]["nom"] = "Chaîne trop grande"
     mec = json.dumps({"format": "mecanisme", "version": 1, "nom": "m", "chaines": [bonne, mauvaise]})
     r = _sortie(pont.mecaImporter, mec)
-    assert "Chaîne 2" in r["erreur"] and "10^18" in r["erreur"]
+    assert "Chaîne 2" in r["erreur"] and "10¹⁸" in r["erreur"]
     # au calcul, la chaîne refusée est en erreur sans empêcher l'autre
     r = _sortie(pont.mecaCalculer, mec, 2000)
     assert [x["nom"] for x in r["enErreur"]] == ["Chaîne trop grande"]
-    assert "10^18" in r["enErreur"][0]["message"]
+    assert "10¹⁸" in r["enErreur"][0]["message"]
 
 
 def test_comparerN_colonne_refusee_sans_bloquer_les_autres():
@@ -150,31 +150,31 @@ def test_comparerN_colonne_refusee_sans_bloquer_les_autres():
     d = {"colonnes": [{"nom": "A", "probleme": PROBLEME}, {"nom": "B", "probleme": mauvaise}], "n": 2000}
     r = _sortie(pont.comparerN, json.dumps(d))
     assert [c["erreur"] is None for c in r["colonnes"]] == [True, False]
-    assert "10^18" in r["colonnes"][1]["erreur"] and "Maillon 1" in r["colonnes"][1]["erreur"]
+    assert "10¹⁸" in r["colonnes"][1]["erreur"] and "Maillon 1" in r["colonnes"][1]["erreur"]
 
 
 def test_comparer_refuse_la_variante():
     r = _sortie(pont.comparer, _texte(PROBLEME), _texte(_avec(lambda p: p["maillons"][0].update(cote=1e30))), "B")
-    assert "10^18" in r["erreur"]
+    assert "10¹⁸" in r["erreur"]
 
 
 def test_repartir_refuse():
     r = _sortie(pont.repartir, _texte(_avec(lambda p: p["maillons"][0].update(cote=1e30))), "proportionnelle", "pire_cas")
-    assert "10^18" in r["erreur"]
+    assert "10¹⁸" in r["erreur"]
 
 
 def test_assistant_refuse_cote_et_limites():
     cotes = [{"piece": "Carter", "de": "A", "vers": "B", "cote": 1e30}, {"piece": "Arbre", "de": "A", "vers": "C", "cote": 50}]
     r = _sortie(pont.assistant, json.dumps(cotes), "[]")
-    assert "10^18" in r["erreur"] and "Carter" in r["erreur"] and "surfaces" in r
+    assert "10¹⁸" in r["erreur"] and "Carter" in r["erreur"] and "surfaces" in r
     cotes[0]["cote"] = 80
     r = _sortie(pont.assistant, json.dumps(cotes), "[]", "", "", "Jeu J", 0.0, 1e30)
-    assert "10^18" in r.get("erreur", "") and "Jmax" in r["erreur"]
+    assert "10¹⁸" in r.get("erreur", "") and "Jmax" in r["erreur"]
 
 
 def test_dilatation_refuse_temperature_demesuree():
     r = _sortie(pont.dilatation, json.loads(pont.materiaux())[0], 20.0, 1e30)
-    assert "10^18" in r["erreur"]
+    assert "10¹⁸" in r["erreur"]
 
 
 def test_tous_les_exemples_sans_erreur():

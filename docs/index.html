@@ -9,8 +9,8 @@
 <meta name="theme-color" content="#2C2348" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="build" content="342e9fb1">
-<meta name="zip" content="a8407c94">
+<meta name="build" content="2243996b">
+<meta name="zip" content="ad61570d">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Chaînes de cotes 1D">
@@ -20,7 +20,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=bff54a98">
+<link rel="stylesheet" href="style.css?v=846fc775">
 </head>
 <body>
 <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -258,15 +258,15 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
   <!-- ===== Page « Comparer » (js/comparer.js) ===== -->
   <details class="bandeau expert-seul" id="page-comparer">
     <summary><h2>Comparer des chaînes et des cotes condition</h2></summary>
-      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Mettez côte à côte plusieurs chaînes de cotes (chacune avec sa cote condition), ou plusieurs cotes condition sur les mêmes maillons. Chaque colonne est une chaîne calculée comme dans la page Étude. Ajoutez des colonnes depuis l'étude en cours, « Mes études » (accueil), la bibliothèque d'exemples ou un fichier, puis lisez le tableau, les graphiques et exportez-les. « Nouvelle CF sur ces maillons » crée une autre cote condition à partir des mêmes cotes (sens « + », « − » ou « exclu » à choisir pour chacune).</p></details>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Mettez côte à côte plusieurs chaînes de cotes (chacune avec sa cote condition), ou plusieurs cotes condition sur les mêmes maillons. Chaque colonne est une chaîne calculée comme dans la page Étude. Ajoutez des colonnes depuis l'étude en cours, « Mes études » (accueil), la bibliothèque d'exemples ou un fichier, puis lisez le tableau, les graphiques et exportez-les. « Nouvelle cote condition sur ces maillons » crée une autre cote condition (CF) à partir des mêmes cotes (sens « + », « − » ou « exclu » à choisir pour chacune).</p></details>
       <section id="cmp-comparatif" aria-labelledby="cmp-titre">
         <h3 id="cmp-titre">Comparatif</h3>
         <div class="ligne" id="cmp-ajouts">
           <button id="cmp-encours" type="button" class="secondaire" data-aide="Ajoute la chaîne de la page Étude (deux colonnes si l'étude a deux cotes condition).">Ajouter l'étude en cours</button>
           <label class="en-ligne">Mes études <select id="cmp-etudes"></select></label>
-          <button id="cmp-ajouter-etude" type="button" class="secondaire">Ajouter</button>
+          <button id="cmp-ajouter-etude" type="button" class="secondaire" aria-label="Ajouter l'étude choisie dans Mes études au comparatif">Ajouter</button>
           <label class="en-ligne">Exemple <select id="cmp-exemple-n"></select></label>
-          <button id="cmp-ajouter-exemple" type="button" class="secondaire">Ajouter</button>
+          <button id="cmp-ajouter-exemple" type="button" class="secondaire" aria-label="Ajouter l'exemple choisi au comparatif">Ajouter</button>
           <button id="cmp-ajouter-fichier" type="button" class="secondaire">Fichier d'étude (.json)…</button>
           <input id="cmp-fichier-n" type="file" accept=".json,application/json" multiple hidden aria-label="Fichiers d'étude à comparer">
         </div>
@@ -628,18 +628,13 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
   </defs></svg>
 
 <footer>
-  <p>Chaînes de cotes 1D · version <span id="version">1.0.0</span> <button type="button" id="partager" class="lien-bouton" title="Partager le site et le projet (feuille de partage du téléphone ; sur ordinateur, les liens sont copiés)">Partager</button> <button type="button" id="actualiser" class="lien-bouton" title="Efface les copies gardées par le navigateur et recharge toute la page">Actualiser le site</button> · Théo Brun ·
-    <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">code source</a> ·
-    <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/blob/main/LIMITES.md">limites connues</a> ·
-    <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/issues">signaler une erreur</a> ·
-    <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest">télécharger pour Windows</a> ·
-    <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/blob/main/LICENSE">licence PolyForm Noncommercial 1.0.0</a></p>
+  <p class="pied-liens"><span>Chaînes de cotes 1D · version <span id="version">1.0.0</span></span> <button type="button" id="partager" class="lien-bouton" title="Partager le site et le projet (feuille de partage du téléphone ; sur ordinateur, les liens sont copiés)">Partager</button> <button type="button" id="actualiser" class="lien-bouton" title="Recharge la dernière version du site (vos études « Mes études » sont conservées)">Actualiser le site</button> <span>Théo Brun</span> <a href="https://github.com/theo33-oss/chaines-de-cotes-1D">code source</a> <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/blob/main/LIMITES.md">limites connues</a> <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/issues">signaler une erreur</a> <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/releases/latest">télécharger pour Windows</a> <a href="https://github.com/theo33-oss/chaines-de-cotes-1D/blob/main/LICENSE">licence PolyForm Noncommercial 1.0.0</a></p>
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel. Aucun cookie, aucune mesure d'audience.</p>
 </footer>
 
-<script src="app.js?v=88f4f650"></script>
+<script src="app.js?v=081cb176"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=1b547a43"></script>
+<script src="js/chaine.js?v=335e211d"></script>
 <script src="js/repartir.js?v=ab2c4d30"></script>
 <script src="js/comparer.js?v=a83ab01d"></script>
 <script src="js/mecanisme.js?v=cde448b1"></script>
@@ -649,9 +644,9 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 <script src="js/ajustement.js?v=27a8c5f2"></script>
 <script src="js/iso286.js?v=d369c407"></script>
 <script src="js/materiaux.js?v=e542faad"></script>
-<script src="js/etudes.js?v=8e7cec11"></script>
-<script src="js/comparatif.js?v=b286b995"></script>
-<script src="js/recherche.js?v=141d00ea"></script>
+<script src="js/etudes.js?v=0c9cef2b"></script>
+<script src="js/comparatif.js?v=a694dde9"></script>
+<script src="js/recherche.js?v=2187bf99"></script>
 <script>App.demarrer();</script>
 </body>
 </html>

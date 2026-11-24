@@ -79,9 +79,16 @@
 
   // ---------- stockage (localStorage abîmé ou absent : la page reste utilisable) ----------
 
+  let abime = false; // le stockage contient quelque chose d'illisible : la page le dit, et en garde une copie
   function lire() {
     try {
-      const l = JSON.parse(localStorage.getItem(CLE) || "[]");
+      const brut = localStorage.getItem(CLE) || "[]";
+      let l;
+      try { l = JSON.parse(brut); } catch (e) {
+        abime = true;
+        try { localStorage.setItem(CLE + ".abimee", brut); } catch (e2) { /* plein : tant pis */ } // avant qu'un enregistrement ne l'écrase
+        return [];
+      }
       return (Array.isArray(l) ? l : []).map(nettoyerCopie).filter(Boolean).slice(0, MAX_ETUDES);
     } catch (e) { return []; }
   }
@@ -220,6 +227,7 @@
   function rendre() {
     if (!zoneListe) return;
     const liste = lire().sort((a, b) => Number(b.favori) - Number(a.favori) || b.modif - a.modif);
+    if (abime && zoneMessage && zoneMessage.hidden) dire("avertissement", "Les études gardées dans ce navigateur sont illisibles (données abîmées) : une copie brute est conservée, et le prochain enregistrement repart de zéro.");
     if (!liste.length) {
       zoneListe.replaceChildren(el("p", { class: "legende", texte: "Aucune étude gardée pour l'instant. « Enregistrer l'étude en cours » la garde ici, dans ce navigateur, pour la rouvrir ou la comparer à d'autres." }));
       return;
@@ -265,7 +273,7 @@
     fichier.addEventListener("change", async (e) => { await importer(e.target.files[0]); e.target.value = ""; });
     zoneMessage = el("p", { class: "message", role: "status", "aria-live": "polite", hidden: true });
     zoneListe = el("div", { class: "etudes-corps" });
-    const bEnregistrer = el("button", { type: "button", class: "secondaire", texte: "Enregistrer l'étude en cours", onclick: () => enregistrerEnCours(bEnregistrer) });
+    const bEnregistrer = el("button", { type: "button", class: "secondaire", texte: "Enregistrer dans Mes études", onclick: () => enregistrerEnCours(bEnregistrer) });
     const section = el("section", { class: "mes-etudes", id: "mes-etudes", "aria-labelledby": "mes-etudes-titre" },
       el("h3", { id: "mes-etudes-titre", texte: "Mes études" }),
       el("p", { class: "legende", texte: "Vos études, gardées dans ce navigateur (rien n'est envoyé sur Internet). Rouvrez-les, ou mettez-les côte à côte dans « Comparer »." }),

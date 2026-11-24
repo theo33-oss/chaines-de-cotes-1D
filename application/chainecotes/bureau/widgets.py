@@ -54,7 +54,7 @@ from chainecotes.core.donnees import ecrireSansPerte
 from chainecotes.core.errors import ErreurChaine
 from chainecotes.core.formules import texVersHtml
 from chainecotes.core.lexique import aideTerme
-from chainecotes.core.nombres import versTableur
+from chainecotes.core.nombres import exposants, versTableur
 from chainecotes.plots._common import FOND_FIGURE, TEXTE
 
 _DOSSIER_FIGURES = Path(tempfile.mkdtemp(prefix="chaines_cotes_"))
@@ -307,9 +307,9 @@ def _ecrit(v: Any, fmt: str | None) -> str:
     if isinstance(v, bool):
         return "oui" if v else "non"
     if fmt and isinstance(v, int | float):
-        return (fmt % v).replace(".", ",")
+        return exposants(fmt % v).replace(".", ",")
     if isinstance(v, float):
-        return f"{v:g}".replace(".", ",")
+        return exposants(f"{v:g}").replace(".", ",")
     return str(v)
 
 

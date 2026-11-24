@@ -155,6 +155,8 @@ def _ecart(v: float | None, ref: float | None, mode: str | None, fmt: str) -> st
         return None
     d = v - ref
     if mode == "rel" and ref != 0:
+        if abs(v / ref) >= 100 or abs(v / ref) <= 0.01:  # un pourcentage de plusieurs millions ne se lit pas : facteur
+            return f"× {fr(v / ref, '.2g')}" if v != 0 else "× 0"
         pct = 100 * d / abs(ref)
         f = ".0f" if abs(pct) >= 10 else ".1f"
         if float(format(pct, f)) == 0:

@@ -121,7 +121,7 @@
       if (!reference) reference = col.id;
       ajoutees++;
     }
-    if (ajoutees) { sauver(); rendreColonnes(); planifier(); }
+    if (ajoutees) { sauver(); rendreColonnes(); planifier(); if (!/au plus|vide ou trop/.test($("cmp-message").textContent)) dire("succes", `${ajoutees} chaîne${ajoutees > 1 ? "s" : ""} ajoutée${ajoutees > 1 ? "s" : ""} au comparatif.`); }
     return ajoutees;
   }
 
@@ -147,7 +147,7 @@
       el("div", { class: "cmp-col-tete" }, champNom, el("label", { class: "case" }, radio, " référence")),
       el("p", { class: "legende", texte: `${c.probleme.maillons.length} maillon(s) · ${limites(c)}` }),
       el("div", { class: "etude-actions" },
-        el("button", { type: "button", class: "secondaire petit", texte: "Nouvelle CF sur ces maillons", "aria-expanded": String(editeur === c.id), onclick: () => { editeur = editeur === c.id ? null : c.id; rendreColonnes(); } }),
+        el("button", { type: "button", class: "secondaire petit", texte: "Nouvelle cote condition sur ces maillons", "aria-expanded": String(editeur === c.id), onclick: () => { editeur = editeur === c.id ? null : c.id; rendreColonnes(); } }),
         el("button", { type: "button", class: "secondaire petit", texte: "Dupliquer", "aria-label": "Dupliquer " + c.nom, onclick: () => ajouterColonnes([{ nom: c.nom + " (copie)", probleme: c.probleme, tous: c.tous }]) }),
         el("button", { type: "button", class: "secondaire petit", texte: "Retirer", "aria-label": "Retirer " + c.nom, onclick: () => retirer(c.id) })));
     if (editeur === c.id) li.append(formulaireCF(c));
@@ -157,7 +157,7 @@
   // Éditeur « nouvelle CF sur ces maillons » : nouvelle cote condition + sens de chaque maillon (+, −, exclu).
   function formulaireCF(c) {
     const cond = c.probleme.condition;
-    const nom = el("input", { type: "text", value: `CF ${colonnes.length + 1}`, "aria-label": "Nom de la nouvelle cote condition" });
+    const nom = el("input", { type: "text", value: `Cote condition ${colonnes.length + 1}`, "aria-label": "Nom de la nouvelle cote condition" });
     const jmin = el("input", { type: "text", inputmode: "decimal", value: cond.jmin ?? "", "aria-label": "Jmin de la nouvelle cote condition (mm)" });
     const jmax = el("input", { type: "text", inputmode: "decimal", value: cond.jmax ?? "", "aria-label": "Jmax de la nouvelle cote condition (mm)" });
     const sens = c.tous.map((m, i) => {
@@ -185,7 +185,7 @@
       if (typeof lo === "string" || typeof hi === "string") return dire("erreur", "Jmin et Jmax doivent être des nombres (laissez vide un côté sans limite).");
       editeur = null;
       const n = ajouterColonnes([{ nom: nomPropre(nom.value) || "CF", tous, probleme: { condition: { nom: nomPropre(nom.value) || "CF", jmin: lo, jmax: hi }, reglages: c.probleme.reglages, maillons: maillons.map((m) => ({ ...m })) } }]);
-      if (n) dire("succes", "Nouvelle colonne ajoutée : même chaîne, autre cote condition.");
+      if (n) dire("succes", "Nouvelle colonne ajoutée : mêmes maillons, autre cote condition.");
       rendreColonnes();
     });
     return form;
@@ -347,7 +347,7 @@
     App.remplir($("cmp-exemple-n"), JSON.parse(pont.exemples()).map((e) => [e.id, e.titre]));
     $("cmp-encours").addEventListener("click", () => {
       const etude = App.analyser.etudeComplete();
-      if (ajouterProbleme(etude, nomLibre(etude.condition.nom || "Étude en cours"))) dire("succes", "Étude en cours ajoutée.");
+      ajouterProbleme(etude, nomLibre(etude.condition.nom || "Étude en cours"));
     });
     $("cmp-ajouter-etude").addEventListener("click", () => {
       const e = App.etudes.obtenir($("cmp-etudes").value);

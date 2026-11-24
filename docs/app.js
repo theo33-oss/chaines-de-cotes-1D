@@ -70,12 +70,14 @@ const App = (() => {
     if (!sombre()) return;
     themeAvantImpression = "dark";
     document.documentElement.dataset.theme = "light";
+    document.dispatchEvent(new Event("themechange"));
     for (const d of document.querySelectorAll(".js-plotly-plot")) if (d._figure) tracer(d, d._figure);
   });
   window.addEventListener("afterprint", () => {
     if (!themeAvantImpression) return;
     document.documentElement.dataset.theme = themeAvantImpression;
     themeAvantImpression = null;
+    document.dispatchEvent(new Event("themechange"));
     for (const d of document.querySelectorAll(".js-plotly-plot")) if (d._figure) tracer(d, d._figure);
   });
 
@@ -190,7 +192,7 @@ const App = (() => {
     const h2i = await chargerHtmlToImage();
     const largeur = Math.max(cible.scrollWidth, cible.getBoundingClientRect().width);
     const copie = cible.cloneNode(true);
-    copie.querySelectorAll(".barre-image, .copier").forEach((b) => b.remove());
+    copie.querySelectorAll(".barre-image, .copier, .poignee").forEach((b) => b.remove());
     copie.open = true; // un bloc replié (details) est copié ouvert
     const cadre = Object.assign(document.createElement("div"), { className: "cadre-image" });
     cadre.style.padding = "8px";
@@ -403,7 +405,7 @@ const App = (() => {
       layout.legend = { ...layout.legend, orientation: "h", x: 0, xanchor: "left", y: -0.28, yanchor: "top" };
       layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
     }
-    Plotly.react(div, f.data, layout, { responsive: true, displaylogo: false });
+    Plotly.react(div, f.data, layout, { responsive: true, displaylogo: false, displayModeBar: !matchMedia("(pointer: coarse)").matches }); // au doigt : pas de barre d'outils minuscule
     if (!div.getAttribute("role")) { // figure = image pour un lecteur d'écran, avec son titre comme nom
       div.setAttribute("role", "img");
       const titre = (f.layout && f.layout.title && (f.layout.title.text || f.layout.title)) || "";
@@ -430,6 +432,7 @@ const App = (() => {
       for (const b of barre.children) {
         b.setAttribute("aria-selected", String(b.dataset.id === id));
         b.tabIndex = b.dataset.id === id ? 0 : -1;
+        if (b.dataset.id === id) panneau.setAttribute("aria-labelledby", b.id);
       }
       panneau.replaceChildren();
       liste.find((o) => o.id === id).rendu(panneau);
@@ -439,6 +442,8 @@ const App = (() => {
       b.type = "button";
       b.setAttribute("role", "tab");
       b.dataset.id = o.id;
+      b.id = (barre.id || "onglets") + "-" + o.id;
+      b.setAttribute("aria-controls", panneau.id || (panneau.id = (barre.id || "onglets") + "-panneau"));
       b.textContent = o.titre;
       b.addEventListener("click", () => ouvrir(o.id));
       return aide(b);
@@ -551,7 +556,7 @@ const App = (() => {
     }
     majMenu();
     if (pont && courantePrecedente !== id) { // navigation : le focus va au titre de la page (lecteur d'écran, clavier)
-      const h = [...$("page-" + ecran).querySelectorAll("h2, summary h2")].find((x) => x.offsetParent !== null);
+      const h = [...$("page-" + (page && page.dans ? id : ecran)).querySelectorAll("h2, summary h2")].find((x) => x.offsetParent !== null);
       if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
     }
     courantePrecedente = id;
@@ -728,7 +733,7 @@ const App = (() => {
     const plotlyPret = bibliotheque("plotly"), pyodideJs = bibliotheque("pyodide"); // en route avant tout le reste, en parallèle
     plotlyPret.catch(() => {}); pyodideJs.catch(() => {}); // l'erreur est traitée à l'attente, plus bas
     const build = document.querySelector('meta[name="build"]')?.content || "";
-    if (build) $("version").textContent += " · build " + build;
+    if (build) $("version").textContent += " · édition " + build;
     $("actualiser").addEventListener("click", actualiserSite);
     $("partager").addEventListener("click", partagerSite);
     // lien « Aller au contenu » : le focus va au contenu sans changer l'adresse (le « # » sert aux liens d'étude)

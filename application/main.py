@@ -516,6 +516,14 @@ def verifier(app: QApplication, fenetre: "Fenetre", sortie: str) -> int:
         erreurs.append(traceback.format_exc()[-1500:])
         bundle = None
     lignes.append(f"calcul de l'étude : {'OK' if len(erreurs) == avant and bundle else 'ERREUR'}")
+    avant = len(erreurs)
+    try:  # texte de l'étude pour le bloc-notes et pour une IA
+        from chainecotes.services.export_texte import texteEtude, texteIA
+
+        assert "RÉSULTATS" in texteEtude(bundle) and "--- ÉTUDE ---" in texteIA(bundle), "texte de l'étude incomplet"
+    except Exception:  # noqa: BLE001
+        erreurs.append(traceback.format_exc()[-1500:])
+    lignes.append(f"texte de l'étude (bloc-notes, IA) : {'OK' if len(erreurs) == avant else 'ERREUR'}")
     for format_, debut in (("HTML", b"<"), ("PDF", b"%PDF"), ("Word", b"PK")):  # polices, gabarit, reportlab-free fpdf2, docx
         avant = len(erreurs)
         try:

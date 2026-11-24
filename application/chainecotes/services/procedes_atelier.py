@@ -73,7 +73,7 @@ def importerProcedes(texte: str) -> dict[str, dict]:
     try:
         d = json.loads(texte)
     except (TypeError, ValueError) as err:
-        raise _erreur(f"ce n'est pas un fichier JSON lisible ({err}).") from err
+        raise _erreur("ce n'est pas un fichier JSON lisible (fichier tronqué, abîmé ou d'un autre format).") from err
     if not isinstance(d, dict) or d.get("format") != FORMAT:
         raise _erreur("ce fichier n'a pas été enregistré par la page Optimiser les tolérances.")
     version = d.get("version")

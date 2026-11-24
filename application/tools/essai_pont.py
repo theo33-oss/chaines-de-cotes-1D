@@ -39,7 +39,7 @@ _grand = json.loads(pont.charger(exemples[0]["id"]))
 _grand["maillons"][0]["cote"] = 1e30
 for _f in (pont.calculer, pont.apercu, pont.sauver):
     _r = json.loads(_f(json.dumps(_grand)))
-    assert "10^18" in _r["erreur"] and "Maillon 1" in _r["erreur"], _r
+    assert "10¹⁸" in _r["erreur"] and "Maillon 1" in _r["erreur"], _r
 _grand["maillons"][0]["cote"] = 1e18
 pont._nettoyer(_grand)  # 1e18 pile : accepté par le plafond
 assert "domaine des nombres" in pont._phraseArithmetique(ZeroDivisionError("float division by zero"))

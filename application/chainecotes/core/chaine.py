@@ -37,12 +37,17 @@ _ID = "Chaine:Saisie:"
 ZERO_ABSOLU_C = -273.15  # °C : constante physique, aucune température ne peut lui être inférieure
 
 
+def _recu(v) -> str:
+    """« reçu : rien (champ vide) » plutôt que « reçu None » dans un message destiné à l'utilisateur."""
+    return "reçu : rien (champ vide)" if v is None or v == "" else f"reçu {v!r}"
+
+
 def _nombre(v, quoi: str, ligne: int) -> float:
     """Nombre fini d'une saisie, sinon ErreurChaine."""
     try:
         x = float(v)
     except (TypeError, ValueError):
-        raise ErreurChaine(_ID + "nombre", f"Maillon {ligne} : {quoi} doit être un nombre (reçu {v!r}).") from None
+        raise ErreurChaine(_ID + "nombre", f"Maillon {ligne} : {quoi} doit être un nombre ({_recu(v)}).") from None
     if not math.isfinite(x):
         raise ErreurChaine(_ID + "nombre", f"Maillon {ligne} : {quoi} doit être un nombre fini.")
     return x
@@ -53,7 +58,7 @@ def _reel(v, quoi: str) -> float:
     try:
         x = float(v)
     except (TypeError, ValueError):
-        raise ErreurChaine(_ID + "nombre", f"{quoi} doit être un nombre (reçu {v!r}).") from None
+        raise ErreurChaine(_ID + "nombre", f"{quoi} doit être un nombre ({_recu(v)}).") from None
     if not math.isfinite(x):
         raise ErreurChaine(_ID + "nombre", f"{quoi} doit être un nombre fini.")
     return x
@@ -75,7 +80,7 @@ def coefficientSigma(loi: str, k: float) -> float:
     """
     if loi == "normale":
         if not k > 0:
-            raise ErreurChaine(_ID + "k", f"Le facteur k doit être strictement positif (reçu {k!r}).")
+            raise ErreurChaine(_ID + "k", f"Le facteur k doit être strictement positif ({_recu(k)}).")
         return 1 / (2 * k)
     if loi == "uniforme":
         return 1 / math.sqrt(12)

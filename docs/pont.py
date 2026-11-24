@@ -130,7 +130,7 @@ def _trop_grand(v) -> str | None:
 
 
 def _refus(prefixe: str, sujet: str, quoi: str, valeur: str, unite: str) -> ErreurChaine:
-    return ErreurChaine(_ID_PLAFOND, f"{prefixe}{sujet} : {quoi} vaut {valeur}, au-delà de 10^18{unite} : vérifiez l'unité.")
+    return ErreurChaine(_ID_PLAFOND, f"{prefixe}{sujet} : {quoi} vaut {valeur}, au-delà de 10¹⁸{unite} : vérifiez l'unité.")
 
 
 def _controlerPlafond(p: dict, prefixe: str = "") -> None:
@@ -727,7 +727,7 @@ def dilatation(nom: str, tref: float, temperature: float) -> str:
         return json.dumps({"erreur": f"Matériau inconnu : {nom!r}."})
     for quoi, v in (("La température de référence", tref), ("La température", temperature)):
         if (texteV := _trop_grand(v)) is not None:
-            return json.dumps({"erreur": f"{quoi} vaut {texteV}, au-delà de 10^18 °C : vérifiez l'unité."})
+            return json.dumps({"erreur": f"{quoi} vaut {texteV}, au-delà de 10¹⁸ °C : vérifiez l'unité."})
     tref, temperature = float(tref), float(temperature)
     if temperature < -273.15 or tref < -273.15:
         return json.dumps({"erreur": "Une température ne peut pas être sous le zéro absolu (−273,15 °C)."})

@@ -84,7 +84,7 @@ def importerMecanisme(texte: str) -> dict:
     try:
         d = json.loads(texte)
     except (TypeError, ValueError) as err:
-        raise _erreur(f"ce n'est pas un fichier JSON lisible ({err}).") from err
+        raise _erreur("ce n'est pas un fichier JSON lisible (fichier tronqué, abîmé ou d'un autre format).") from err
     if isinstance(d, dict) and d.get("application") == APPLICATION:
         p = importerProbleme(texte)
         return {"nom": _nomChaine(p, 1), "chaines": [p]}
