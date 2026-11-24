@@ -629,8 +629,10 @@ const App = (() => {
 
   // « Actualiser le site » : efface les copies gardées (service worker, caches) et recharge en contournant le cache.
   async function actualiserSite() {
-    try { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (e) { /* pas de service worker */ }
-    try { for (const n of await caches.keys()) if (n !== "chainecotes-cdn") await caches.delete(n); } catch (e) { /* pas de cache */ }
+    // l'adresse github.io est partagée avec d'autres projets (MecaStruct…) : on ne touche qu'au service worker et aux caches de ce site
+    const ici = new URL("./", location.href).href;
+    try { for (const r of await navigator.serviceWorker.getRegistrations()) if (r.scope === ici) await r.unregister(); } catch (e) { /* pas de service worker */ }
+    try { for (const n of await caches.keys()) if (n.startsWith("chainecotes-") && n !== "chainecotes-cdn") await caches.delete(n); } catch (e) { /* pas de cache */ }
     location.replace(location.pathname + "?maj=" + Date.now() + location.hash);
   }
 

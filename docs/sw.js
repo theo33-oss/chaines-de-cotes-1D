@@ -4,14 +4,15 @@
 // Bibliothèques des CDN (Pyodide, Plotly, html-to-image, roue plotly) : copie gardée d'abord, d'une version du site à l'autre.
 // Le numéro change avec construire_web.py (empreinte du zip, de app.js et de style.css) : les anciennes copies sont effacées.
 
-const VERSION = "chainecotes-1.0.0-bcfb6df6";
+const VERSION = "chainecotes-1.0.0-a5f202cd";
 const CDN_CACHE = "chainecotes-cdn"; // adresses à version figée : gardées d'une version du site à l'autre
 const CDN = ["https://cdn.jsdelivr.net/", "https://cdnjs.cloudflare.com/", "https://files.pythonhosted.org/", "https://pypi.org/"];
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
-    for (const nom of await caches.keys()) if (nom !== VERSION && nom !== CDN_CACHE) await caches.delete(nom);
+    // l'adresse github.io est partagée avec d'autres projets (MecaStruct…) : seules les copies de ce site sont effacées
+    for (const nom of await caches.keys()) if (nom.startsWith("chainecotes-") && nom !== VERSION && nom !== CDN_CACHE) await caches.delete(nom);
     await self.clients.claim();
   })());
 });
