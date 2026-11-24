@@ -133,6 +133,7 @@
       return ecrire([copie, ...liste]) ? { copie } : { erreur: "Le navigateur refuse de garder l'étude (stockage plein ou interdit). Exportez vos études en JSON." };
     },
     lireImport,
+    nettoyerProbleme,
   };
   App.etudes = api;
 

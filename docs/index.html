@@ -6,8 +6,8 @@
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
 <meta name="theme-color" content="#5C4B99">
-<meta name="build" content="47ce6366">
-<meta name="zip" content="52eb07ea">
+<meta name="build" content="7011f499">
+<meta name="zip" content="e46ba666">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Chaînes de cotes 1D">
@@ -17,7 +17,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=eca618ba">
+<link rel="stylesheet" href="style.css?v=200ba19b">
 </head>
 <body>
 <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -248,7 +248,43 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
   <!-- ===== Page « Comparer » (js/comparer.js) ===== -->
   <details class="bandeau expert-seul" id="page-comparer">
-    <summary><h2>Comparaison de scénarios</h2></summary>
+    <summary><h2>Comparer des chaînes et des cotes condition</h2></summary>
+      <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Mettez côte à côte plusieurs chaînes de cotes (chacune avec sa cote condition), ou plusieurs cotes condition sur les mêmes maillons. Chaque colonne est une chaîne calculée comme dans la page Étude. Ajoutez des colonnes depuis l'étude en cours, « Mes études » (accueil), la bibliothèque d'exemples ou un fichier, puis lisez le tableau, les graphiques et exportez-les. « Nouvelle CF sur ces maillons » crée une autre cote condition à partir des mêmes cotes (sens « + », « − » ou « exclu » à choisir pour chacune).</p></details>
+      <section id="cmp-comparatif" aria-labelledby="cmp-titre">
+        <h3 id="cmp-titre">Comparatif</h3>
+        <div class="ligne" id="cmp-ajouts">
+          <button id="cmp-encours" type="button" class="secondaire" data-aide="Ajoute la chaîne de la page Étude (deux colonnes si l'étude a deux cotes condition).">Ajouter l'étude en cours</button>
+          <label class="en-ligne">Mes études <select id="cmp-etudes"></select></label>
+          <button id="cmp-ajouter-etude" type="button" class="secondaire">Ajouter</button>
+          <label class="en-ligne">Exemple <select id="cmp-exemple-n"></select></label>
+          <button id="cmp-ajouter-exemple" type="button" class="secondaire">Ajouter</button>
+          <button id="cmp-ajouter-fichier" type="button" class="secondaire">Fichier d'étude (.json)…</button>
+          <input id="cmp-fichier-n" type="file" accept=".json,application/json" multiple hidden aria-label="Fichiers d'étude à comparer">
+        </div>
+        <p id="cmp-message" class="message" role="status" aria-live="polite" hidden></p>
+        <ul id="cmp-colonnes" class="cmp-colonnes" aria-label="Chaînes à comparer"></ul>
+        <div class="ligne" id="cmp-actions" hidden>
+          <button id="cmp-lancer" type="button" class="primaire">Comparer</button>
+          <button id="cmp-vider" type="button" class="secondaire">Tout retirer</button>
+          <button id="cmp-exporter-json" type="button" class="secondaire" data-aide="Enregistre la liste des chaînes comparées dans un fichier .json, à rouvrir plus tard.">Enregistrer la comparaison (.json)</button>
+          <button id="cmp-importer-json" type="button" class="secondaire">Ouvrir une comparaison (.json)…</button>
+          <input id="cmp-fichier-json" type="file" accept=".json,application/json" hidden aria-label="Fichier de comparaison à ouvrir">
+        </div>
+        <div id="cmp-sortie" hidden>
+          <h3 id="cmp-resultat-titre" tabindex="-1">Résultat de la comparaison</h3>
+          <p id="cmp-phrases" class="message info" role="status"></p>
+          <div class="ligne" id="cmp-exports">
+            <button id="cmp-copier" type="button" class="secondaire petit" data-aide="Copie le tableau avec des tabulations : à coller directement dans Excel.">Copier pour Excel</button>
+            <button id="cmp-csv" type="button" class="secondaire petit">Exporter le tableau (.csv)</button>
+            <button id="cmp-imprimer" type="button" class="secondaire petit">Imprimer</button>
+            <label class="case"><input id="cmp-masquer" type="checkbox"> Masquer les lignes identiques</label>
+          </div>
+          <div id="cmp-tableau" class="cmp-region" role="region" aria-label="Tableau comparatif" tabindex="0"></div>
+          <div id="cmp-figures"></div>
+        </div>
+      </section>
+      <details id="cmp-ab" class="repli">
+        <summary><h3>Deux scénarios (A/B)</h3></summary>
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Le scénario A est l'étude en cours (bandeaux ci-dessus). Choisissez le scénario B : le résultat de la répartition (bandeau Optimiser), un exemple de la bibliothèque ou un fichier d'étude. Les écarts sont toujours B − A.</p></details>
       <fieldset class="familles"><legend>Scénario B</legend><div>
         <label class="case"><input type="radio" name="cp-source" value="repartition" checked> Résultat de la répartition</label>
@@ -271,6 +307,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
         <div id="cp-fig" class="figure"></div>
         <p id="cp-legende" class="legende"></p>
       </section>
+      </details>
   </details>
 
   <!-- ===== Page « Dossier de validation » (js/dossier.js) ===== -->
@@ -605,7 +642,8 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 <script src="js/ajustement.js?v=27a8c5f2"></script>
 <script src="js/iso286.js?v=d369c407"></script>
 <script src="js/materiaux.js?v=e542faad"></script>
-<script src="js/etudes.js?v=23de0022"></script>
+<script src="js/etudes.js?v=8e7cec11"></script>
+<script src="js/comparatif.js?v=e1867893"></script>
 <script>App.demarrer();</script>
 </body>
 </html>

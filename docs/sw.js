@@ -4,7 +4,7 @@
 // Bibliothèques des CDN (Pyodide, Plotly, html-to-image, roue plotly) : copie gardée d'abord, d'une version du site à l'autre.
 // Le numéro change avec construire_web.py (empreinte du zip, de app.js et de style.css) : les anciennes copies sont effacées.
 
-const VERSION = "chainecotes-1.0.0-be740dc9";
+const VERSION = "chainecotes-1.0.0-a720a0a7";
 const CDN_CACHE = "chainecotes-cdn"; // adresses à version figée : gardées d'une version du site à l'autre
 const CDN = ["https://cdn.jsdelivr.net/", "https://cdnjs.cloudflare.com/", "https://files.pythonhosted.org/", "https://pypi.org/"];
 

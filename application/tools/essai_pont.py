@@ -159,3 +159,10 @@ pont.calculer(exemple)
 dernier = pont._dernier["bundle"]
 assert pont._dernier["cle"] == exemple and json.loads(pont.texteEtude(exemple))["texte"].count("Monte-Carlo (100000 tirages") == 1
 assert pont._dernier["bundle"] is dernier, "le texte de l'étude doit réutiliser le dernier calcul"
+# comparatif de plusieurs chaînes : une colonne en erreur n'empêche pas les autres, figures et exports présents
+ex = [e["id"] for e in json.loads(pont.exemples())][:3]
+cols = [{"nom": i, "probleme": json.loads(pont.charger(i))} for i in ex] + [{"nom": "cassée", "probleme": {"condition": {}, "reglages": {}, "maillons": [{"sens": "+", "cote": "abc"}]}}]
+cmp_ = json.loads(pont.comparerN(json.dumps({"colonnes": cols, "reference": 0, "n": 5000})))
+assert [c["verdict"] for c in cmp_["colonnes"]][-1] == "erreur" and len(cmp_["colonnes"]) == 4, cmp_.get("erreur")
+assert [f["id"] for f in cmp_["figures"]] == ["plages", "cpk", "distributions"] and cmp_["csv"].startswith("\ufeff") and "\t" in cmp_["texte"]
+assert "erreur" in json.loads(pont.comparerN(json.dumps({"colonnes": [], "reference": 0})))

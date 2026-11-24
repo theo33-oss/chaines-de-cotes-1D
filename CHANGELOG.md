@@ -5,6 +5,13 @@ l'installateur Windows de chaque version est dans les [Releases](https://github.
 
 ## Non publié
 
+Comparer plusieurs chaînes et plusieurs cotes condition (site)
+- Page Comparer : un comparatif de 12 chaînes au plus, côte à côte. Une colonne = une chaîne avec sa cote condition, venue de l'étude en cours (deux colonnes si elle a deux cotes condition), de « Mes études », d'un exemple ou d'un fichier ; « Nouvelle CF sur ces maillons » crée une autre cote condition sur les mêmes cotes (sens +, − ou exclu au choix).
+- Tableau comparatif (limites, jeu au pire des cas, statistique, Cp, Cpk, ppm, maillon dominant…), meilleure valeur en évidence, écart à la colonne de référence, lignes identiques masquables ; trois graphiques (plages de jeu face aux limites, Cpk, distributions Monte-Carlo) ; copie vers Excel, CSV, enregistrement et réouverture de la comparaison (.json), impression. Une colonne en erreur n'empêche pas les autres.
+- « Mes études » (accueil et page Étude) : copies nommées gardées dans le navigateur, favoris, renommer, dupliquer, supprimer, export et import JSON (`schema_version`).
+- La comparaison de deux scénarios (A/B) reste dans un volet de la même page. Le calcul ne change pas.
+- Correctif : « Actualiser le site » et le service worker ne touchent plus aux caches des autres projets de la même adresse github.io (MecaStruct).
+
 Confort d'utilisation et forme, reportés de MecaStruct RdM. Le calcul et ses résultats ne changent pas.
 
 Site et bureau

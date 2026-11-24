@@ -44,7 +44,9 @@ from chainecotes.plots.assistant import figureConstruction
 from chainecotes.plots.materiaux import figureDilatation
 from chainecotes.plots.optimisation import figureCoutsMaillons, figureITAvantApres, figureScenarios
 from chainecotes.plots.schema import figureSchema
+from chainecotes.plots.comparatif import figuresComparatif
 from chainecotes.plots.mecanisme import figureCpkMecanisme
+from chainecotes.services import comparatif
 from chainecotes.services import mecanisme as meca
 from chainecotes.services import procedes_atelier, projet_io
 from chainecotes.services import repartition as rep
@@ -799,6 +801,44 @@ def mecaCalculer(texte: str, n: int = 50_000, graine: int = 1, seuil: float = 1.
         },
         allow_nan=False,
     )
+
+
+def comparerN(texte: str) -> str:
+    """Compare plusieurs chaînes de cotes côte à côte (JSON {colonnes: [{nom, probleme}], reference, n}).
+
+    Une colonne est un problème à une seule cote condition. Sortie JSON : colonnes (nom, verdict, erreur), lignes (tableau
+    grandeurs x colonnes avec meilleure valeur et écart à la référence), phrase et niveau, figures (plages de jeu, Cpk,
+    distributions), csv (« ; », virgule décimale) et texte (tabulations, pour Excel) ; ou {"erreur": message}.
+    """
+    try:
+        d = json.loads(texte)
+        colonnes = []
+        for c in d["colonnes"]:
+            try:
+                probleme = _nettoyer(c["probleme"])
+            except (ErreurChaine, ValueError, TypeError, KeyError):
+                probleme = c["probleme"]  # la colonne sera signalée en erreur par le calcul, sans bloquer les autres
+            colonnes.append({"nom": c.get("nom", ""), "probleme": probleme})
+        r = comparatif.comparerColonnes(colonnes, int(d.get("reference", 0)), int(d.get("n", N_TIRAGES)))
+        r["figures"] = [{**f, "fig": json.loads(f["fig"].to_json())} for f in figuresComparatif(r)]
+        r.pop("_bundles", None)
+        v = [c["verdict"] for c in r["colonnes"]]
+        n = len(v)
+        ok, ko, err = v.count("conforme"), v.count("non conforme"), v.count("erreur")
+        morceaux = [f"{n} chaîne{'s' if n > 1 else ''} comparée{'s' if n > 1 else ''}"]
+        if ok:
+            morceaux.append(f"{ok} conforme{'s' if ok > 1 else ''}")
+        if ko:
+            morceaux.append(f"{ko} non conforme{'s' if ko > 1 else ''}")
+        if err:
+            morceaux.append(f"{err} en erreur")
+        r["phrase"] = ", ".join(morceaux) + "."
+        r["niveau"] = "erreur" if ko or err else "succes" if ok == n else "info"
+        return json.dumps(r, allow_nan=False)
+    except ErreurChaine as e:
+        return json.dumps({"erreur": e.message})
+    except (ValueError, TypeError, KeyError) as e:
+        return json.dumps({"erreur": f"Comparaison impossible : {e}"})
 
 
 # ---------- dossier de validation ----------
