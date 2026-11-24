@@ -42,7 +42,7 @@ répond en une phrase : au pire des cas, en statistique, ou pas du tout, avec la
 | Démarrage | 10 à 30 secondes la première fois | quelques secondes |
 | Internet | au premier chargement | jamais après l'installation |
 | Données | restent dans votre navigateur | restent sur votre ordinateur |
-| En plus | lien de partage de l'étude (tout est dans l'adresse), téléphone | dossiers PDF et Word, enregistrement direct sur le disque |
+| En plus | lien de partage de l'étude (tout est dans l'adresse), « Mes études » gardées dans le navigateur, recherche (`/`), téléphone | dossiers PDF et Word, enregistrement direct sur le disque |
 
 Dans les deux cas, **tout est calculé sur votre ordinateur** : aucune cote n'est envoyée sur Internet. Un fichier
 d'étude enregistré dans l'une des versions s'ouvre dans l'autre ; les champs que le site ne modifie pas (dérive,
@@ -65,10 +65,10 @@ Le menu du site a quatre entrées : Accueil, Étude, Mécanisme et Aides.
 
 | Menu | Page | Ce qu'elle fait |
 |---|---|---|
-| **Accueil** | | Trois actions pour démarrer ; méthodes, outils et limites d'usage sous « En savoir plus » |
+| **Accueil** | | Trois actions pour démarrer ; « Mes études » (copies nommées, favoris, export et import JSON) ; méthodes, outils et limites d'usage sous « En savoir plus » |
 | **Étude** | Étude | Saisie de la chaîne (ISO 286, matériaux, effet thermique, décentrage), schéma et contrôles en direct, verdicts, Pareto, Monte-Carlo, sensibilité, explications pas à pas ; mode guidé en cinq étapes |
 | | Optimiser | Calcule les tolérances qui tiennent [Jmin ; Jmax] : égale, proportionnelle, qualité ISO la plus proche ou coût minimal par procédé ; maillons figés, maillon de réglage, valeurs d'atelier gardées dans le navigateur |
-| | Comparer | L'étude en cours contre le résultat de l'optimisation, un exemple ou un fichier : écarts sur le jeu, le Cpk et chaque tolérance |
+| | Comparer | Jusqu'à 12 chaînes, ou plusieurs cotes condition sur les mêmes maillons, côte à côte : tableau comparatif (meilleure valeur, écart à la référence), plages de jeu, Cpk et distributions, copie vers Excel, CSV, comparaison enregistrable ; la comparaison de deux scénarios (A/B) reste dans un volet |
 | | Dossier | Dossier de validation HTML : chaque grandeur est refaite à la main puis comparée au solveur (32 contrôles sur le réducteur, références MATLAB comprises) |
 | **Mécanisme** | | Plusieurs chaînes d'un même assemblage calculées ensemble ; tableau de bord des Cpk, chaîne la plus fragile, export CSV |
 | **Aides** | Assistant de chaîne | Des pièces, de leurs cotes et de leurs contacts à la chaîne minimale, avec le plan |
