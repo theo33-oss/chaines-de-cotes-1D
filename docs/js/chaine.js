@@ -128,7 +128,7 @@
     const cellules = [
       ["Nom", champ(m.nom, "m-nom")],
       ["Sens (CF1)", liste("m-sens", optionsSens(deux), valeurSens(m.sens, deux))],
-      ["Sens CF2", liste("m-sens2", optionsSens(true), valeurSens(m.sens2, true))],
+      ["Sens CF2", liste("m-sens2", optionsSens(true), valeurSens(m.sens2 ?? m.sens, true))],
       ["Cote nominale", champ(m.cote, "m-cote", true)],
       ["Désignation ISO 286", champ(m.iso, "m-iso")],
       ["Écart supérieur ES", champ(m.es, "m-es", true)],
@@ -940,6 +940,36 @@
       e.stopPropagation();
       if (e.detail === 0) poser(suivante(), true);
     });
+    // largeur du tableau des maillons face au schéma (en %, côte à côte) : séparateur à glisser, flèches, double-clic ou « Moitié-moitié »
+    const zone = $("zone-maillons"), sep = $("separateur");
+    let part = 0;
+    try { part = Number(localStorage.getItem("chainecotes.schemaPart")) || 0; } catch (e) { /* sans mémoire */ }
+    const poserPart = (p, garder = true) => {
+      part = Math.max(25, Math.min(75, Math.round(p)));
+      zone.style.setProperty("--part", String(part));
+      sep.setAttribute("aria-valuenow", String(part));
+      if (garder) { try { localStorage.setItem("chainecotes.schemaPart", String(part)); } catch (e) { /* sans mémoire */ } }
+      window.dispatchEvent(new Event("resize")); // les figures se recalent sur leur nouvelle largeur
+    };
+    if (part) poserPart(part, false);
+    const gauche = () => zone.classList.contains("gauche");
+    let tire = false;
+    sep.addEventListener("pointerdown", (e) => { if (e.button) return; tire = true; sep.setPointerCapture(e.pointerId); document.body.classList.add("glisse"); e.preventDefault(); });
+    sep.addEventListener("pointermove", (e) => {
+      if (!tire) return;
+      const r = zone.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * 100;
+      poserPart(gauche() ? 100 - x : x, false); // la part est celle du tableau, qu'il soit à gauche ou à droite du schéma
+    });
+    const finTire = () => { if (!tire) return; tire = false; document.body.classList.remove("glisse"); poserPart(part); };
+    sep.addEventListener("pointerup", finTire);
+    sep.addEventListener("pointercancel", finTire);
+    sep.addEventListener("keydown", (e) => {
+      const pas = { ArrowLeft: gauche() ? 2 : -2, ArrowRight: gauche() ? -2 : 2 }[e.key];
+      if (pas !== undefined) { e.preventDefault(); poserPart((part || 60) + pas); }
+      else if (e.key === "Home") { e.preventDefault(); poserPart(50); }
+    });
+    sep.addEventListener("dblclick", () => poserPart(50));
+    $("moitie").addEventListener("click", () => { if (place === "dessus" || place === "dessous") poser("droite"); poserPart(50); });
     // « Copier l'image » dans le titre des deux gros blocs (le schéma est copié avec son verdict et ses contrôles)
     $("apercu-section").querySelector("summary").append(App.boutonImage($("apercu-section"), "schema-et-controles.png"));
     $("resultats").querySelector("summary").append(App.boutonImage($("resultats"), "resultats.png"));
@@ -993,6 +1023,9 @@
       let lignes = lireMaillons();
       if ($("deux-cf").checked) {
         if (!$("c2-nom").value.trim()) $("c2-nom").value = "Jeu J2";
+        if (!$("c2-jmin").value.trim() && !$("c2-jmax").value.trim()) { $("c2-jmin").value = $("c-jmin").value; $("c2-jmax").value = $("c-jmax").value; } // mêmes limites au départ : à ajuster
+        // la deuxième cote condition part des mêmes maillons que la première (même sens) : à chacun de retirer ceux qui n'en font pas partie
+        lignes = lignes.map((m) => ({ ...m, sens2: m.sens === "+" || m.sens === "-" ? m.sens : "+" }));
       } else {
         const gardees = lignes.filter((m) => m.sens === "+" || m.sens === "-");
         if (gardees.length < lignes.length) messageFichier("info", `${lignes.length - gardees.length} maillon(s) propre(s) à la CF2 retiré(s).`);
@@ -1057,7 +1090,24 @@
     const iaBouton = $("ia-bouton"), iaPanneau = $("ia-panneau");
     iaBouton.disabled = false;
     const iaFermer = () => { iaPanneau.hidden = true; iaBouton.setAttribute("aria-expanded", "false"); };
+    // rangé sur le bord gauche : on ne voit qu'une languette « IA » ; elle s'ouvre au survol, et un clic la remet en place pour de bon
+    const iaConteneur = $("ia-flottant");
+    const ranger = (oui, garder = true) => {
+      iaConteneur.classList.toggle("range", oui);
+      if (oui) iaFermer();
+      $("ia-ranger").hidden = oui;
+      if (garder) { try { localStorage.setItem("chainecotes.iaRange", oui ? "1" : "0"); } catch (e) { /* sans mémoire */ } }
+    };
+    let rangeAuDepart = false;
+    try { rangeAuDepart = localStorage.getItem("chainecotes.iaRange") === "1"; } catch (e) { /* sans mémoire */ }
+    ranger(rangeAuDepart, false);
+    $("ia-ranger").addEventListener("click", () => ranger(true));
+    iaConteneur.addEventListener("mouseenter", () => iaConteneur.classList.add("survol"));
+    iaConteneur.addEventListener("mouseleave", () => iaConteneur.classList.remove("survol"));
+    iaConteneur.addEventListener("focusin", () => iaConteneur.classList.add("survol"));
+    iaConteneur.addEventListener("focusout", () => iaConteneur.classList.remove("survol"));
     iaBouton.addEventListener("click", async () => {
+      if (iaConteneur.classList.contains("range")) { ranger(false); return; } // un premier clic sur la languette la remet en place
       iaBouton.disabled = true;
       // le texte se prépare après le clic (30 ms pour afficher l'état) mais la copie est demandée dans le clic même
       const texte = new Promise((r) => setTimeout(r, 30)).then(() => texteDeLEtude(true));
@@ -1104,6 +1154,7 @@
 
   // Points d'entrée pour les autres pages (exemples, assistant d'ajustement) : elles alimentent la chaîne de cette page.
   App.analyser = {
+    calculer, // le bouton « Calculer » de la barre collante
     guide: modeGuide, // modeGuide(true, 0) : parcours guidé à l'étape 1 ; modeGuide(false) : mode expert
     ouvrirFichier: () => $("fichier").click(),
     // Remplace l'étude par un problème (dict du pont) et lance le calcul.

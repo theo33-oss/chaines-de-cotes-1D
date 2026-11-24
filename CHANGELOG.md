@@ -3,6 +3,14 @@
 Le numéro de version est celui de `application/chainecotes/__init__.py`. Le site suit toujours la dernière version ;
 l'installateur Windows de chaque version est dans les [Releases](https://github.com/theo33-oss/chaines-de-cotes-1D/releases).
 
+## Non publié
+
+Site : mise en page de l'étude
+- Séparateur à glisser entre le tableau des maillons et le schéma (flèches, double-clic ou « Moitié-moitié » pour 50 / 50), en temps réel ; le choix est gardé.
+- « Deux cotes condition » : la deuxième cote condition part des mêmes maillons et des mêmes limites que la première (plus de chaîne vide ni de « il faut au moins deux maillons »).
+- Bouton « Calculer » toujours visible dans la barre collante du haut.
+- « Demander à une IA » se range sur le bord gauche en languette « IA » ; elle s'ouvre au survol et un clic la remet en place.
+
 ## 1.1.0 (24 novembre 2026)
 
 Comparer plusieurs chaînes et plusieurs cotes condition (site)

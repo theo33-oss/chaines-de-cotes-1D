@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#2C2348" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="build" content="1bdb6112">
+<meta name="build" content="b4384c0a">
 <meta name="zip" content="68fc881e">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -20,7 +20,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=846fc775">
+<link rel="stylesheet" href="style.css?v=d2ad02f0">
 </head>
 <body>
 <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -51,7 +51,10 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
           <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Ouvrir ChatGPT</a>
         </div>
       </div>
-      <button id="ia-bouton" type="button" class="ia-bouton" aria-expanded="false" disabled data-aide="Copie l'étude (données, résultats, démarche) avec une consigne : l'IA présente le problème, puis vous lui posez vos questions. Rien n'est envoyé : vous collez le texte dans Claude ou ChatGPT.">Demander à une IA</button>
+      <div class="ia-ligne">
+      <button id="ia-ranger" type="button" class="ia-ranger" aria-label="Ranger « Demander à une IA » sur le côté gauche" title="Ranger sur le côté">‹</button>
+      <button id="ia-bouton" type="button" class="ia-bouton" aria-expanded="false" disabled data-aide="Copie l'étude (données, résultats, démarche) avec une consigne : l'IA présente le problème, puis vous lui posez vos questions. Rien n'est envoyé : vous collez le texte dans Claude ou ChatGPT."><span class="ia-long">Demander à une IA</span><span class="ia-court" aria-hidden="true">IA</span></button>
+      </div>
     </div>
     <div id="guide" class="guide-seul">
       <h2>Nouvelle étude</h2>
@@ -132,6 +135,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
         <button data-aide="Ajoute une ligne vide en bas du tableau." id="ajouter" type="button" class="secondaire">Ajouter un maillon</button>
         <button id="annuler" type="button" class="secondaire" disabled title="Ctrl+Z">↶ Annuler</button>
         <button id="retablir" type="button" class="secondaire" disabled title="Ctrl+Y">↷ Rétablir</button>
+        <button id="moitie" type="button" class="secondaire" title="Tableau et schéma à égalité (50 / 50), côte à côte">Moitié-moitié</button>
         <button id="disposition" type="button" class="secondaire" title="Place le schéma à droite, à gauche, au-dessus ou en dessous du tableau (ou tirez la poignée ⠿ de son titre)">Schéma : à droite</button>
       </div>
       <label data-aide="Dessine une silhouette de pièce (arbre, roulement, carter…) sur chaque flèche du schéma." class="case"><input id="representation" type="checkbox"> Représentation : afficher une image de pièce sur chaque flèche</label>
@@ -145,6 +149,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
       <details class="info"><summary aria-label="Plus d'informations">i</summary><p class="legende">Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir, <kbd>Entrée</kbd> calculer, <kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer l'étude, <kbd>Ctrl</kbd>+<kbd>O</kbd> ouvrir une étude. Collage : copiez des cellules d'Excel (Nom, Cote, ES, EI) et collez-les dans le tableau ; une désignation (h7) ou un sens (+ ou −) dans la ligne est reconnu.</p></details>
     </details>
 
+    <div id="separateur" role="separator" aria-orientation="vertical" aria-label="Largeur du tableau des maillons et du schéma : glisser, ou flèches gauche et droite ; double-clic pour moitié-moitié" aria-valuemin="25" aria-valuemax="75" aria-valuenow="60" tabindex="0" title="Glisser pour changer la largeur (double-clic : moitié-moitié)"><span aria-hidden="true">⋮</span></div>
     <details class="bandeau" id="apercu-section" open data-etape="3"><summary><h2 data-aide="Le dessin de la chaîne, mis à jour à chaque saisie, et la liste des incohérences trouvées." id="t-apercu">Schéma et contrôles</h2><span class="resume" id="resume-apercu"></span></summary>
       <h3 id="apercu-cf1-titre" hidden></h3>
       <p id="apercu-verdict" class="message" role="status" hidden></p>
@@ -632,9 +637,9 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
   <p class="legende">Outil pédagogique et d'aide à la cotation, fourni sans garantie. Les résultats ne remplacent ni une note de calcul certifiée ni les normes en vigueur et doivent être vérifiés avant tout usage réel. Aucun cookie, aucune mesure d'audience.</p>
 </footer>
 
-<script src="app.js?v=081cb176"></script>
+<script src="app.js?v=d2ef60e3"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=335e211d"></script>
+<script src="js/chaine.js?v=316108b8"></script>
 <script src="js/repartir.js?v=ab2c4d30"></script>
 <script src="js/comparer.js?v=a83ab01d"></script>
 <script src="js/mecanisme.js?v=cde448b1"></script>

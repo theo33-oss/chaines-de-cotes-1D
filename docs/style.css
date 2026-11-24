@@ -221,11 +221,18 @@ details.bandeau > .message, details.bandeau > p.message { margin-top: 12px; }
 /* places du schéma : droite (défaut), gauche, dessus, dessous ; sous 1200 px, droite et gauche tombent en dessous */
 #zone-maillons.dessus #apercu-section { order: -1; }
 @media (min-width: 1200px) {
-  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
-  #zone-maillons.large:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
-  #zone-maillons.gauche { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
-  #zone-maillons.gauche.large { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
-  #zone-maillons.gauche #apercu-section { order: -1; }
+  /* --part : part du tableau des maillons, en % de la largeur (réglée par le séparateur) ; 60 par défaut, 67 si le tableau a beaucoup de colonnes */
+  #zone-maillons:not(.dessous):not(.dessus) { --part: 60; gap: 0; }
+  #zone-maillons.large:not(.dessous):not(.dessus) { --part: 67; }
+  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, calc(var(--part) * 1%)) 16px minmax(0, 1fr); }
+  #zone-maillons.gauche { grid-template-columns: minmax(0, calc((100 - var(--part)) * 1%)) 16px minmax(0, 1fr); }
+  #zone-maillons:not(.dessous):not(.dessus) #b-maillons { order: 2; }
+  #zone-maillons:not(.dessous):not(.dessus) #separateur { display: flex; order: 1; }
+  #zone-maillons:not(.dessous):not(.dessus) #apercu-section { order: 0; }
+  #zone-maillons.gauche #apercu-section { order: 0; }
+  #zone-maillons.gauche #b-maillons { order: 2; }
+  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) #b-maillons { order: 0; }
+  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) #apercu-section { order: 2; }
   #zone-maillons:not(.dessous):not(.dessus) #apercu-section { position: sticky; top: 100px; max-height: calc(100vh - 116px); overflow: auto; }
 }
 #zone-maillons #maillons { min-width: 640px; }
@@ -443,3 +450,21 @@ label.case input, input[type="checkbox"], input[type="radio"] { flex: 0 0 auto; 
   button.secondaire { min-height: 40px; min-width: 40px; }
   .ia-bouton { min-height: 40px; }
 }
+/* séparateur entre le tableau des maillons et le schéma */
+#separateur { display: none; align-self: stretch; align-items: center; justify-content: center; cursor: col-resize; touch-action: none; color: var(--discret); user-select: none; border-radius: 6px; margin: 14px 2px; }
+#separateur:hover, #separateur:focus-visible, body.glisse #separateur { background: var(--alt); color: var(--accent); }
+#separateur span { font-size: 1.3rem; line-height: 1; }
+/* bouton « Calculer » toujours visible dans la barre collante */
+#menu .sous button.calculer-barre { font-weight: 700; margin-right: 6px; }
+/* « Demander à une IA » : rangé sur le bord gauche en languette */
+.ia-ligne { display: flex; align-items: center; gap: 6px; }
+.ia-ranger { min-height: 0; padding: 2px 9px; border-radius: 999px; font-size: 1.1rem; line-height: 1.3; opacity: .85; }
+.ia-bouton .ia-court { display: none; }
+.ia-flottant { transition: left .2s ease; }
+.ia-flottant.range { left: 0; }
+.ia-flottant.range:not(.survol) .ia-bouton { border-radius: 0 999px 999px 0; padding: 10px 8px 10px 6px; min-width: 0; }
+.ia-flottant.range:not(.survol) .ia-bouton .ia-long { display: none; }
+.ia-flottant.range:not(.survol) .ia-bouton .ia-court { display: inline; }
+.ia-flottant.range .ia-ranger { display: none; }
+.ia-flottant.range .ia-panneau { display: none; }
+@media (prefers-reduced-motion: reduce) { .ia-flottant { transition: none; } }

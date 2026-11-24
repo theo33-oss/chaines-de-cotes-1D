@@ -601,7 +601,10 @@ const App = (() => {
     };
     sous.hidden = h !== "analyser" && h !== "aides";
     if (h === "analyser") {
-      sous.replaceChildren(...SOMMAIRE.map(([cible, titre]) => bouton(titre, () => {
+      const calculer = bouton("Calculer", () => exposition.analyser.calculer(), false); // toujours sous la main, où que l'on soit dans la page
+      calculer.classList.add("primaire", "calculer-barre");
+      calculer.title = "Calcule l'étude (Ctrl+Entrée)";
+      sous.replaceChildren(calculer, ...SOMMAIRE.map(([cible, titre]) => bouton(titre, () => {
         const page = pages.find((p) => "page-" + p.id === cible);
         if (page) afficherPage(page.id);
         else allerBandeau($(cible));
