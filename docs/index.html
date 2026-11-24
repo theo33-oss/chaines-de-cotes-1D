@@ -6,7 +6,7 @@
 <title>Chaînes de cotes 1D</title>
 <meta name="description" content="Calcul d'une chaîne de cotes à une dimension : pire des cas, statistique et Monte-Carlo, dans le navigateur.">
 <meta name="theme-color" content="#5C4B99">
-<meta name="build" content="c2fcf39d">
+<meta name="build" content="47ce6366">
 <meta name="zip" content="52eb07ea">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -17,7 +17,7 @@
 // thème posé avant l'affichage (pas de flash) : choix gardé, sinon réglage de Windows
 try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = "light"; }
 </script>
-<link rel="stylesheet" href="style.css?v=cc506400">
+<link rel="stylesheet" href="style.css?v=eca618ba">
 </head>
 <body>
 <a class="evitement" href="#contenu">Aller au contenu</a>
@@ -73,6 +73,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
       <div class="ligne">
         <button data-aide="Reprend une étude enregistrée sur votre PC (Ctrl+O)." id="ouvrir" type="button" class="secondaire">Ouvrir une étude (.json)</button>
         <button data-aide="Télécharge l'étude dans un fichier .json, à rouvrir plus tard (Ctrl+S)." id="enregistrer" type="button" class="secondaire">Enregistrer l'étude</button>
+        <button data-aide="Garde une copie nommée de l'étude dans ce navigateur (Mes études, sur l'accueil) : à rouvrir ou à comparer avec d'autres." id="mes-etudes-enregistrer" type="button" class="secondaire">Enregistrer dans Mes études</button>
         <button id="copier-lien" type="button" class="secondaire" data-aide="Copie un lien qui contient l'étude : la personne qui l'ouvre retrouve vos cotes. Rien n'est envoyé sur Internet, tout est dans l'adresse.">Copier le lien de l'étude</button>
         <input id="fichier" type="file" accept=".json,application/json" hidden>
       </div>
@@ -592,9 +593,9 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
-<script src="app.js?v=c309c043"></script>
+<script src="app.js?v=66725ffe"></script>
 <script src="js/accueil.js?v=48b9df2b"></script>
-<script src="js/chaine.js?v=7643dc5b"></script>
+<script src="js/chaine.js?v=f2d76868"></script>
 <script src="js/repartir.js?v=ab2c4d30"></script>
 <script src="js/comparer.js?v=a83ab01d"></script>
 <script src="js/mecanisme.js?v=cde448b1"></script>
@@ -604,6 +605,7 @@ try { var t = localStorage.getItem("chainecotes.theme"); if (t !== "light" && t 
 <script src="js/ajustement.js?v=27a8c5f2"></script>
 <script src="js/iso286.js?v=d369c407"></script>
 <script src="js/materiaux.js?v=e542faad"></script>
+<script src="js/etudes.js?v=23de0022"></script>
 <script>App.demarrer();</script>
 </body>
 </html>

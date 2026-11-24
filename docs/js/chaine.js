@@ -1084,6 +1084,16 @@
       $("resultats").hidden = true;
       apercu();
     },
+    // Étude complète (avec sa deuxième cote condition éventuelle) pour « Mes études » ; ouvrirEtude la remplace, sans la recalculer.
+    etudeComplete: lireCommun,
+    ouvrirEtude(probleme) {
+      etude = { cartouche: probleme.cartouche || null, revisions: [] };
+      poserProbleme(probleme);
+      $("resultats").hidden = true;
+      App.message($("erreur"), "erreur", "");
+      messageFichier("info", "");
+      apercu();
+    },
     ouvrirLien, // appelé une fois toutes les pages prêtes : un lien « #etude=… » ouvre l'étude partagée
     noms: () => lignesCF(cfActive()).map((m) => m.nom),
     tref: () => nombre($("r-tref").value) || 20,

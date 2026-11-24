@@ -520,7 +520,7 @@ const App = (() => {
   function afficherPage(id) {
     const page = pages.find((p) => p.id === id);
     const ecran = page && page.dans ? page.dans : id; // les blocs de l'étude s'affichent dans la page Étude
-    for (const p of pages) if (!p.dans) $("page-" + p.id).hidden = p.id !== ecran;
+    for (const p of pages) if (!p.dans && !p.module) $("page-" + p.id).hidden = p.id !== ecran;
     if (AIDES.includes(id)) derniereAide = id;
     courante = id;
     $("etude-cours").hidden = !(pont && UTILISENT_ETUDE.includes(id));
