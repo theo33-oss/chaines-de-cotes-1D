@@ -11,9 +11,9 @@ Les données des procédés sont dans data/procedes.json (valeurs indicatives).
 import math
 
 import numpy as np
-from scipy.optimize import brentq
 
 from chainecotes.core import iso286
+from chainecotes.core.numerique import brentq
 from chainecotes.core.donnees import chargerJson
 from chainecotes.core.errors import ErreurChaine
 

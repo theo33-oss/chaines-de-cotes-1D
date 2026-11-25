@@ -5,6 +5,10 @@ l'installateur Windows de chaque version est dans les [Releases](https://github.
 
 ## Non publié
 
+Site : ouverture plus rapide
+- scipy n'est plus chargé : convolution, erfc, brentq et pchip sont écrits avec numpy seul (`core/numerique.py`, comparés à scipy par `tests/test_numerique.py`) ; environ 15 Mo en moins à télécharger, ouverture de ~6,8 s à ~3,2 s sur la machine de test.
+- Seules l'Accueil et l'Étude se préparent avant d'activer le site ; les autres pages se préparent ensuite en arrière-plan (ou aussitôt si on les ouvre).
+
 Site : mise en page de l'étude
 - Séparateur à glisser entre le tableau des maillons et le schéma (flèches, double-clic ou « Moitié-moitié » pour 50 / 50), en temps réel ; le choix est gardé.
 - « Deux cotes condition » : la deuxième cote condition part des mêmes maillons et des mêmes limites que la première (plus de chaîne vide ni de « il faut au moins deux maillons »).

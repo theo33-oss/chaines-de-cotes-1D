@@ -8,7 +8,7 @@ moyenne du procédé (CF_moy_proc, décentrage compris).
 import math
 
 import numpy as np
-from scipy.optimize import brentq
+from chainecotes.core.numerique import brentq
 
 from chainecotes.core.chaine import capabilites, ppmHorsTolerance, solveurChaine
 from chainecotes.core.errors import ErreurChaine

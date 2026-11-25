@@ -14,10 +14,10 @@ import re
 import unicodedata
 
 import numpy as np
-from scipy.interpolate import PchipInterpolator
 
 from chainecotes.core.donnees import chargerJson
 from chainecotes.core.nombres import fr
+from chainecotes.core.numerique import pchip
 
 PERSONNALISE = "Personnalise"
 T_REFERENCE_TABLES = 20.0  # °C : origine des courbes et des α moyens du classeur
@@ -27,7 +27,7 @@ def _pchip(x: np.ndarray, y: np.ndarray, t):
     """Interpolation pchip (même schéma que pchip de MATLAB, y compris aux extrémités)."""
     if len(x) == 2:  # deux points : pchip de MATLAB est linéaire
         return np.interp(t, x, y)
-    return PchipInterpolator(x, y)(t)
+    return pchip(x, y, t)
 
 
 def _versEpsilon(points: list[dict]) -> np.ndarray:

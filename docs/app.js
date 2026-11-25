@@ -869,10 +869,10 @@ const App = (() => {
     prechargerPlotly();
     try {
       pyodide = await chronometre("python", async () => { await pyodideJs; return loadPyodide(); });
-      etat("Préparation 2/3 : bibliothèques de calcul (numpy, scipy) et graphiques (plotly), chargés ensemble…", 2);
+      etat("Préparation 2/3 : bibliothèque de calcul (numpy) et graphiques (plotly), chargées ensemble…", 2);
       await chronometre("micropip", () => pyodide.loadPackage(["micropip"]));
       await Promise.all([
-        chronometre("numpy_scipy", () => pyodide.loadPackage(["numpy", "scipy"])),
+        chronometre("numpy", () => pyodide.loadPackage(["numpy"])),
         chronometre("plotly", () => pyodide.pyimport("micropip").install("plotly==" + PLOTLY)),
       ]);
       etat("Préparation 3/3 : tables ISO 286, matériaux et exemples…", 3);

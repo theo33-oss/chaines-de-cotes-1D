@@ -21,7 +21,7 @@ valeur par défaut qui redonne exactement MATLAB :
 import math
 
 import numpy as np
-from scipy.signal import fftconvolve
+from chainecotes.core.numerique import erfc, fftconvolve
 
 from chainecotes.core import iso286, iso2768
 from chainecotes.core.errors import ErreurChaine
@@ -405,8 +405,6 @@ def solveurChaine(probleme: dict) -> dict:
 
 def phi(z):
     """Fonction de répartition de la loi normale centrée réduite : Φ(z) = ½ erfc(−z/√2)."""
-    from scipy.special import erfc
-
     return 0.5 * erfc(-np.asarray(z, dtype=float) / math.sqrt(2))
 
 
