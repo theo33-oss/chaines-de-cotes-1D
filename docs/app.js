@@ -542,9 +542,31 @@ const App = (() => {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // Préparation des pages (page.apres) : celles de départ avant d'activer le site, les autres en arrière-plan, une par une.
+  // Une page ouverte avant d'être prête est préparée tout de suite (même promesse : jamais deux fois).
+  const pretes = new Set(), enCours = new Map();
+  function preparer(page) {
+    if (!enCours.has(page.id)) {
+      enCours.set(page.id, (async () => {
+        await page.apres(pont);
+        const zone = ZONES.find((z) => z[0] === "page-" + page.id);
+        if (zone) { try { diviser(zone); } catch (e) { console.warn("Page à deux volets indisponible :", zone[0], e); } } // une page qui ne s'y prête pas reste comme avant
+        pretes.add(page.id);
+        if (page.dans && page.afficher && $("page-" + page.id).open) page.afficher(); // bloc déjà ouvert : mise à jour d'après l'étude
+      })());
+    }
+    return enCours.get(page.id);
+  }
+  const reposNavigateur = () => new Promise((fin) => (window.requestIdleCallback ? requestIdleCallback(fin, { timeout: 400 }) : setTimeout(fin, 30)));
+
   let courantePrecedente = null;
   function afficherPage(id) {
     const page = pages.find((p) => p.id === id);
+    if (pont && page && !pretes.has(id)) { // page pas encore préparée : on la prépare en priorité, puis on l'affiche
+      etat("Préparation de la page…");
+      preparer(page).then(() => { etat(""); afficherPage(id); }, (e) => { $("etat").className = "message erreur"; $("etat-texte").textContent = "Cette page n'a pas pu se préparer : " + e; });
+      return;
+    }
     const ecran = page && page.dans ? page.dans : id; // les blocs de l'étude s'affichent dans la page Étude
     for (const p of pages) if (!p.dans && !p.module) $("page-" + p.id).hidden = p.id !== ecran;
     if (AIDES.includes(id)) derniereAide = id;
@@ -573,7 +595,7 @@ const App = (() => {
 
   // Remet à jour les blocs ouverts de l'étude (Optimiser, Comparer, Dossier) d'après l'étude en cours.
   function majBlocs() {
-    for (const p of pages) if (p.dans && p.afficher && $("page-" + p.id).open) p.afficher();
+    for (const p of pages) if (p.dans && p.afficher && pretes.has(p.id) && $("page-" + p.id).open) p.afficher();
   }
 
   // Menu qui défile (téléphone) : un fondu sur le bord signale ce qui dépasse, et l'entrée courante se centre.
@@ -656,7 +678,7 @@ const App = (() => {
         try { localStorage.setItem("chainecotes.bandeaux", JSON.stringify(memo)); } catch (e) { /* stockage bloqué : sans mémoire */ }
         const page = pages.find((p) => p.dans && "page-" + p.id === d.id);
         if (d.open) ajusterGraphiques(d);
-        if (d.open && page && page.afficher && pont) page.afficher();
+        if (d.open && page && page.afficher && pont && pretes.has(page.id)) page.afficher();
       });
     }
   }
@@ -862,8 +884,9 @@ const App = (() => {
       });
       exposition.pyodide = pyodide; // pour les essais et la console (App.pyodide)
       await plotlyPret; // les pages dessinent des figures dès leur préparation
-      await chronometre("pages", async () => { for (const p of pages) await p.apres(pont); });
-      for (const z of ZONES) { try { diviser(z); } catch (e) { console.warn("Page à deux volets indisponible :", z[0], e); } } // une page qui ne s'y prête pas reste comme avant
+      // Départ : l'accueil et l'étude seulement (ou toutes les pages si l'adresse porte un lien d'étude « #… », qui peut en ouvrir plusieurs).
+      const depart = location.hash.length > 1 ? pages : pages.filter((p) => p.id === "accueil" || p.id === "analyser");
+      await chronometre("pages", async () => { for (const p of depart) await preparer(p); });
     } catch (e) {
       pont = null;
       $("etat").className = "message erreur";
@@ -890,6 +913,15 @@ const App = (() => {
     clearInterval(horloge);
     mesures.total = Math.round(performance.now() - debut);
     console.info("Chaînes de cotes prêt (ms)", mesures);
+    // Les autres pages se préparent ensuite, une par une, quand le navigateur est au repos : la saisie reste fluide.
+    (async () => {
+      for (const p of pages) {
+        if (pretes.has(p.id) || enCours.has(p.id)) continue;
+        await reposNavigateur();
+        try { await preparer(p); } catch (e) { console.warn("Page non préparée en arrière-plan :", p.id, e); }
+      }
+      mesures.arriere_plan = Math.round(performance.now() - debut);
+    })();
   }
 
   const exposition = { $, mesures, actualiserSite, verifierMiseAJour, sombre, icone, copier, copierDiffere, copierImage, boutonImage, messageFlottant, retour, confirmer, etat, nombre, fr, echapper, markdown, message, tableau, metriques, titre, legende, tracer, onglets, remplir, matrice, telecharger, paquets, pip, enregistrerPage, afficherPage, majBlocs, demarrer };
