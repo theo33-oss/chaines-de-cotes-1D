@@ -10,6 +10,7 @@ Site : ouverture plus rapide
 - Seules l'Accueil et l'Étude se préparent avant d'activer le site ; les autres pages se préparent ensuite en arrière-plan (ou aussitôt si on les ouvre).
 
 Site : mise en page de l'étude
+- Hauteur du schéma réglable : poignée « ⋯ » sous la figure, à tirer vers le bas (flèches haut / bas, double-clic : hauteur automatique) ; le choix est gardé.
 - Séparateur à glisser entre le tableau des maillons et le schéma (flèches, double-clic ou « Moitié-moitié » pour 50 / 50), en temps réel ; le choix est gardé.
 - « Deux cotes condition » : la deuxième cote condition part des mêmes maillons et des mêmes limites que la première (plus de chaîne vide ni de « il faut au moins deux maillons »).
 - Comparer, Optimiser, Mécanisme, Assistant, Ajustements et Dossier : sur grand écran (1 200 px et plus), la saisie et le résultat se mettent côte à côte avec le même séparateur à glisser (flèches, double-clic, « Moitié-moitié ») et un bouton « Empiler » / « Côte à côte » ; réglages gardés par page.
