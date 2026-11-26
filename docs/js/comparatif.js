@@ -263,8 +263,8 @@
     $("cmp-tableau").classList.toggle("cmp-masque", $("cmp-masquer").checked);
     const hote = $("cmp-figures");
     hote.replaceChildren();
-    for (const f of r.figures || []) {
-      const div = el("div", { class: "figure", role: "img", "aria-label": f.titre + (f.description ? " : " + f.description : "") });
+    for (const [i, f] of (r.figures || []).entries()) {
+      const div = el("div", { class: "figure", "data-cle": "cmp-figure-" + i, role: "img", "aria-label": f.titre + (f.description ? " : " + f.description : "") });
       const desc = el("p", { class: "legende", texte: f.description || "" });
       hote.append(el("h4", { texte: f.titre }), div, desc);
       App.tracer(div, f.fig);

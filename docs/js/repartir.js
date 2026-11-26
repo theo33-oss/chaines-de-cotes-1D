@@ -134,9 +134,10 @@
     $("rp-valeurs").replaceChildren(App.metriques(r.valeurs));
     $("rp-valeurs-cout").replaceChildren(...(r.metriquesCout ? [App.metriques(r.metriquesCout)] : []));
     $("rp-tableau").replaceChildren(App.tableau(r.tableau));
-    $("rp-figures").replaceChildren(...r.figures.flatMap((f) => {
+    $("rp-figures").replaceChildren(...r.figures.flatMap((f, i) => {
       const d = document.createElement("div");
       d.className = "figure";
+      d.dataset.cle = "rp-figure-" + i;
       setTimeout(() => App.tracer(d, f.fig), 0); // le tracé a besoin que la figure soit dans la page
       return [d, App.legende(f.legende)];
     }));

@@ -519,10 +519,6 @@
     $("resume-maillons").textContent = `${$("maillons").tBodies[0].rows.length} maillon(s)`;
   }
 
-  // Hauteur du schéma choisie par l'utilisateur (px, poignée sous la figure) ; 0 : hauteur automatique.
-  let hauteurFig = 0;
-  try { hauteurFig = Number(localStorage.getItem("chainecotes.schemaHauteur")) || 0; } catch (e) { /* sans mémoire */ }
-
   // Aperçu d'une chaîne : verdict du pire des cas, schéma (avec silhouettes si demandé). Renvoie la réponse du pont, ou null.
   function apercuUne(probleme, lignes, ids) {
     let r;
@@ -535,7 +531,6 @@
     if (r.erreur) App.message($(ids.verdict), "avertissement", "Saisie à compléter : " + r.erreur);
     else App.message($(ids.verdict), r.pireCas.niveau, r.pireCas.texte);
     if ($("representation").checked) vignettes(r.fig, lignes, $(ids.fig));
-    if (hauteurFig && r.fig && r.fig.layout) r.fig = { ...r.fig, layout: { ...r.fig.layout, height: hauteurFig } };
     App.tracer($(ids.fig), r.fig);
     $(ids.legende).textContent = r.erreur ? "" : r.legende;
     return r;
@@ -564,9 +559,10 @@
   // ---------- résultats ----------
 
   function figures(panneau, liste) {
-    for (const f of liste) {
+    for (const [i, f] of liste.entries()) {
       const d = document.createElement("div");
       d.className = "figure";
+      d.dataset.cle = `${panneau.getAttribute("aria-labelledby")}-${i}`; // hauteur gardée par onglet et par rang
       panneau.append(d);
       App.tracer(d, f.fig);
       panneau.append(App.legende(f.legende));
@@ -954,59 +950,30 @@
       zone.style.setProperty("--part", String(part));
       sep.setAttribute("aria-valuenow", String(part));
       if (garder) { try { localStorage.setItem("chainecotes.schemaPart", String(part)); } catch (e) { /* sans mémoire */ } }
-      window.dispatchEvent(new Event("resize")); // les figures se recalent sur leur nouvelle largeur
     };
     if (part) poserPart(part, false);
     const gauche = () => zone.classList.contains("gauche");
-    let tire = false;
-    sep.addEventListener("pointerdown", (e) => { if (e.button) return; tire = true; sep.setPointerCapture(e.pointerId); document.body.classList.add("glisse"); e.preventDefault(); });
-    sep.addEventListener("pointermove", (e) => {
-      if (!tire) return;
-      const r = zone.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * 100;
-      poserPart(gauche() ? 100 - x : x, false); // la part est celle du tableau, qu'il soit à gauche ou à droite du schéma
+    Poignees.brancher(sep, {
+      axe: "x",
+      valeur: () => part || 60,
+      depuis: (e) => { // la part est celle du tableau, qu'il soit à gauche ou à droite du schéma
+        const r = zone.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * 100;
+        return gauche() ? 100 - x : x;
+      },
+      poser: (p) => poserPart(p, false),
+      garder: () => poserPart(part),
+      auto: () => poserPart(50),
+      pas: (touche) => ({ ArrowLeft: gauche() ? 2 : -2, ArrowRight: gauche() ? -2 : 2 }[touche]),
     });
-    const finTire = () => { if (!tire) return; tire = false; document.body.classList.remove("glisse"); poserPart(part); };
-    sep.addEventListener("pointerup", finTire);
-    sep.addEventListener("pointercancel", finTire);
-    sep.addEventListener("keydown", (e) => {
-      const pas = { ArrowLeft: gauche() ? 2 : -2, ArrowRight: gauche() ? -2 : 2 }[e.key];
-      if (pas !== undefined) { e.preventDefault(); poserPart((part || 60) + pas); }
-      else if (e.key === "Home") { e.preventDefault(); poserPart(50); }
+    $("moitie").addEventListener("click", () => {
+      if (place === "dessus" || place === "dessous") poser("droite");
+      poserPart(50);
+      document.dispatchEvent(new Event("taillechange"));
     });
-    sep.addEventListener("dblclick", () => poserPart(50));
-    $("moitie").addEventListener("click", () => { if (place === "dessus" || place === "dessous") poser("droite"); poserPart(50); });
-    // hauteur du schéma : poignée sous chaque figure, à tirer vers le bas (ou flèches haut et bas, double-clic : hauteur automatique)
-    const figs = ["apercu-fig", "apercu-fig2"].map($);
-    const poserHauteur = (h, garder = true) => {
-      hauteurFig = h ? Math.max(200, Math.min(1400, Math.round(h))) : 0;
-      for (const f of figs) if (f.data && hauteurFig) Plotly.relayout(f, { height: hauteurFig });
-      if (garder) {
-        try { localStorage.setItem("chainecotes.schemaHauteur", String(hauteurFig)); } catch (e) { /* sans mémoire */ }
-        if (!hauteurFig && pont) apercu(); // retour à la hauteur automatique : on redessine
-      }
-    };
-    for (const f of figs) {
-      const p = document.createElement("div");
-      p.className = "poignee-hauteur";
-      p.setAttribute("role", "separator");
-      p.setAttribute("aria-orientation", "horizontal");
-      p.setAttribute("aria-label", "Hauteur du schéma : glisser vers le bas pour l'agrandir, flèches haut et bas, double-clic pour la hauteur automatique");
-      p.tabIndex = 0;
-      p.title = "Glisser vers le bas pour agrandir le schéma (double-clic : hauteur automatique)";
-      p.innerHTML = '<span aria-hidden="true">⋯</span>';
-      f.after(p);
-      let tireH = false;
-      p.addEventListener("pointerdown", (e) => { if (e.button) return; tireH = true; p.setPointerCapture(e.pointerId); document.body.classList.add("glisse-haut"); e.preventDefault(); });
-      p.addEventListener("pointermove", (e) => { if (tireH) poserHauteur(e.clientY - f.getBoundingClientRect().top, false); });
-      const finH = () => { if (!tireH) return; tireH = false; document.body.classList.remove("glisse-haut"); poserHauteur(hauteurFig); };
-      p.addEventListener("pointerup", finH);
-      p.addEventListener("pointercancel", finH);
-      p.addEventListener("keydown", (e) => {
-        const pas = { ArrowDown: 40, ArrowUp: -40 }[e.key];
-        if (pas !== undefined) { e.preventDefault(); poserHauteur((hauteurFig || f.offsetHeight) + pas); }
-      });
-      p.addEventListener("dblclick", () => poserHauteur(0));
-    }
+    // les silhouettes des pièces sont placées d'après la largeur du schéma : il est redessiné dès qu'on relâche une poignée
+    let redessin = 0;
+    const redessiner = () => { clearTimeout(redessin); redessin = setTimeout(() => { if (pont) apercu(); }, 0); };
+    for (const id of ["apercu-fig", "apercu-fig2"]) $(id)._redessiner = redessiner;
     // « Copier l'image » dans le titre des deux gros blocs (le schéma est copié avec son verdict et ses contrôles)
     $("apercu-section").querySelector("summary").append(App.boutonImage($("apercu-section"), "schema-et-controles.png"));
     $("resultats").querySelector("summary").append(App.boutonImage($("resultats"), "resultats.png"));

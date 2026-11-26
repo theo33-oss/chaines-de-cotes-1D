@@ -107,7 +107,7 @@ td:nth-child(2), td:nth-child(7) { min-width: 110px; }
 
 #onglets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
 #onglets button[aria-selected="true"] { background: var(--accent); color: var(--sur-accent); }
-.figure { background: var(--figure-fond); border: 1px solid var(--bord); border-radius: 4px; min-height: 120px; overflow: hidden; margin-top: 8px; }
+.figure { background: var(--figure-fond); border: 1px solid var(--bord); border-radius: 4px; min-height: 120px; overflow: hidden; margin-top: 8px; contain: inline-size; } /* la figure suit son cadre sans jamais l'élargir */
 #panneau { border: 1px solid var(--bord-fort); border-radius: 4px; padding: 4px 12px 12px; background: var(--carte); }
 #panneau h3 { font-size: 1.05rem; margin: 20px 0 6px; }
 #panneau table { min-width: 0; }
@@ -224,8 +224,8 @@ details.bandeau > .message, details.bandeau > p.message { margin-top: 12px; }
   /* --part : part du tableau des maillons, en % de la largeur (réglée par le séparateur) ; 60 par défaut, 67 si le tableau a beaucoup de colonnes */
   #zone-maillons:not(.dessous):not(.dessus) { --part: 60; gap: 0; }
   #zone-maillons.large:not(.dessous):not(.dessus) { --part: 67; }
-  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, calc(var(--part) * 1%)) 16px minmax(0, 1fr); }
-  #zone-maillons.gauche { grid-template-columns: minmax(0, calc((100 - var(--part)) * 1%)) 16px minmax(0, 1fr); }
+  #zone-maillons:not(.dessous):not(.dessus):not(.gauche) { grid-template-columns: minmax(0, calc(var(--part) * 1%)) var(--poignee, 16px) minmax(0, 1fr); }
+  #zone-maillons.gauche { grid-template-columns: minmax(0, calc((100 - var(--part)) * 1%)) var(--poignee, 16px) minmax(0, 1fr); }
   #zone-maillons:not(.dessous):not(.dessus) #b-maillons { order: 2; }
   #zone-maillons:not(.dessous):not(.dessus) #separateur { display: flex; order: 1; }
   #zone-maillons:not(.dessous):not(.dessus) #apercu-section { order: 0; }
@@ -473,7 +473,7 @@ label.case input, input[type="checkbox"], input[type="radio"] { flex: 0 0 auto; 
 .zone-sep { display: none; }
 @media (min-width: 1200px) {
   .zone-divisee > .zone-barre { display: flex; }
-  .zone-divisee.cote.avec-resultat { display: grid; grid-template-columns: minmax(0, calc(var(--part, 50) * 1%)) 16px minmax(0, 1fr); gap: 0; align-items: start; }
+  .zone-divisee.cote.avec-resultat { display: grid; grid-template-columns: minmax(0, calc(var(--part, 50) * 1%)) var(--poignee, 16px) minmax(0, 1fr); gap: 0; align-items: start; }
   .zone-divisee.cote.avec-resultat > * { grid-column: 1; }
   .zone-divisee.cote.avec-resultat > .zone-barre { grid-column: 1 / -1; }
   .zone-divisee.cote.avec-resultat > .zone-sep { display: flex; grid-column: 2; grid-row: 2 / span 200; align-self: stretch; align-items: center; justify-content: center; cursor: col-resize; touch-action: none; color: var(--discret); user-select: none; border-radius: 6px; margin: 8px 2px; }
@@ -485,5 +485,11 @@ label.case input, input[type="checkbox"], input[type="radio"] { flex: 0 0 auto; 
 /* poignée sous le schéma : tirer vers le bas pour l'agrandir */
 .poignee-hauteur { display: flex; align-items: center; justify-content: center; height: 18px; margin-top: 2px; cursor: row-resize; touch-action: none; user-select: none; color: var(--discret); border-radius: 6px; line-height: 1; }
 .poignee-hauteur:hover, .poignee-hauteur:focus-visible, body.glisse-haut .poignee-hauteur { background: var(--alt); color: var(--accent); }
-body.glisse-haut { cursor: row-resize; user-select: none; }
-@media (pointer: coarse) { .poignee-hauteur { height: 32px; } }
+body.glisse-haut, body.glisse-haut * { cursor: row-resize !important; user-select: none; }
+@media (pointer: coarse) { :root { --poignee: 32px; } .poignee-hauteur { height: 32px; } }
+.tableau > .poignee-hauteur { flex: 0 0 100%; margin: 0 0 4px; }
+/* tableaux à hauteur réglable : ils défilent sur place, les titres de colonnes restent visibles */
+.defile.hauteur-reglable { overflow: auto; }
+.defile thead th { position: sticky; top: 0; z-index: 1; }
+.cadre-image .defile, .cadre-image .cmp-region { max-height: none !important; }
+@media print { .poignee-hauteur { display: none !important; } .defile, .cmp-region { max-height: none !important; } .defile thead th { position: static; } }

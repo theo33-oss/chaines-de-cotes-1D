@@ -37,6 +37,7 @@
     schema.append(Object.assign(document.createElement("summary"), { textContent: "Schéma : " + c.titre }));
     const fig = document.createElement("div");
     fig.className = "figure";
+    fig.dataset.cle = "exemple"; // même hauteur pour tous les exemples
     const leg = App.legende("");
     schema.append(fig, leg);
     schema.addEventListener("toggle", () => {

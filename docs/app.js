@@ -192,7 +192,7 @@ const App = (() => {
     const h2i = await chargerHtmlToImage();
     const largeur = Math.max(cible.scrollWidth, cible.getBoundingClientRect().width);
     const copie = cible.cloneNode(true);
-    copie.querySelectorAll(".barre-image, .copier, .poignee").forEach((b) => b.remove());
+    copie.querySelectorAll(".barre-image, .copier, .poignee, .poignee-hauteur").forEach((b) => b.remove());
     copie.open = true; // un bloc replié (details) est copié ouvert
     const cadre = Object.assign(document.createElement("div"), { className: "cadre-image" });
     cadre.style.padding = "8px";
@@ -360,6 +360,7 @@ const App = (() => {
       telecharger("tableau.csv", "\ufeff" + [t.entetes, ...t.lignes].map((l) => l.map(cellule).join(";")).join("\r\n"), "text/csv;charset=utf-8");
     });
     bloc.append(enveloppe, b, csv, boutonImage(bloc, "tableau.png"));
+    Poignees.tableau(enveloppe, t.entetes.slice(0, 4).join("|")); // une hauteur gardée par sorte de tableau
     return bloc;
   }
 
@@ -405,7 +406,8 @@ const App = (() => {
       layout.legend = { ...layout.legend, orientation: "h", x: 0, xanchor: "left", y: -0.28, yanchor: "top" };
       layout.margin = { ...layout.margin, b: Math.max((layout.margin || {}).b || 0, 130) };
     }
-    Plotly.react(div, f.data, layout, { responsive: true, displaylogo: false, displayModeBar: !matchMedia("(pointer: coarse)").matches }); // au doigt : pas de barre d'outils minuscule
+    // responsive: false : la largeur et la hauteur sont suivies par js/poignees.js
+    Plotly.react(div, f.data, Poignees.preparerFigure(div, layout), { responsive: false, displaylogo: false, displayModeBar: !matchMedia("(pointer: coarse)").matches }); // au doigt : pas de barre d'outils minuscule
     if (!div.getAttribute("role")) { // figure = image pour un lecteur d'écran, avec son titre comme nom
       div.setAttribute("role", "img");
       const titre = (f.layout && f.layout.title && (f.layout.title.text || f.layout.title)) || "";
@@ -424,6 +426,7 @@ const App = (() => {
       div._barre.prepend(svg);
       div.before(div._barre);
     }
+    Poignees.suivreFigure(div);
   }
 
   // Onglets : onglets = [{ id, titre, rendu(panneau) }] ; le rendu se fait à l'ouverture (Plotly a besoin d'un panneau visible).
@@ -533,7 +536,7 @@ const App = (() => {
 
   // Un graphique tracé pendant que sa page était cachée a une largeur par défaut : on l'ajuste quand il devient visible.
   function ajusterGraphiques(racine) {
-    for (const g of racine.querySelectorAll(".js-plotly-plot")) Plotly.Plots.resize(g);
+    for (const g of racine.querySelectorAll(".js-plotly-plot")) Poignees.ajuster(g);
   }
 
   function allerBandeau(el) {
@@ -789,7 +792,6 @@ const App = (() => {
       sep.setAttribute("aria-valuenow", String(part));
       bCote.textContent = cote ? "Empiler (saisie au-dessus du résultat)" : "Côte à côte (saisie | résultat)";
       bMoitie.hidden = !cote;
-      window.dispatchEvent(new Event("resize")); // les figures se recalent
     };
     const poser = (p, memoriser = true) => { part = Math.max(25, Math.min(75, Math.round(p))); appliquer(); if (memoriser) garder("part", part); };
     // le résultat apparaît (hidden retiré) : la colonne de droite n'existe que s'il y a quelque chose à y mettre
@@ -797,18 +799,16 @@ const App = (() => {
     new MutationObserver(suivre).observe(resultat, { attributes: true, attributeFilter: ["hidden"] });
     suivre();
     bCote.addEventListener("click", () => { cote = !cote; garder("cote", cote ? "1" : "0"); appliquer(); });
-    bMoitie.addEventListener("click", () => poser(50));
-    let tire = false;
-    sep.addEventListener("pointerdown", (e) => { if (e.button) return; tire = true; sep.setPointerCapture(e.pointerId); document.body.classList.add("glisse"); e.preventDefault(); });
-    sep.addEventListener("pointermove", (e) => { if (tire) { const r = zone.getBoundingClientRect(); poser(((e.clientX - r.left) / r.width) * 100, false); } });
-    const fin = () => { if (tire) { tire = false; document.body.classList.remove("glisse"); poser(part); } };
-    sep.addEventListener("pointerup", fin);
-    sep.addEventListener("pointercancel", fin);
-    sep.addEventListener("keydown", (e) => {
-      const pas = { ArrowLeft: -2, ArrowRight: 2 }[e.key];
-      if (pas !== undefined) { e.preventDefault(); poser(part + pas); } else if (e.key === "Home") { e.preventDefault(); poser(50); }
+    bMoitie.addEventListener("click", () => { poser(50); document.dispatchEvent(new Event("taillechange")); });
+    Poignees.brancher(sep, {
+      axe: "x",
+      valeur: () => part,
+      depuis: (e) => { const r = zone.getBoundingClientRect(); return ((e.clientX - r.left) / r.width) * 100; },
+      poser: (p) => poser(p, false),
+      garder: () => poser(part),
+      auto: () => poser(50),
+      pas: (touche) => ({ ArrowLeft: -2, ArrowRight: 2 }[touche]),
     });
-    sep.addEventListener("dblclick", () => poser(50));
     appliquer();
   }
 
@@ -848,6 +848,8 @@ const App = (() => {
     if (/[?&]maj=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);
     menu();
     bandeaux();
+    for (const id of ["maillons", "as-cotes", "as-contacts"]) Poignees.tableau($(id).parentElement, id);
+    Poignees.tableau($("cmp-tableau"), "comparatif");
     bulles();
     afficherPage("accueil"); // l'accueil se lit pendant le chargement ; ses boutons s'activent à la fin
     $("etude-modifier").addEventListener("click", () => afficherPage("analyser"));
